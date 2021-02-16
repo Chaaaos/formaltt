@@ -60,13 +60,15 @@ module Lambda where
   term-substitute σ (tm-λ t) = tm-λ (term-substitute (extend-substutition σ) t)
   term-substitute σ (tm-app s t) = tm-app (term-substitute σ s) (term-substitute σ t)
 
+  -- Auxiliary substitution that replaces just the 0-th variable
+  subst-Z : ∀ {Γ A} → tm Γ A → substitution (Γ , A) Γ
+  subst-Z t Z = t
+  subst-Z T (S x) = tm-var x
+
   -- A common kind of substitution only replaces the 0-th variable with a term
   -- and leaves all the others intact, so we define its action as a shorthand
   _[_] : ∀ {Γ A B} → tm (Γ , A) B → tm Γ A → tm Γ B
-  _[_] {Γ} {A} {B} s t = term-substitute σ s where
-    σ : substitution (Γ , A) Γ
-    σ Z = t
-    σ (S x) = tm-var x
+  _[_] {Γ} {A} {B} s t = term-substitute (subst-Z t) s where
 
   -- Judgemental equality
   data _≡_ {Γ : ctx} : {A : ty} (t s : tm Γ A) → Set where
@@ -85,6 +87,11 @@ module Lambda where
     eq-ext : ∀ {A B} {s t : tm Γ (A ⇒ B)} →
              (tm-app (↑ s) (tm-var Z)) ≡ (tm-app (↑ t) (tm-var Z))
              → s ≡ t
+
+  subst-↑ : ∀ {Γ A B} (t : tm Γ A) (s : tm Γ B) → (( (↑ t) [ s ] ) ≡ t)
+  subst-↑ (tm-var x) s = eq-refl
+  subst-↑ (tm-λ t) s = eq-congr-λ {!!}
+  subst-↑ (tm-app t₁ t₂) s = eq-congr-app (subst-↑ t₁ s) (subst-↑ t₂ s)
 
   -- Example: the identity function
   -- Note that we actually define a family of terms, indexed by a context
@@ -114,22 +121,3 @@ module Lambda where
   tm-numeral : ∀ {Γ} → N → tm Γ nat
   tm-numeral zero = tm-id
   tm-numeral (succ n) = tm-λ (tm-λ (tm-app (tm-app (tm-numeral n) (tm-var (S Z))) (tm-app (tm-var (S Z)) (tm-var Z))))
-
-  -- normalization (this is problematic because Agda does not see that it terminates)
-  -- normalize : ∀ {Γ A} → tm Γ A → tm Γ A
-  -- normalize (tm-var x) = tm-var x
-  -- normalize (tm-λ t) = tm-λ (normalize t)
-  -- normalize {Γ} {A} (tm-app s t) = apply-normalized (normalize s) (normalize t) where
-  --   apply-normalized : ∀ {B} → tm Γ (B ⇒ A) → tm Γ B → tm Γ A
-  --   apply-normalized (tm-λ u) v = normalize (u [ v ])
-  --   apply-normalized (tm-var x) v = (tm-app (tm-var x) v)
-  --   apply-normalized (tm-app u₁ u₂) v = (tm-app (tm-app u₁ u₂) v)
-
-  -- -- normalization works correctly
-  -- normalize-correct : ∀ {Γ A} (t : tm Γ A) → normalize t ≡ t
-  -- normalize-correct (tm-var x) = {!!}
-  -- normalize-correct (tm-λ t) = {!!}
-  -- normalize-correct (tm-app s t) with normalize s
-  -- normalize-correct (tm-app s t)    | (tm-λ u) = {!!}
-  -- normalize-correct (tm-app s t)    | (tm-var x) = {!!}
-  -- normalize-correct (tm-app s t)    | (tm-app u₁ u₂) = {!!}
