@@ -1,11 +1,12 @@
 module Lambda where
--- this is a silly comment
+
   -- The typed λ-calculus
 
   -- The type of types
   data ty : Set where
      ι : ty                   -- the base type
      _⇒_ : ty → ty → ty      -- function type
+     _×_ : ty → ty → ty      -- product type
 
   -- A typing context, there are no variable names because we use de Bruijn indices.
   data ctx : Set where
@@ -25,6 +26,10 @@ module Lambda where
      tm-var : {A : ty} → Γ ∋ A → tm Γ A
      tm-λ : {B : ty} {A : ty} → tm (Γ , A) B → tm Γ (A ⇒ B)
      tm-app : {A B : ty} → tm Γ (A ⇒ B) → tm Γ A → tm Γ B
+     tm-pair : {A B : ty} → tm Γ A → tm Γ B → tm Γ (A × B)
+     tm-fst : {A B : ty} → tm Γ (A × B) → tm Γ A
+     tm-snd : {A B : ty} → tm Γ (A × B) → tm Γ B
+
 
   -- We need serveral boring auxiliary functions whose
   -- purpose is to define substitution
@@ -43,6 +48,9 @@ module Lambda where
   term-rename ρ (tm-var x) = tm-var (ρ x)
   term-rename ρ (tm-λ t) = tm-λ (term-rename (extend-renaming ρ) t)
   term-rename ρ (tm-app s t) = tm-app (term-rename ρ s) (term-rename ρ t)
+  term-rename ρ (tm-pair s t) = tm-pair (term-rename ρ s) (term-rename ρ t)
+  term-rename ρ (tm-fst t) = tm-fst (term-rename ρ t)
+  term-rename ρ (tm-snd t) = tm-snd (term-rename ρ t)
 
   -- a special kind of renaming is weakening by a variable, which we write as ↑
   ↑ : ∀ {Γ A B} → tm Γ A → tm (Γ , B) A
@@ -60,6 +68,9 @@ module Lambda where
   term-substitute σ (tm-var x) = σ x
   term-substitute σ (tm-λ t) = tm-λ (term-substitute (extend-substutition σ) t)
   term-substitute σ (tm-app s t) = tm-app (term-substitute σ s) (term-substitute σ t)
+  term-substitute σ (tm-pair s t) = tm-pair (term-substitute σ s) (term-substitute σ t)
+  term-substitute σ (tm-fst t) = tm-fst (term-substitute σ t)
+  term-substitute σ (tm-snd t) = tm-snd (term-substitute σ t)
 
   -- Auxiliary substitution that replaces just the 0-th variable
   subst-Z : ∀ {Γ A} → tm Γ A → substitution (Γ , A) Γ
@@ -88,11 +99,21 @@ module Lambda where
     eq-ext : ∀ {A B} {s t : tm Γ (A ⇒ B)} →
              (tm-app (↑ s) (tm-var Z)) ≡ (tm-app (↑ t) (tm-var Z))
              → s ≡ t
+    -- product rules
+    eq-fst : ∀ {A B} {u : tm Γ A} {v : tm Γ B} → (tm-fst (tm-pair u v)) ≡ u
+    eq-snd : ∀ {A B} {u : tm Γ A} {v : tm Γ B} → (tm-snd (tm-pair u v)) ≡ v
+    eq-pair : ∀{A B} {s t : tm Γ (A × B)} → tm-fst s ≡ tm-fst t → tm-snd s ≡ tm-snd t → s ≡ t
 
-  subst-↑ : ∀ {Γ A B} (t : tm Γ A) (s : tm Γ B) → (( (↑ t) [ s ] ) ≡ t)
-  subst-↑ (tm-var x) s = eq-refl
-  subst-↑ (tm-λ t) s = eq-congr-λ {!!}
-  subst-↑ (tm-app t₁ t₂) s = eq-congr-app (subst-↑ t₁ s) (subst-↑ t₂ s)
+  -- "η-equivalence" for products
+  eq-pair-η : ∀ {Γ A B} {s : tm Γ (A × B)} → ((tm-pair (tm-fst s) (tm-snd s)) ≡ s)
+  eq-pair-η = eq-pair eq-fst eq-snd
+
+  -- subst-↑ : ∀ {Γ A B} (t : tm Γ A) (s : tm Γ B) → (( (↑ t) [ s ] ) ≡ t)
+  -- subst-↑ (tm-var x) s = eq-refl
+  -- subst-↑ (tm-λ t) s = eq-congr-λ {!!}
+  -- subst-↑ (tm-app t₁ t₂) s = eq-congr-app (subst-↑ t₁ s) (subst-↑ t₂ s)
+  -- I commented this lemma that we tried to prove this morning because we did not achieve to do it yet, and Agda doesn't like the fact that I did not detail the other case of terms yet
+
 
   -- Example: the identity function
   -- Note that we actually define a family of terms, indexed by a context
