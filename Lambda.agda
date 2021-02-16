@@ -52,7 +52,7 @@ module Lambda where
 
   extend-substutition : ∀ {Γ Δ A} → substitution Γ Δ → substitution (Γ , A) (Δ , A)
   extend-substutition σ Z = tm-var Z
-  extend-substutition σ (S x) = term-rename S (σ x)
+  extend-substutition σ (S x) = ↑ (σ x)
 
   -- The action of a substitution on a term
   term-substitute : ∀ {Γ Δ} → substitution Γ Δ → ∀ {A} → tm Γ A → tm Δ A
@@ -73,7 +73,7 @@ module Lambda where
     -- general rules
     eq-refl : {A : ty} {t : tm Γ A} → t ≡ t
     eq-tran : {A : ty} {t s u : tm Γ A} → t ≡ s → s ≡ u → t ≡ u
-    eq-sym :  {A : ty} {t s : tm Γ A} → t ≡ s -> s ≡ t
+    eq-sym :  {A : ty} {t s : tm Γ A} → t ≡ s → s ≡ t
     -- congruence rules
     eq-congr-app : ∀ {A B} {t₁ t₂ : tm Γ (A ⇒ B)} {s₁ s₂ : tm Γ A} →
                    t₁ ≡ t₂ → s₁ ≡ s₂ → tm-app t₁ s₁ ≡ tm-app t₂ s₂
@@ -83,7 +83,7 @@ module Lambda where
     eq-β : ∀ {A B} {t : tm (Γ , A) B} {s : tm Γ A} → (tm-app (tm-λ t) s) ≡ (t [ s ])
     -- extensionality rules
     eq-ext : ∀ {A B} {s t : tm Γ (A ⇒ B)} →
-             (tm-app (↑ t) (tm-var Z)) ≡ (tm-app (↑ s) (tm-var Z))
+             (tm-app (↑ s) (tm-var Z)) ≡ (tm-app (↑ t) (tm-var Z))
              → s ≡ t
 
   -- Example: the identity function
@@ -94,7 +94,13 @@ module Lambda where
 
   -- Appying the identity function twice does nothing
   app-id-id : ∀ {Γ A} {t : tm Γ A} → tm-app tm-id (tm-app tm-id t) ≡ t
-  app-id-id = eq-tran (eq-congr-app eq-refl eq-β) eq-β
+  -- app-id-id = eq-tran (eq-congr-app eq-refl eq-β) eq-β
+  app-id-id = eq-tran eq-β eq-β
+
+  -- Eta-rule
+
+  eq-η : ∀ {Γ A B} {t : tm Γ (A ⇒ B)} → tm-λ (tm-app (↑ t) (tm-var Z)) ≡ t
+  eq-η = eq-ext (eq-tran eq-β (eq-congr-app {!!} eq-refl))
 
   -- natural numbers
   data N : Set where
@@ -110,20 +116,20 @@ module Lambda where
   tm-numeral (succ n) = tm-λ (tm-λ (tm-app (tm-app (tm-numeral n) (tm-var (S Z))) (tm-app (tm-var (S Z)) (tm-var Z))))
 
   -- normalization (this is problematic because Agda does not see that it terminates)
-  normalize : ∀ {Γ A} → tm Γ A → tm Γ A
-  normalize (tm-var x) = tm-var x
-  normalize (tm-λ t) = tm-λ (normalize t)
-  normalize {Γ} {A} (tm-app s t) = apply-normalized (normalize s) (normalize t) where
-    apply-normalized : ∀ {B} → tm Γ (B ⇒ A) → tm Γ B → tm Γ A
-    apply-normalized (tm-λ u) v = normalize (u [ v ])
-    apply-normalized (tm-var x) v = (tm-app (tm-var x) v)
-    apply-normalized (tm-app u₁ u₂) v = (tm-app (tm-app u₁ u₂) v)
+  -- normalize : ∀ {Γ A} → tm Γ A → tm Γ A
+  -- normalize (tm-var x) = tm-var x
+  -- normalize (tm-λ t) = tm-λ (normalize t)
+  -- normalize {Γ} {A} (tm-app s t) = apply-normalized (normalize s) (normalize t) where
+  --   apply-normalized : ∀ {B} → tm Γ (B ⇒ A) → tm Γ B → tm Γ A
+  --   apply-normalized (tm-λ u) v = normalize (u [ v ])
+  --   apply-normalized (tm-var x) v = (tm-app (tm-var x) v)
+  --   apply-normalized (tm-app u₁ u₂) v = (tm-app (tm-app u₁ u₂) v)
 
-  -- normalization works correctly
-  normalize-correct : ∀ {Γ A} (t : tm Γ A) → normalize t ≡ t
-  normalize-correct (tm-var x) = {!!}
-  normalize-correct (tm-λ t) = {!!}
-  normalize-correct (tm-app s t) with normalize s
-  normalize-correct (tm-app s t)    | (tm-λ u) = {!!}
-  normalize-correct (tm-app s t)    | (tm-var x) = {!!}
-  normalize-correct (tm-app s t)    | (tm-app u₁ u₂) = {!!}
+  -- -- normalization works correctly
+  -- normalize-correct : ∀ {Γ A} (t : tm Γ A) → normalize t ≡ t
+  -- normalize-correct (tm-var x) = {!!}
+  -- normalize-correct (tm-λ t) = {!!}
+  -- normalize-correct (tm-app s t) with normalize s
+  -- normalize-correct (tm-app s t)    | (tm-λ u) = {!!}
+  -- normalize-correct (tm-app s t)    | (tm-var x) = {!!}
+  -- normalize-correct (tm-app s t)    | (tm-app u₁ u₂) = {!!}
