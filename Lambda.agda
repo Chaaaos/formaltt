@@ -91,22 +91,24 @@ module Lambda where
     -- congruence rules
     eq-congr-app : ∀ {A B} {t₁ t₂ : tm Γ (A ⇒ B)} {s₁ s₂ : tm Γ A} →
                    t₁ ≡ t₂ → s₁ ≡ s₂ → tm-app t₁ s₁ ≡ tm-app t₂ s₂
-    eq-congr-λ : ∀ {A B} {t₁ t₂ : tm (Γ , A) B} →
-                   t₁ ≡ t₂ → tm-λ t₁ ≡ tm-λ t₂
-    -- computation rules
+    eq-congr-λ : ∀ {A B} {t₁ t₂ : tm (Γ , A) B} → t₁ ≡ t₂ → tm-λ t₁ ≡ tm-λ t₂
+    eq-congr-pair : ∀ {A B} {t₁ t₂ : tm Γ (A ⇒ B)} {s₁ s₂ : tm Γ A} →
+                   t₁ ≡ t₂ → s₁ ≡ s₂ → tm-pair t₁ s₁ ≡ tm-pair t₂ s₂
+    eq-congr-fst : ∀ {A B} {s t : tm Γ (A × B)} → s ≡ t → tm-fst s ≡ tm-fst t
+    eq-congr-snd : ∀ {A B} {s t : tm Γ (A × B)} → s ≡ t → tm-snd s ≡ tm-snd t
+    -- function type rules
     eq-β : ∀ {A B} {t : tm (Γ , A) B} {s : tm Γ A} → (tm-app (tm-λ t) s) ≡ (t [ s ])
-    -- extensionality rules
-    eq-ext : ∀ {A B} {s t : tm Γ (A ⇒ B)} →
+    eq-⇒ : ∀ {A B} {s t : tm Γ (A ⇒ B)} →
              (tm-app (↑ s) (tm-var Z)) ≡ (tm-app (↑ t) (tm-var Z))
              → s ≡ t
     -- product rules
     eq-fst : ∀ {A B} {u : tm Γ A} {v : tm Γ B} → (tm-fst (tm-pair u v)) ≡ u
     eq-snd : ∀ {A B} {u : tm Γ A} {v : tm Γ B} → (tm-snd (tm-pair u v)) ≡ v
-    eq-pair : ∀{A B} {s t : tm Γ (A × B)} → tm-fst s ≡ tm-fst t → tm-snd s ≡ tm-snd t → s ≡ t
+    eq-× : ∀{A B} {s t : tm Γ (A × B)} → tm-fst s ≡ tm-fst t → tm-snd s ≡ tm-snd t → s ≡ t
 
   -- "η-equivalence" for products
-  eq-pair-η : ∀ {Γ A B} {s : tm Γ (A × B)} → ((tm-pair (tm-fst s) (tm-snd s)) ≡ s)
-  eq-pair-η = eq-pair eq-fst eq-snd
+  eq-pair-η : ∀ {Γ A B} {s : tm Γ (A × B)} → (tm-pair (tm-fst s) (tm-snd s) ≡ s)
+  eq-pair-η = eq-× eq-fst eq-snd
 
   -- subst-↑ : ∀ {Γ A B} (t : tm Γ A) (s : tm Γ B) → (( (↑ t) [ s ] ) ≡ t)
   -- subst-↑ (tm-var x) s = eq-refl
@@ -129,7 +131,7 @@ module Lambda where
   -- Eta-rule
 
   eq-η : ∀ {Γ A B} {t : tm Γ (A ⇒ B)} → tm-λ (tm-app (↑ t) (tm-var Z)) ≡ t
-  eq-η = eq-ext (eq-tran eq-β (eq-congr-app {!!} eq-refl))
+  eq-η = eq-⇒(eq-tran eq-β (eq-congr-app {!!} eq-refl))
 
   -- natural numbers
   data N : Set where
