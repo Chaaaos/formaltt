@@ -8,18 +8,24 @@ module Lambda where
      _⇒_ : ty → ty → ty      -- function type
      _×_ : ty → ty → ty      -- product type
 
+  infixr 7 _⇒_
+  infixl 8 _×_
+
   -- A typing context, there are no variable names because we use de Bruijn indices.
   data ctx : Set where
      • : ctx                  -- empty context
      _,_ : ctx → ty → ctx     -- context extension
 
+  infixr 5 _,_
+
   -- A variable is a natural number (de Bruijn index, position in the context),
   -- but at the same time a proof that a type appears in the context.
   -- We write Γ ∋ A for the type of variables in Γ of type A.
   data _∋_ : (Γ : ctx) (B : ty) → Set where
-     Z : {Γ : ctx} {B : ty} → (Γ , B) ∋ B              -- zero
-     S : {Γ : ctx} {A B : ty} → Γ ∋ B → (Γ , A) ∋ B    -- successor
+     Z : {Γ : ctx} {B : ty} → (Γ , B) ∋ B              -- zero index
+     S : {Γ : ctx} {A B : ty} → Γ ∋ B → (Γ , A) ∋ B    -- successor index
 
+  infix 4 _∋_
 
   -- The type of terms in context Γ of type A
   data tm (Γ : ctx) : (A : ty) → Set where
@@ -29,7 +35,6 @@ module Lambda where
      tm-pair : {A B : ty} → tm Γ A → tm Γ B → tm Γ (A × B)
      tm-fst : {A B : ty} → tm Γ (A × B) → tm Γ A
      tm-snd : {A B : ty} → tm Γ (A × B) → tm Γ B
-
 
   -- We need serveral boring auxiliary functions whose
   -- purpose is to define substitution
@@ -82,6 +87,8 @@ module Lambda where
   _[_] : ∀ {Γ A B} → tm (Γ , A) B → tm Γ A → tm Γ B
   _[_] {Γ} {A} {B} s t = term-substitute (subst-Z t) s where
 
+  infix 5 _[_]
+
   -- Judgemental equality
   data _≡_ {Γ : ctx} : {A : ty} (t s : tm Γ A) → Set where
     -- general rules
@@ -97,17 +104,19 @@ module Lambda where
     eq-congr-fst : ∀ {A B} {s t : tm Γ (A × B)} → s ≡ t → tm-fst s ≡ tm-fst t
     eq-congr-snd : ∀ {A B} {s t : tm Γ (A × B)} → s ≡ t → tm-snd s ≡ tm-snd t
     -- function type rules
-    eq-β : ∀ {A B} {t : tm (Γ , A) B} {s : tm Γ A} → (tm-app (tm-λ t) s) ≡ (t [ s ])
+    eq-β : ∀ {A B} {t : tm (Γ , A) B} {s : tm Γ A} → tm-app (tm-λ t) s ≡ t [ s ]
     eq-⇒ : ∀ {A B} {s t : tm Γ (A ⇒ B)} →
-             (tm-app (↑ s) (tm-var Z)) ≡ (tm-app (↑ t) (tm-var Z))
+             tm-app (↑ s) (tm-var Z) ≡ tm-app (↑ t) (tm-var Z)
              → s ≡ t
     -- product rules
-    eq-fst : ∀ {A B} {u : tm Γ A} {v : tm Γ B} → (tm-fst (tm-pair u v)) ≡ u
-    eq-snd : ∀ {A B} {u : tm Γ A} {v : tm Γ B} → (tm-snd (tm-pair u v)) ≡ v
+    eq-fst : ∀ {A B} {u : tm Γ A} {v : tm Γ B} → tm-fst (tm-pair u v) ≡ u
+    eq-snd : ∀ {A B} {u : tm Γ A} {v : tm Γ B} → tm-snd (tm-pair u v) ≡ v
     eq-× : ∀{A B} {s t : tm Γ (A × B)} → tm-fst s ≡ tm-fst t → tm-snd s ≡ tm-snd t → s ≡ t
 
+  infix 4 _≡_
+
   -- "η-equivalence" for products
-  eq-pair-η : ∀ {Γ A B} {s : tm Γ (A × B)} → (tm-pair (tm-fst s) (tm-snd s) ≡ s)
+  eq-pair-η : ∀ {Γ A B} {s : tm Γ (A × B)} → tm-pair (tm-fst s) (tm-snd s) ≡ s
   eq-pair-η = eq-× eq-fst eq-snd
 
   -- subst-↑ : ∀ {Γ A B} (t : tm Γ A) (s : tm Γ B) → (( (↑ t) [ s ] ) ≡ t)
@@ -140,8 +149,6 @@ module Lambda where
 
   -- church numerals
 
-  nat = (ι ⇒ ι) ⇒ (ι ⇒ ι)
-
-  tm-numeral : ∀ {Γ} → N → tm Γ nat
+  tm-numeral : ∀ {Γ} → N → tm Γ ((ι ⇒ ι) ⇒ (ι ⇒ ι))
   tm-numeral zero = tm-id
   tm-numeral (succ n) = tm-λ (tm-λ (tm-app (tm-app (tm-numeral n) (tm-var (S Z))) (tm-app (tm-var (S Z)) (tm-var Z))))
