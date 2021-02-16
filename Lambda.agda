@@ -1,4 +1,5 @@
 module Lambda where
+-- this is a silly comment
   -- The typed λ-calculus
 
   -- The type of types
