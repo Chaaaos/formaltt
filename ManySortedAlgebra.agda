@@ -37,13 +37,16 @@ module ManySortedAlgebra where
   open EquationalTheory
 
   -- the remaining judgement form is equality
-  data _≡_ {Σ : Signature} {T : EquationalTheory Σ} : {Γ : Context Σ} → {S : sort Σ} → Term Γ S → Term Γ S → Set where
+  data _≡_ {Σ : Signature} {T : EquationalTheory Σ} : {Γ : Context Σ} → {S : sort Σ} → Term Γ S → Term Γ S → Set₁ where
     -- general rules
     eq-refl : ∀ {Γ} {S : sort Σ} {t : Term Γ S} → t ≡ t
-    eq-symm : ∀ {Γ} {S : sort Σ} {s t : Term Γ S} → _≡_ {_} {T} s t → t ≡ s
-    eq-tran : ∀ {Γ} {S : sort Σ} {s t u : Term Γ S} → _≡_ {_} {T} s t → _≡_ {_} {T} t u → s ≡ u
-    -- congruence rule
+    eq-symm : ∀ {Γ} {S : sort Σ} {s t : Term {Σ} Γ S} → _≡_ {T = T} s t → t ≡ s
+    eq-tran : ∀ {Γ} {S : sort Σ} {s t u : Term Γ S} → _≡_ {T = T} s t → _≡_ {T = T} t u → s ≡ u
+`    -- congruence rule
     eq-congr : ∀ {Γ} {f : op Σ} (x y : ∀ (i : arg Σ f) → Term Γ (arg-sort Σ i)) →
                (∀ {i} → _≡_ {_} {T} (x i) (y i)) → tm-op f x ≡ tm-op f y
     -- equational axiom
     eq-axiom : ∀ {ε : eq T} → eq-lhs T ε ≡ eq-rhs T ε
+
+  data cow {A : Set} {x : A} : Set where
+    moo : cow → cow
