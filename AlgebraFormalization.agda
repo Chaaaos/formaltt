@@ -40,3 +40,29 @@ module AlgebraFormalization where
       -- naturality / commutation
       lhs-natural : ∀ (A B : OpAlgebra {l} S) (f : Hom A B) (e : eq) (args : eq-arity e → OpAlgebra.carrier A) → ( (Hom.map f) (lhs {A} {e} args) ≡ lhs {B} {e} (λ i → (Hom.map f) (args i)))
       rhs-natural : ∀ (A B : OpAlgebra {l} S) (f : Hom A B) (e : eq) (args : eq-arity e → OpAlgebra.carrier A) → ( (Hom.map f) (rhs {A} {e} args) ≡ rhs {B} {e} (λ i → (Hom.map f) (args i)))
+
+  -- Useful arities
+  data nullary : Set where
+  data unary : Set where
+    only : unary
+  data binary : Set where
+    fst : binary
+    snd : binary
+
+
+  -- Definition of groups
+  data GroupOperation : Set where
+    one : GroupOperation
+    mul : GroupOperation
+    inv : GroupOperation
+
+  GroupArity : (o : GroupOperation) → Set
+  GroupArity one = nullary
+  GroupArity mul = binary
+  GroupArity inv = unary
+
+  GroupOp : OpSignature
+  GroupOp = record { operation = GroupOperation ;  arity = GroupArity}
+
+
+
