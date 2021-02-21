@@ -5,6 +5,9 @@ module AlgebraFormalization where
 
   -- Here is an attempt to translate (part of) the Coq formalization. I did not translate the definition of the free algebra, the proof, and the part concerning the groups yet. I hope I did not do too weird things with the levels.
 
+
+  -- ** Formalization of single-sorted algebraic theories **
+
   -- Function extensionality
   postulate
     funext : ∀ {X : Set} {Y : X → Set} {f g : ∀ (x : X) → (Y x)} → (∀ (x : X) → ((f x) ≡ (g x))) → (f ≡ g)
@@ -14,6 +17,31 @@ module AlgebraFormalization where
       operation : Set l
       arity : operation → Set l
   -- I used the things with the levels of the hierachy of types because Agda was unhappy with what I was doing (and I did not want to define it only with Set₀ and Set₁ beacause I wanted to avoid weird things if we then want to define an OpSignature with an operation OpSignature)
+
+
+-- Here is a attempt (partial for the moment) to add context and terms, based on the same principles as in the file "ManySortedAlgebra.agda"
+  -- Contexts
+  record Context {l : Level} (Σ : OpSignature {l}) : Set (lsuc l) where
+    field
+      var : Set l
+
+  open Context
+
+  -- Terms on an operation signature
+  data Term {l : Level} {Σ : OpSignature {l}} (Γ : Context Σ) : Set l  where
+    tm-var : ∀ (x : var Γ) → Term Γ
+    tm-op : ∀ (f : OpSignature.operation Σ) → (OpSignature.arity Σ f → Term Γ) → Term Γ
+
+  substitution : ∀ {l : Level} {Σ : OpSignature {l}} (Γ Δ : Context Σ) → Set l
+  substitution Γ Δ = ∀ (x : var Γ) → Term Δ
+
+
+  -- the action of a substitution on a term
+  _·_ : ∀ {l : Level} {Σ : OpSignature {l}} {Γ Δ : Context Σ} → substitution Γ Δ  → Term Γ → Term Δ
+  σ · (tm-var x) = σ x
+  σ · (tm-op f x) = tm-op f (λ i → σ · x i)
+
+-- End of the attempt
 
   -- Operation Algebra
   record OpAlgebra {l : Level} (S : OpSignature {l}) : Set (lsuc l) where
@@ -30,7 +58,7 @@ module AlgebraFormalization where
   -- For the moment I skip the translation of the part concerning the free algebra
 
   -- Equation Signature
-  record Eqsignature {l : Level} (S : OpSignature {l}) : Set (lsuc l) where
+  record EqSignature {l : Level} (S : OpSignature {l}) : Set (lsuc l) where
     field
       eq : Set l
       eq-arity : eq → Set l
@@ -40,6 +68,18 @@ module AlgebraFormalization where
       -- naturality / commutation
       lhs-natural : ∀ (A B : OpAlgebra {l} S) (f : Hom A B) (e : eq) (args : eq-arity e → OpAlgebra.carrier A) → ( (Hom.map f) (lhs {A} {e} args) ≡ lhs {B} {e} (λ i → (Hom.map f) (args i)))
       rhs-natural : ∀ (A B : OpAlgebra {l} S) (f : Hom A B) (e : eq) (args : eq-arity e → OpAlgebra.carrier A) → ( (Hom.map f) (rhs {A} {e} args) ≡ rhs {B} {e} (λ i → (Hom.map f) (args i)))
+
+  --  Algebra
+  record Algebra {l : Level} (S : OpSignature {l}) (E : EqSignature {l} S) : Set (lsuc l) where
+    field
+      alg : OpAlgebra S
+      equations : ∀ (e : EqSignature.eq E) (args : EqSignature.eq-arity E e → OpAlgebra.carrier  alg) → (EqSignature.rhs E {alg} {e} args ≡ EqSignature.lhs E {alg} {e} args)
+
+
+   -- For the moment, I think that we did not talk about terms in contexts, did we ? Should we generalize the things we did in Lambda.agda (using De Bruijn indices for the variables) ?
+
+
+  -- ** Other things **
 
   -- Useful arities
   data nullary : Set where
