@@ -19,7 +19,7 @@ module MultiCategories where
     [] : List A
     _::_ : A → List A → List A
 
-  infix 30 _::_
+  infixr 30 _::_
 
   open List
 
@@ -86,4 +86,33 @@ module MultiCategories where
 
   open MultiCategory
 
--- This is a fisrt attempt, there might be things that I have forgotten, or wrong things
+  -- List over a list
+  data ListOver {l : Level} {A : Set l} (B : A → Set l) : List A → Set l where
+    [[]] : ListOver B []
+    _:::_ : ∀ {x xs} → (y : B x) → (ys : ListOver B xs) → ListOver B (x :: xs)
+
+  infixr 25 _:::_
+
+  over-map : ∀ {l : Level} {A : Set l} {B : A → Set l} {xs} {C : Set l} → (∀ {x} → B x → C) → ListOver B xs → List C
+  over-map f [[]] = []
+  over-map f (y ::: ys) = f y :: over-map f ys
+
+  -- Dependent sum
+  record Σ {l} (A : Set l) (B : A → Set l) : Set l where
+    constructor ⟨_,_⟩
+    field
+      π₁ : A
+      π₂ : B π₁
+
+  open Σ
+
+  -- A more dependent attempt at multicategories
+  record MultiCategory2 {l : Level} : Set (lsuc l) where
+    field
+      object : Set l
+      multimap : List object → object → Set l
+      𝟙 : ∀ {x} → multimap (x :: []) x
+      _•_ : ∀ {ys x} → multimap ys x → ∀ (gs : ListOver (λ y → Σ (List object) (λ zs → multimap zs y)) ys) →
+            multimap (flatten (over-map π₁ gs)) x
+      -- here complications start
+      -- id-left : ∀ {ys x} → (f : multimap ys x) → 𝟙 • (⟨ ys , f ⟩ ::: [[]]) == f
