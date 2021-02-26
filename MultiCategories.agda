@@ -115,4 +115,4 @@ module MultiCategories where
       _•_ : ∀ {ys x} → multimap ys x → ∀ (gs : ListOver (λ y → Σ (List object) (λ zs → multimap zs y)) ys) →
             multimap (flatten (over-map π₁ gs)) x
       -- here complications start
-      -- id-left : ∀ {ys x} → (f : multimap ys x) → 𝟙 • (⟨ ys , f ⟩ ::: [[]]) == f
+      -- 𝟙-left : ∀ {ys x} → (f : multimap ys x) → 𝟙 • (⟨ ys , f ⟩ ::: [[]]) == f
