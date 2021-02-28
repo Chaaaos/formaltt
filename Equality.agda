@@ -13,3 +13,6 @@ module Equality where
 
   ap : ∀ {ℓ k} {A : Set ℓ} {B : Set k} {x y : A} {f : A → B} → x ≡ y → f x ≡ f y
   ap refl = refl
+
+  transport : ∀ {ℓ k} {A : Set ℓ} (B : A → Set k) {x y : A} → x ≡ y → B x → B y
+  transport _ refl u = u
