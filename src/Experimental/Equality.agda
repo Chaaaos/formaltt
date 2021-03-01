@@ -1,6 +1,6 @@
 open import Agda.Primitive
 
-module Equality where
+module Experimental.Equality where
 
   data _≡_ {ℓ} {A : Set ℓ} : A → A → Set ℓ where
     refl : ∀ {x : A} → x ≡ x

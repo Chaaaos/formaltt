@@ -1,4 +1,4 @@
-module Finite where
+module Experimental.Finite where
 
 data ℕ : Set where
   Z : ℕ

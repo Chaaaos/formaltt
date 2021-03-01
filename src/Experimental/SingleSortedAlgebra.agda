@@ -1,155 +1,197 @@
 open import Agda.Primitive
+open import Agda.Builtin.Nat
+open import Data.Fin
 
-open import Equality
-open import Finite
-open import Category
+open import Experimental.Equality
 
-module SingleSortedAlgebra where
+open import Categories.Category
+open import Categories.Category.Cartesian
 
-  -- an algebraic signature
-  record Signature : Set₁ where
-    field
-      op : Set -- operations
-      op-arity : op → ℕ -- the arity of an operation
+module Experimental.SingleSortedAlgebra where
 
-  open Signature
+-- an algebraic signature
+record Signature : Set₁ where
+  field
+    oper : Set -- operations
+    oper-arity : oper → Nat -- the arity of an operation
 
-  Context = ℕ
-  var = Fin
+open Signature
 
-  -- terms over a signature in a context of a given sort
-  data Term (Σ : Signature) (Γ : Context) : Set where
-    tm-var : ∀ (x : var Γ) → Term Σ Γ
-    tm-op : ∀ (f : op Σ) → (∀ (i : Fin (op-arity Σ f)) → Term Σ Γ) → Term Σ Γ
+Context = Nat
+var = Fin
 
-  substitution : ∀ (Σ : Signature) (Γ Δ : Context) → Set
-  substitution Σ Γ Δ = var Γ → Term Σ Δ
+-- terms over a signature in a context of a given sort
+data Term (Σ : Signature) (Γ : Context) : Set where
+  tm-var : ∀ (x : var Γ) → Term Σ Γ
+  tm-op : ∀ (f : oper Σ) → (∀ (i : Fin (oper-arity Σ f)) → Term Σ Γ) → Term Σ Γ
 
-  -- the action of a substitution on a term
-  _·_ : ∀ {Σ : Signature} {Γ Δ : Context} → substitution Σ Γ Δ → Term Σ Γ → Term Σ Δ
-  σ · (tm-var x) = σ x
-  σ · (tm-op f x) = tm-op f (λ i → σ · x i)
+substitution : ∀ (Σ : Signature) (Γ Δ : Context) → Set
+substitution Σ Γ Δ = var Γ → Term Σ Δ
 
-  infixr 6 _·_
+-- identity substitution
+id-substitution : ∀ {Σ : Signature} {Γ : Context} → substitution Σ Γ Γ
+id-substitution = tm-var
 
-  -- composition of substitutions
-  _○_ : ∀ {Σ : Signature} {Γ Δ Θ : Context} → substitution Σ Δ Θ → substitution Σ Γ Δ → substitution Σ Γ Θ
-  (σ ○ τ) x = σ · τ x
+-- the action of a substitution on a term
+_·_ : ∀ {Σ : Signature} {Γ Δ : Context} → substitution Σ Γ Δ → Term Σ Γ → Term Σ Δ
+σ · (tm-var x) = σ x
+σ · (tm-op f x) = tm-op f (λ i → σ · x i)
 
-  infixl 7 _○_
+infixr 6 _·_
 
-  -- an equational theory is a family of equations over a given sort
-  record Theory ℓ (Σ : Signature) : Set (lsuc ℓ) where
-    field
-      eq : Set ℓ
-      eq-ctx : ∀ (ε : eq) → Context
-      eq-lhs : ∀ (ε : eq) → Term Σ (eq-ctx ε)
-      eq-rhs : ∀ (ε : eq) → Term Σ (eq-ctx ε)
+-- composition of substitutions
+_∘s_ : ∀ {Σ : Signature} {Γ Δ Θ : Context} → substitution Σ Δ Θ → substitution Σ Γ Δ → substitution Σ Γ Θ
+(σ ∘s τ) x = σ · τ x
 
-  open Theory
+infixl 7 _∘s_
 
-  infix 4 _∥_⊢_≈_
+-- an equational theory is a family of equations over a given sort
+record Theory ℓ (Σ : Signature) : Set (lsuc ℓ) where
+  field
+    eq : Set ℓ
+    eq-ctx : ∀ (ε : eq) → Context
+    eq-lhs : ∀ (ε : eq) → Term Σ (eq-ctx ε)
+    eq-rhs : ∀ (ε : eq) → Term Σ (eq-ctx ε)
+
+  infix 4 _⊢_≈_
 
   -- equality of terms
-  data _∥_⊢_≈_ {ℓ} {Σ : Signature} (T : Theory ℓ Σ) : (Γ : Context) → Term Σ Γ → Term Σ Γ → Set (lsuc ℓ) where
+  data _⊢_≈_ : (Γ : Context) → Term Σ Γ → Term Σ Γ → Set (lsuc ℓ) where
     -- general rules
-    eq-refl : ∀ {Γ} {t : Term Σ Γ} → T ∥ Γ ⊢ t ≈ t
-    eq-symm : ∀ {Γ} {s t : Term Σ Γ} → T ∥ Γ ⊢ s ≈ t → T ∥ Γ ⊢ t ≈ s
-    eq-tran : ∀ {Γ} {s t u : Term Σ Γ} → T ∥ Γ ⊢ s ≈ t → T ∥ Γ ⊢ t ≈ u → T ∥ Γ ⊢ s ≈ u
+    eq-refl : ∀ {Γ} {t : Term Σ Γ} → Γ ⊢ t ≈ t
+    eq-symm : ∀ {Γ} {s t : Term Σ Γ} → Γ ⊢ s ≈ t → Γ ⊢ t ≈ s
+    eq-tran : ∀ {Γ} {s t u : Term Σ Γ} → Γ ⊢ s ≈ t → Γ ⊢ t ≈ u → Γ ⊢ s ≈ u
     -- congruence rule
-    eq-congr : ∀ {Γ} {f : op Σ} (x y : ∀ (i : Fin (op-arity Σ f)) → Term Σ Γ) →
-               (∀ i → T ∥ Γ ⊢ x i ≈ y i) → T ∥ Γ ⊢ tm-op f x ≈ tm-op f y
+    eq-congr : ∀ {Γ} {f : oper Σ} (x y : ∀ (i : Fin (oper-arity Σ f)) → Term Σ Γ) →
+               (∀ i → Γ ⊢ x i ≈ y i) → Γ ⊢ tm-op f x ≈ tm-op f y
     -- equational axiom
-    eq-axiom : ∀ (ε : eq T) {Δ : Context} (σ : substitution Σ (eq-ctx T ε) Δ) →
-               T ∥ Δ ⊢ σ · (eq-lhs T ε) ≈ σ · eq-rhs T ε
+    eq-axiom : ∀ (ε : eq) {Δ : Context} (σ : substitution Σ (eq-ctx ε) Δ) →
+               Δ ⊢ σ · (eq-lhs ε) ≈ σ · eq-rhs ε
 
-  -- composition is functorial
-  subst-○ : ∀ {ℓ} {Σ : Signature} {T : Theory ℓ Σ} {Γ Δ Θ : Context}
-              (σ : substitution Σ Δ Θ) (τ : substitution Σ Γ Δ) →
-              ∀ (t : Term Σ Γ) → T ∥ Θ ⊢ (σ · τ · t) ≈ (σ ○ τ · t)
-  subst-○ σ τ (tm-var x) = eq-refl
-  subst-○ σ τ (tm-op f x) = eq-congr (λ i → σ · τ · x i) (λ i → σ ○ τ · x i) λ i → subst-○ σ τ (x i)
+  -- equality of substitutions
+  _≈s_ : ∀ {Γ Δ : Context} → substitution Σ Γ Δ → substitution Σ Γ Δ → Set (lsuc ℓ)
+  _≈s_ {Δ = Δ} σ ρ = ∀ x → Δ ⊢ σ x ≈ ρ x
+
+  -- composition of substitutions is functorial
+  subst-∘s : ∀ {Γ Δ Θ} (σ : substitution Σ Δ Θ) (τ : substitution Σ Γ Δ) → ∀ (t : Term Σ Γ) → Θ ⊢ (σ · τ · t) ≈ (σ ∘s τ · t)
+  subst-∘s σ τ (tm-var x) = eq-refl
+  subst-∘s σ τ (tm-op f x) = eq-congr (λ i → σ · τ · x i) (λ i → σ ∘s τ · x i) λ i → subst-∘s σ τ (x i)
 
   -- substitution preserves equality
-  eq-subst : ∀ {ℓ} {Σ : Signature} {T : Theory ℓ Σ} {Γ Δ : Context} (σ : substitution Σ Γ Δ)
-               {s t : Term Σ Γ} → T ∥ Γ ⊢ s ≈ t → T ∥ Δ ⊢ σ · s ≈ σ · t
+  eq-subst : ∀ {Γ Δ : Context} (σ : substitution Σ Γ Δ) {s t : Term Σ Γ} → Γ ⊢ s ≈ t → Δ ⊢ σ · s ≈ σ · t
   eq-subst σ eq-refl = eq-refl
   eq-subst σ (eq-symm ξ) = eq-symm (eq-subst σ ξ)
   eq-subst σ (eq-tran ζ ξ) = eq-tran (eq-subst σ ζ) (eq-subst σ ξ)
   eq-subst σ (eq-congr x y ξ) = eq-congr (λ i → σ · x i) (λ i → σ · y i) λ i → eq-subst σ (ξ i)
-  eq-subst {T = T} σ (eq-axiom ε τ) =
-    eq-tran (subst-○ σ τ (eq-lhs T ε))
-            (eq-tran (eq-axiom ε (σ ○ τ)) (eq-symm (subst-○ σ τ (eq-rhs T ε))))
+  eq-subst σ (eq-axiom ε τ) =
+    eq-tran (subst-∘s σ τ (eq-lhs ε))
+            (eq-tran (eq-axiom ε (σ ∘s τ)) (eq-symm (subst-∘s σ τ (eq-rhs ε))))
 
-  open Category.Category
-  open Category.FPCategory
+module _ {ℓt o ℓ e : Level}
+         (Σ : Signature) (T : Theory ℓt Σ) (𝒞 : Category o ℓ e)
+         (cartesian-𝒞 : Cartesian 𝒞) where
+  open Category 𝒞
+  open import Categories.Object.Product 𝒞
+  open Cartesian cartesian-𝒞
+  open HomReasoning
 
-  record Interp {ℓ} (Σ : Signature) (C : FPCategory ℓ) : Set ℓ where
+  -- We use our own definition of powers (because the one in the library has a silly special case n = 1
+  pow : ∀ (A : Obj) (n : Nat) → Obj
+  pow A zero = ⊤
+  pow A (suc n) = pow A n × A
+
+  pow-π : ∀ {A : Obj} {n : Nat} (i : Fin n) → pow A n ⇒ A
+  pow-π {_} {suc n} zero = π₂
+  pow-π {_} {suc n} (suc i) = (pow-π i) ∘ π₁
+
+  pow-tuple : ∀ {A B : Obj} {n : Nat} → (Fin n → A ⇒ B) → A ⇒ pow B n
+  pow-tuple {n = zero} fs = !
+  pow-tuple {n = suc n} fs = ⟨ (pow-tuple (λ i → fs (suc i))) , (fs zero) ⟩
+
+  pow-tuple-∘ : ∀ {A B C : Obj} {n : Nat} {fs : Fin n → B ⇒ C} {g : A ⇒ B} →
+                pow-tuple (λ i → fs i ∘ g) ≈ pow-tuple fs ∘ g
+  pow-tuple-∘ {n = zero} {fs} {g} = !-unique (! ∘ g)
+  pow-tuple-∘ {n = suc n} {fs = fs} =
+    let open product in
+      (⟨⟩-congʳ (pow-tuple-∘ {fs = λ i → fs (suc i)})) ○ (⟺ ⟨⟩∘)
+
+  pow-tuple-id : ∀ {A : Obj} {n} → pow-tuple {A = pow A n} {n = n} pow-π ≈ id
+  pow-tuple-id {n = zero} = !-unique id
+  pow-tuple-id {n = suc n} = (⟨⟩-congʳ ((pow-tuple-∘ {n = n}) ○ ((pow-tuple-id {n = n} ⟩∘⟨refl) ○ identityˡ))) ○ η
+
+  -- An interpretation of Σ in 𝒞
+  record Interp : Set (o ⊔ ℓ ⊔ e) where
     field
-      interp-carrier : obj (category C)
-      interp-op : ∀ (f : op Σ) → hom (category C) (power C (op-arity Σ f) interp-carrier) interp-carrier
+      interp-carrier : Obj
+      interp-oper : ∀ (f : oper Σ) → pow interp-carrier (oper-arity Σ f) ⇒ interp-carrier
 
     -- the interpretation of a term
-    interp-term : ∀ {Γ : Context} → Term Σ Γ → hom (category C) (power C Γ interp-carrier) interp-carrier
-    interp-term {Γ} (tm-var x) = project C Γ x
-    interp-term {Γ} (tm-op f ts) = compose (category C) (interp-op f) (tuple C (op-arity Σ f) (λ i → interp-term (ts i)))
-
-  -- Homomorphism of interpretations
-  record InterpHom {ℓ} {Σ : Signature} {C : FPCategory ℓ} (A B : Interp Σ C) : Set ℓ where
-    open Interp
-
-    field
-      interp-hom : hom (category C) (interp-carrier A) (interp-carrier B)
-      interp-hom-eq :
-        ∀ {f : op Σ} →
-        compose (category C) interp-hom (interp-op A f) ≡ compose (category C) (interp-op B f) (power-hom C (op-arity Σ f) interp-hom)
+    interp-term : ∀ {Γ : Context} → Term Σ Γ →  𝒞 [ (pow interp-carrier Γ) , interp-carrier ]
+    interp-term (tm-var x) = pow-π x
+    interp-term (tm-op f ts) = 𝒞 [ interp-oper f ∘ pow-tuple (λ i → interp-term (ts i)) ]
 
   -- Every signature has the trivial interpretation
 
-  TrivialInterp : ∀ {ℓ} (Σ : Signature) (C : FPCategory ℓ) → Interp Σ C
-  TrivialInterp Σ C =
-    record
-      { interp-carrier = terminal-obj C
-      ; interp-op = λ f → terminal-hom C
-      }
+  TrivialInterp : Interp
+  TrivialInterp = record { interp-carrier = ⊤ ; interp-oper = λ f → ! }
 
-  -- The identity homomorphism
-  Id : ∀ {ℓ} {Σ : Signature} {C : FPCategory ℓ} (A : Interp Σ C) → InterpHom A A
-  Id {C = C} A =
-    record
-      { interp-hom = id-hom (category C)
-      ; interp-hom-eq = λ {f} → tran (compose-id-left (category C))
-                             (tran (sym (compose-id-right (category C)))
-                                   (ap
-                                     (sym (tuple-project C
-                                           (λ i → tran (project-tuple C)
-                                                 (tran (compose-id-left (category C))
-                                                       (sym (compose-id-right (category C)))))))))
-      }
-
-  -- Compositon of homomorphisms
-  HomCompose : ∀ {ℓ} {Σ : Signature} {C : FPCategory ℓ} {A B C : Interp Σ C} → InterpHom B C → InterpHom A B → InterpHom A C
-  HomCompose {C = C} ϕ ψ =
-      record
-        { interp-hom = compose (category C) (interp-hom ϕ) (interp-hom ψ)
-        ; interp-hom-eq = λ {f} → {!!}
-        }
-      where open InterpHom
-
-
-  -- Model of a theory
-  record Model {ℓT ℓC} {Σ : Signature} (T : Theory ℓT Σ) (C : FPCategory ℓC) : Set (ℓT ⊔ ℓC) where
+  record Hom (A B : Interp) : Set (o ⊔ ℓ ⊔ e) where
     open Interp
 
     field
-      {{model-interp}} : Interp Σ C
-      model-eq : ∀ (ε : eq T) → interp-term model-interp (eq-lhs T ε) ≡ interp-term model-interp (eq-rhs T ε)
+      hom-morphism : interp-carrier A  ⇒ interp-carrier B
+      hom-commute :
+         ∀ (f : oper Σ) →
+         hom-morphism ∘ interp-oper A f ≈
+             interp-oper B f ∘ pow-tuple {n = oper-arity Σ f} (λ i →  hom-morphism ∘  interp-oper A f)
+
+  -- The identity homomorphism
+  Id : ∀ (A : Interp) → Hom A A
+  Id A = record
+          { hom-morphism = id
+          ; hom-commute = {!!}
+          }
+
+  -- Compositon of homomorphisms
+  _∘I_ : ∀ {A B C : Interp} → Hom B C → Hom A B → Hom A C
+  ϕ ∘I ψ =
+    let open Hom in
+    record { hom-morphism = (hom-morphism ϕ) ∘ (hom-morphism ψ)
+           ; hom-commute = {!!} }
+
+  -- Model of a theory
+  record Mod : Set (ℓt ⊔ o ⊔ ℓ ⊔ e) where
+    open Interp
+    open Theory
+
+    field
+      {{model-interp}} : Interp
+      model-eq : ∀ (ε : eq T) → interp-term model-interp (eq-lhs T ε) ≈ interp-term model-interp (eq-rhs T ε)
 
   -- Every theory has the trivial model, whose carrier is the terminal object
 
-  TrivialModel : ∀ {ℓT ℓC} {Σ : Signature} (T : Theory ℓT Σ) (C : FPCategory ℓC) → Model T C
-  TrivialModel {Σ = Σ} T C =
+  TrivialModel : Mod
+  TrivialModel =
     record
-      { model-interp = TrivialInterp Σ C
-      ; model-eq = λ ε → terminal-eq C
+      { model-interp = TrivialInterp
+      ; model-eq = λ ε → !-unique₂
       }
+
+  -- Syntactic category
+  SynCat : Category lzero lzero (lsuc ℓt)
+  SynCat =
+    let open Theory in
+      record
+        { Obj = Context
+        ; _⇒_ = substitution Σ
+        ; _≈_ = _≈s_ T
+        ; id =  id-substitution
+        ; _∘_ =  _∘s_
+        ; assoc = {!!}
+        ; sym-assoc = {!!}
+        ; identityˡ = {!!}
+        ; identityʳ = {!!}
+        ; identity² = {!!}
+        ; equiv = {!!}
+        ; ∘-resp-≈ = {!!}
+        }
