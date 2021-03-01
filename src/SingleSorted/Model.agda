@@ -10,8 +10,8 @@ open import SingleSorted.Interpretation
 
 module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
 
-  open Signature
-  open Theory
+  open Signature Σ
+  open Theory T
 
   -- Model of a theory
   record Model {o ℓ e} {𝒞 : Category o ℓ e} {cartesian-𝒞 : Cartesian 𝒞}
@@ -21,7 +21,7 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
     open Category 𝒞
 
     field
-      model-eq : ∀ (ε : eq T) → interp-term (eq-lhs T ε) ≈ interp-term (eq-rhs T ε)
+      model-eq : ∀ (ε : eq) → interp-term (eq-lhs ε) ≈ interp-term (eq-rhs ε)
 
   -- Every theory has the trivial model, whose carrier is the terminal object
   TrivialM : ∀ {o ℓ e} {𝒞 : Category o ℓ e} (cartesian-𝒞 : Cartesian 𝒞) → Model (TrivialI Σ cartesian-𝒞)
@@ -30,12 +30,12 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
      record { model-eq = λ ε → !-unique₂ }
 
   -- The syntactic category
-  SyntacticCategory : Category lzero lzero (lsuc ℓt)
-  SyntacticCategory =
+  𝒮 : Category lzero lzero (lsuc ℓt)
+  𝒮 =
     record
       { Obj = Context
-      ; _⇒_ = λ Γ Δ → {!!}
-      ; _≈_ = _≈s_ T
+      ; _⇒_ = substitution Σ
+      ; _≈_ = _≈s_
       ; id =  id-substitution
       ; _∘_ =  _∘s_
       ; assoc = {!!}
@@ -48,15 +48,20 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
       }
 
   -- The cartesian structure of the syntactic category
-  cartesian-SyntacticCategory : Cartesian SyntacticCategory
-  cartesian-SyntacticCategory =
-    record { terminal = record { ⊤ = 0 ; ⊤-is-terminal = record { ! = λ i → {! i!} ; !-unique = {!!} } }
-           ; products = {!!} }
+  cartesian-𝒮 : Cartesian 𝒮
+  cartesian-𝒮 =
+    record { terminal = record { ⊤ = empty-context
+                               ; ⊤-is-terminal = record { ! = empty-context-absurd
+                                                        ; !-unique = λ f → empty-context-unique
+                                                        }
+                               }
+           ; products = {!!}
+           }
 
   -- The universal interpretation
-  universalI : Interpretation Σ cartesian-SyntacticCategory
+  universalI : Interpretation Σ cartesian-𝒮
   universalI =
-    let open Category SyntacticCategory in
+    let open Category 𝒮 in
     record { interp-carrier = 1
            ; interp-oper = {!!}
            }
