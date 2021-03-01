@@ -9,16 +9,16 @@ open import Categories.Category.Cartesian
 
 open import SingleSorted.AlgebraicTheory
 
-module SingleSorted.Interpretation {o ℓ e : Level}
+module SingleSorted.Interpretation
+         {o ℓ e}
          (Σ : Signature) {𝒞 : Category o ℓ e}
          (cartesian-𝒞 : Cartesian 𝒞) where
   open Signature
   open Category 𝒞
-  open import Categories.Object.Product 𝒞
   open Cartesian cartesian-𝒞
   open HomReasoning
 
-  -- We use our own definition of powers (because the one in the library has a silly special case n = 1
+  -- We use our own definition of powers, because the one in the library has a silly special case n = 1
   pow : ∀ (A : Obj) (n : Nat) → Obj
   pow A zero = ⊤
   pow A (suc n) = pow A n × A
@@ -52,7 +52,7 @@ module SingleSorted.Interpretation {o ℓ e : Level}
     -- the interpretation of a term
     interp-term : ∀ {Γ : Context} → Term {Σ} Γ →  𝒞 [ (pow interp-carrier Γ) , interp-carrier ]
     interp-term (tm-var x) = pow-π x
-    interp-term (tm-oper f ts) = 𝒞 [ interp-oper f ∘ pow-tuple (λ i → interp-term (ts i)) ]
+    interp-term (tm-oper f ts) = interp-oper f ∘ pow-tuple (λ i → interp-term (ts i))
 
   -- Every signature has the trivial interpretation
 
@@ -67,13 +67,13 @@ module SingleSorted.Interpretation {o ℓ e : Level}
       hom-commute :
          ∀ (f : oper Σ) →
          hom-morphism ∘ interp-oper A f ≈
-             interp-oper B f ∘ pow-tuple {n = oper-arity Σ f} (λ i →  hom-morphism ∘  interp-oper A f)
+             interp-oper B f ∘ pow-tuple {n = oper-arity Σ f} (λ i → hom-morphism ∘ pow-π i)
 
   -- The identity homomorphism
   IdI : ∀ (A : Interpretation) → HomI A A
   IdI A = record
           { hom-morphism = id
-          ; hom-commute = {!!}
+          ; hom-commute = λ f → identityˡ ○ ((⟺ identityʳ) ○ (refl⟩∘⟨ ⟺ pow-tuple-id))
           }
 
   -- Compositon of homomorphisms
