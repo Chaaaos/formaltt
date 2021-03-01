@@ -55,7 +55,15 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
                                                         ; !-unique = λ f → empty-context-unique
                                                         }
                                }
-           ; products = {!!}
+           ; products =  record { product =  λ {Γ} {Δ} → record
+                                                           { A×B =  Agda.Builtin.Nat._+_ Γ Δ
+                                                           ; π₁ = λ i → {!!}
+                                                           ; π₂ = {!!}
+                                                           ; ⟨_,_⟩ = {!!}
+                                                           ; project₁ = {!!}
+                                                           ; project₂ = {!!}
+                                                           ; unique = {!!}
+                                                           } }
            }
 
   -- The universal interpretation
