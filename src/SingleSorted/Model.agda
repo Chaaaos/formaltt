@@ -38,13 +38,15 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
       ; _≈_ = _≈s_
       ; id =  id-substitution
       ; _∘_ =  _∘s_
-      ; assoc = {!!}
-      ; sym-assoc = {!!}
-      ; identityˡ = {!!}
-      ; identityʳ = {!!}
-      ; identity² = {!!}
-      ; equiv = {!!}
-      ; ∘-resp-≈ = {!!}
+      ; assoc = λ {A B C D f g h} x →  subst-∘s ((tm-var x) [ h ]s)
+      ; sym-assoc =  λ {A B C D f g h} x → eq-symm (subst-∘s ((tm-var x) [ h ]s))
+      ; identityˡ = λ x → eq-refl
+      ; identityʳ = λ {A B f} x →  tm-var-id
+      ; identity² = λ x → eq-refl
+      ; equiv = record { refl = λ x → eq-refl
+               ; sym = λ {x = x} {y = y} a b → equiv-subst y x (symm-subst a) (tm-var b)
+               ; trans = λ {i = i} {j = j} {k = k} a b c → equiv-subst i k (trans-subst a b) (tm-var c) }
+      ; ∘-resp-≈ = λ {A B C f h g i} x x₁ x₂ → equiv-eq-subst g i x₁ (x x₂)
       }
 
   -- The cartesian structure of the syntactic category
@@ -59,7 +61,7 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
                                                            { A×B =  Agda.Builtin.Nat._+_ Γ Δ
                                                            ; π₁ = λ i → {!!}
                                                            ; π₂ = {!!}
-                                                           ; ⟨_,_⟩ = {!!}
+                                                           ; ⟨_,_⟩ = λ x x₁ x₂ → x {!!}
                                                            ; project₁ = {!!}
                                                            ; project₂ = {!!}
                                                            ; unique = {!!}
@@ -71,7 +73,8 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
   universalI =
     let open Category 𝒮 in
     record { interp-carrier = 1
-           ; interp-oper = {!!}
+           ; interp-oper = Cartesian.!-unique {!𝒮!}
+--tm-oper f λ x₁ → tm-var {!1!}
            }
 
   -- The universal model

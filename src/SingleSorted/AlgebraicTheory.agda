@@ -77,6 +77,19 @@ record Theory ℓ (Σ : Signature) : Set (lsuc ℓ) where
   _≈s_ : ∀ {Γ Δ : Context} → substitution Σ Γ Δ → substitution Σ Γ Δ → Set (lsuc ℓ)
   _≈s_ {Γ = Γ} σ ρ = ∀ x → Γ ⊢ σ x ≈ ρ x
 
+  -- symmetry of the equality of substitutions
+  symm-subst : ∀ {Γ Δ : Context} {f g : substitution Σ Γ Δ} → f ≈s g → g ≈s f
+  symm-subst {Γ} {Δ} {f} {g} p = λ x → eq-symm (p x)
+
+  -- transitivity of the equality of substitutions
+  trans-subst : ∀ {Γ Δ : Context} {f g h : substitution Σ Γ Δ} → f ≈s g → g ≈s h → f ≈s h
+  trans-subst {Γ} {Δ} {f} {g} {h} p q = λ x → eq-tran (p x) (q x)
+
+  -- neutrality of tm-var
+  tm-var-id : ∀ {Γ : Context} {x : Term Γ} → Γ ⊢ x [ id-substitution ]s ≈ x
+  tm-var-id {x = tm-var x} = eq-refl
+  tm-var-id {x = tm-oper f x} = eq-congr (λ i → tm-var-id)
+
   -- any two substitutions into the empty context are equal
   empty-context-unique : ∀ {Γ : Context} {σ ρ : substitution Σ Γ empty-context} → σ ≈s ρ
   empty-context-unique ()
@@ -93,3 +106,16 @@ record Theory ℓ (Σ : Signature) : Set (lsuc ℓ) where
   eq-subst σ (eq-tran ζ ξ) = eq-tran (eq-subst σ ζ) (eq-subst σ ξ)
   eq-subst σ (eq-congr ξ) = eq-congr (λ i → eq-subst σ (ξ i))
   eq-subst σ (eq-axiom ε ρ) = eq-tran (subst-∘s (eq-lhs ε)) (eq-tran (eq-axiom ε (ρ ∘s σ)) (eq-symm (subst-∘s (eq-rhs ε))))
+
+ -- equivalent substitutions act the same on terms
+  equiv-subst : ∀ {Γ Δ : Context} (f g : substitution Σ Γ Δ)  → f ≈s g → ( ∀ x → Γ ⊢ x [ f ]s ≈ x [ g ]s)
+  equiv-subst f g p (tm-var x) = p x
+  equiv-subst f g p (tm-oper f₁ x) = eq-congr (λ i → equiv-subst f g p (x i))
+
+ -- equivalent substitution preserve equality
+  equiv-eq-subst : ∀ {Γ Δ : Context} (f g : substitution Σ Γ Δ) {u v : Term Δ} (p : f ≈s g) → Δ ⊢ u ≈ v → Γ ⊢ u [ f ]s ≈ v [ g ]s
+  equiv-eq-subst f g {u} {.u} p eq-refl = equiv-subst f g p u
+  equiv-eq-subst f g {u} {v} p (eq-symm q) = eq-symm  (equiv-eq-subst g f {v} {u} (symm-subst p) q)
+  equiv-eq-subst f g {u} {v} p (eq-tran {t = t} q q₁ ) =  eq-tran (eq-subst f q) (equiv-eq-subst f g {t} {v} (p) q₁)
+  equiv-eq-subst {Γ} {Δ} f g {.(tm-oper _ _)} {.(tm-oper  _ _)} p (eq-congr x) = eq-congr λ i → equiv-eq-subst f g p (x i)
+  equiv-eq-subst f g {.(eq-lhs ε [ σ ]s)} {.(eq-rhs ε [ σ ]s)} p (eq-axiom ε σ) = eq-tran (eq-subst f (eq-axiom ε σ)) (equiv-subst f g p (eq-rhs ε [ σ ]s))

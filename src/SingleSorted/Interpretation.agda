@@ -42,6 +42,10 @@ module SingleSorted.Interpretation
   pow-tuple-id {n = zero} = !-unique id
   pow-tuple-id {n = suc n} = (⟨⟩-congʳ ((pow-tuple-∘ {n = n}) ○ ((pow-tuple-id {n = n} ⟩∘⟨refl) ○ identityˡ))) ○ η
 
+  pow-tuple-eq :  ∀ {A B : Obj} {n} {f g : Fin n → A ⇒ B} → (∀ i →  f i ≈ g i) → (pow-tuple {A = A} {n = n} f) ≈ (pow-tuple {A = A} {n = n} g)
+  pow-tuple-eq {n = zero} = λ x → Equiv.refl
+  pow-tuple-eq {n = suc n} = λ x → Equiv.trans (⟨⟩-congʳ (pow-tuple-eq (λ i → x (suc i)))) (⟨⟩-congˡ (x zero))
+
   -- An interpretation of Σ in 𝒞
   record Interpretation : Set (o ⊔ ℓ ⊔ e) where
 
@@ -53,6 +57,8 @@ module SingleSorted.Interpretation
     interp-term : ∀ {Γ : Context} → Term {Σ} Γ →  𝒞 [ (pow interp-carrier Γ) , interp-carrier ]
     interp-term (tm-var x) = pow-π x
     interp-term (tm-oper f ts) = interp-oper f ∘ pow-tuple (λ i → interp-term (ts i))
+
+  open Interpretation
 
   -- Every signature has the trivial interpretation
 
@@ -68,12 +74,14 @@ module SingleSorted.Interpretation
          ∀ (f : oper Σ) →
          hom-morphism ∘ interp-oper A f ≈
              interp-oper B f ∘ pow-tuple {n = oper-arity Σ f} (λ i → hom-morphism ∘ pow-π i)
+  open HomI
 
   -- The identity homomorphism
   IdI : ∀ (A : Interpretation) → HomI A A
   IdI A = record
           { hom-morphism = id
-          ; hom-commute = λ f → {!!}
+          ; hom-commute = λ f →  Equiv.trans identityˡ (Equiv.trans (Equiv.sym identityʳ) (∘-resp-≈ʳ (Equiv.trans (Equiv.sym pow-tuple-id) (pow-tuple-eq {f = pow-π} {g = (λ i → id ∘ pow-π i) }  (λ i → Equiv.sym identityˡ))) ))
+-- I don't really why this doesn't work ... 
           }
 
   -- Compositon of homomorphisms
@@ -81,4 +89,5 @@ module SingleSorted.Interpretation
   ϕ ∘I ψ =
     let open HomI in
     record { hom-morphism = (hom-morphism ϕ) ∘ (hom-morphism ψ)
-           ; hom-commute = {!!} }
+           ; hom-commute = λ f → {!!} }
+-- pow-π  (λ i → id ∘ pow-π i)
