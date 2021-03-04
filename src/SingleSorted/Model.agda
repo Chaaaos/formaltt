@@ -1,6 +1,9 @@
 open import Agda.Primitive
 open import Agda.Builtin.Nat
+open import Agda.Builtin.Equality
 open import Data.Fin
+open import Data.Sum.Base
+open import Data.Nat.Properties
 
 open import Categories.Category
 open import Categories.Category.Cartesian
@@ -13,7 +16,30 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
   open Signature Σ
   open Theory T
 
+  -- "Axioms"
+
+  -- I assume (hopefully reasonnable) things about the built-in equality (I don't know if we could avoid it)
+  postulate
+    trans : ∀ {l : Level} {A : Set l} {a b c : A} → a ≡ b → b ≡ c → a ≡ c
+
+  postulate
+    symm : ∀ {l : Level} {A : Set l} {a b : A} → a ≡ b → b ≡ a
+
+  postulate
+    funext : ∀ {l : Level} {X : Set l} {Y : X → Set l} {f g : ∀ (x : X) → (Y x)} → (∀ (x : X) → ((f x) ≡ (g x))) → (f ≡ g)
+
+  postulate
+    congr : ∀ {l : Level} {X Y : Set l} {f : ∀ (x : X) → Y} {x y : X} → (x ≡ y) → (f x ≡ f y)
+
+  postulate
+    eq-builtin-refl : ∀ {l : Level} {Γ : Context} {x : Term Γ} {y : Term Γ} → (x ≡ y) → (Γ ⊢ x ≈ y)
+
+
+
+
+
   -- Model of a theory
+
   record Model {o ℓ e} {𝒞 : Category o ℓ e} {cartesian-𝒞 : Cartesian 𝒞}
             (I : Interpretation Σ cartesian-𝒞) : Set (ℓt ⊔ o ⊔ ℓ ⊔ e) where
 
@@ -29,7 +55,12 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
      let open Cartesian cart in
      record { model-eq = λ ε → !-unique₂ }
 
+
+
+
+
   -- The syntactic category
+
   𝒮 : Category lzero lzero (lsuc ℓt)
   𝒮 =
     record
@@ -49,7 +80,43 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
       ; ∘-resp-≈ = λ {A B C f h g i} x x₁ x₂ → equiv-eq-subst g i x₁ (x x₂)
       }
 
+
+
+
+
   -- The cartesian structure of the syntactic category
+
+  _plus_ : Nat → Nat → Nat
+  _plus_ = Agda.Builtin.Nat._+_
+
+  com+ = +-comm
+
+  -- handling finite sets
+  swap-Fin : ∀ {Γ Δ} → Fin (Γ plus Δ) → Fin (Δ plus Γ)
+  swap-Fin {Γ} {Δ} = λ  x → cast (com+ Γ Δ) x
+
+  lift-prod₁ : ∀ {Δ Γ} → Fin Γ → Fin (Γ plus Δ)
+  lift-prod₁ {Δ} {Γ} a = swap-Fin {Δ} {Γ} (raise Δ a)
+
+  lift-prod₂ : ∀ {Δ Γ} → Fin Δ → Fin (Γ plus Δ)
+  lift-prod₂ {Δ} {Γ} a =  swap-Fin {Δ} {Γ}(inject+ Γ a)
+
+
+  -- useful to define "project₁" and "project₂"
+  pre-proj₁ : ∀ {Γ Δ : Nat}  {x : Fin Γ} → (splitAt Γ (lift-prod₁ {Δ} {Γ} x)) ≡ (inj₁ x)
+  pre-proj₁ = {!!}
+  -- I am pretty conviced that the above works, but not sure because I struggle to prove it
+
+  proj₁ :  ∀ {Γ Δ A : Context}  {x : Fin Γ} {h : substitution Σ A Γ } {i : substitution Σ A Δ} → [ h , i ] (splitAt Γ (lift-prod₁ {Δ} {Γ} x)) ≡ h x
+  proj₁ {Γ} {Δ} {A} {x} {h} {i} = trans (congr {f = [ h , i ]} {x = (splitAt Γ (lift-prod₁ {Δ} {Γ} x))} {y = inj₁ x} (pre-proj₁ {Γ} {Δ} {x})) refl
+
+  pre-proj₂ : ∀ {Γ  Δ : Nat}  {x : Fin Δ} → (splitAt Γ (lift-prod₂ {Δ} {Γ} x)) ≡ (inj₂ x)
+  pre-proj₂ = {!!}
+
+  proj₂ :  ∀ {Γ Δ A : Context}  {x : Fin Δ} {h : substitution Σ A Γ } {i : substitution Σ A Δ} → [ h , i ] (splitAt Γ (lift-prod₂ {Δ} {Γ} x)) ≡ i x
+  proj₂ {Γ} {Δ} {A} {x} {h} {i} = trans (congr {f = [ h , i ]} {x = (splitAt Γ (lift-prod₂ {Δ} {Γ} x))} {y = inj₂ x} (pre-proj₂ {Γ} {Δ} {x})) refl
+
+  -- Cartesian structure of 𝒮
   cartesian-𝒮 : Cartesian 𝒮
   cartesian-𝒮 =
     record { terminal = record { ⊤ = empty-context
@@ -58,13 +125,13 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
                                                         }
                                }
            ; products =  record { product =  λ {Γ} {Δ} → record
-                                                           { A×B =  Agda.Builtin.Nat._+_ Γ Δ
-                                                           ; π₁ = λ i → {!!}
-                                                           ; π₂ = {!!}
-                                                           ; ⟨_,_⟩ = λ x x₁ x₂ → x {!!}
-                                                           ; project₁ = {!!}
-                                                           ; project₂ = {!!}
-                                                           ; unique = {!!}
+                                                           { A×B =  Γ plus Δ
+                                                           ; π₁ = λ x → tm-var (lift-prod₁ x)
+                                                           ; π₂ = λ x → tm-var (lift-prod₂ x)
+                                                           ; ⟨_,_⟩ = λ x x₁ x₂ → [ x , x₁ ] (splitAt Γ x₂)
+                                                           ; project₁ = λ {h = s} {i = h} {i} x → eq-builtin-refl {ℓt} {Γ = s} {x = [ h , i ] (splitAt Γ (lift-prod₁ {Δ} {Γ} x)) } {y = h x} (proj₁{Γ} {Δ} {s} {x} {h} {i})
+                                                           ; project₂ = λ {h = s} {i = h} {i} x → eq-builtin-refl {ℓt} {Γ = s} {x = [ h , i ] (splitAt Γ (lift-prod₂ {Δ} {Γ} x)) } {y = i x} (proj₂{Γ} {Δ} {s} {x} {h} {i})
+                                                           ; unique = λ {C} {h} {i} {j} x x₁ x₂ → {!!}
                                                            } }
            }
 
@@ -73,8 +140,7 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
   universalI =
     let open Category 𝒮 in
     record { interp-carrier = 1
-           ; interp-oper = Cartesian.!-unique {!𝒮!}
---tm-oper f λ x₁ → tm-var {!1!}
+           ; interp-oper =  λ f x → tm-oper f (λ x₁ → {!!})
            }
 
   -- The universal model

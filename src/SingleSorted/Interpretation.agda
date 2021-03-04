@@ -81,7 +81,7 @@ module SingleSorted.Interpretation
   IdI A = record
           { hom-morphism = id
           ; hom-commute = λ f →  Equiv.trans identityˡ (Equiv.trans (Equiv.sym identityʳ) (∘-resp-≈ʳ (Equiv.trans (Equiv.sym pow-tuple-id) (pow-tuple-eq {f = pow-π} {g = (λ i → id ∘ pow-π i) }  (λ i → Equiv.sym identityˡ))) ))
--- I don't really why this doesn't work ... 
+-- I don't really why this doesn't work ...
           }
 
   -- Compositon of homomorphisms
