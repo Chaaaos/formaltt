@@ -19,17 +19,18 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
   -- "Axioms"
 
   -- I assume (hopefully reasonnable) things about the built-in equality (I don't know if we could avoid it)
-  postulate
-    trans : ∀ {l : Level} {A : Set l} {a b c : A} → a ≡ b → b ≡ c → a ≡ c
 
-  postulate
-    symm : ∀ {l : Level} {A : Set l} {a b : A} → a ≡ b → b ≡ a
+  trans : ∀ {l : Level} {A : Set l} {a b c : A} → a ≡ b → b ≡ c → a ≡ c
+  trans refl refl = refl
+
+  symm : ∀ {l : Level} {A : Set l} {a b : A} → a ≡ b → b ≡ a
+  symm refl = refl
 
   postulate
     funext : ∀ {l : Level} {X : Set l} {Y : X → Set l} {f g : ∀ (x : X) → (Y x)} → (∀ (x : X) → ((f x) ≡ (g x))) → (f ≡ g)
 
-  postulate
-    congr : ∀ {l : Level} {X Y : Set l} {f : ∀ (x : X) → Y} {x y : X} → (x ≡ y) → (f x ≡ f y)
+  congr : ∀ {l : Level} {X Y : Set l} {f : ∀ (x : X) → Y} {x y : X} → (x ≡ y) → (f x ≡ f y)
+  congr {l} {X} {Y} {f} refl = refl
 
   postulate
     eq-builtin-refl : ∀ {l : Level} {Γ : Context} {x : Term Γ} {y : Term Γ} → (x ≡ y) → (Γ ⊢ x ≈ y)
