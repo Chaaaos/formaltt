@@ -4,6 +4,9 @@ open import Agda.Builtin.Equality
 open import Data.Fin
 open import Data.Sum.Base
 open import Data.Nat.Properties
+import Relation.Binary.PropositionalEquality as Eq
+open Eq using (_≡_; refl; cong-app; trans) renaming (sym to symm)
+open Eq.≡-Reasoning
 
 open import Categories.Category
 open import Categories.Category.Cartesian
@@ -20,12 +23,6 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
 
   -- I assume (hopefully reasonnable) things about the built-in equality (I don't know if we could avoid it)
 
-  trans : ∀ {l : Level} {A : Set l} {a b c : A} → a ≡ b → b ≡ c → a ≡ c
-  trans refl refl = refl
-
-  symm : ∀ {l : Level} {A : Set l} {a b : A} → a ≡ b → b ≡ a
-  symm refl = refl
-
   postulate
     funext : ∀ {l : Level} {X : Set l} {Y : X → Set l} {f g : ∀ (x : X) → (Y x)} → (∀ (x : X) → ((f x) ≡ (g x))) → (f ≡ g)
 
@@ -34,7 +31,6 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
 
   postulate
     eq-builtin-refl : ∀ {l : Level} {Γ : Context} {x : Term Γ} {y : Term Γ} → (x ≡ y) → (Γ ⊢ x ≈ y)
-
 
 
 
