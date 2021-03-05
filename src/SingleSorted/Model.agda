@@ -137,7 +137,7 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
   universalI =
     let open Category 𝒮 in
     record { interp-carrier = 1
-           ; interp-oper =  λ f x → tm-oper f (λ x₁ → {!!})
+           ; interp-oper =  λ f x →  tm-var (inject+ (oper-arity f Agda.Builtin.Nat.- {!!}) {!!})
            }
 
   -- The universal model
