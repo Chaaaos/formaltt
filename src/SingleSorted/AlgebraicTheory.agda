@@ -77,6 +77,10 @@ record Theory ℓ (Σ : Signature) : Set (lsuc ℓ) where
   _≈s_ : ∀ {Γ Δ : Context} → substitution Σ Γ Δ → substitution Σ Γ Δ → Set (lsuc ℓ)
   _≈s_ {Γ = Γ} σ ρ = ∀ x → Γ ⊢ σ x ≈ ρ x
 
+  -- reflexivity of the equality of substitutions
+  refl-subst : ∀ {Γ Δ : Context} {f : substitution Σ Γ Δ} → f ≈s f
+  refl-subst = λ x → eq-refl
+
   -- symmetry of the equality of substitutions
   symm-subst : ∀ {Γ Δ : Context} {f g : substitution Σ Γ Δ} → f ≈s g → g ≈s f
   symm-subst {Γ} {Δ} {f} {g} p = λ x → eq-symm (p x)

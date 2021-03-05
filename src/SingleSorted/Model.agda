@@ -19,20 +19,14 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
   open Signature Σ
   open Theory T
 
-  -- "Axioms"
-
-  -- I assume (hopefully reasonnable) things about the built-in equality (I don't know if we could avoid it)
-
   postulate
     funext : ∀ {l : Level} {X : Set l} {Y : X → Set l} {f g : ∀ (x : X) → (Y x)} → (∀ (x : X) → ((f x) ≡ (g x))) → (f ≡ g)
 
   congr : ∀ {l : Level} {X Y : Set l} {f : ∀ (x : X) → Y} {x y : X} → (x ≡ y) → (f x ≡ f y)
-  congr {l} {X} {Y} {f} refl = refl
+  congr refl = refl
 
-  postulate
-    eq-builtin-refl : ∀ {l : Level} {Γ : Context} {x : Term Γ} {y : Term Γ} → (x ≡ y) → (Γ ⊢ x ≈ y)
-
-
+  eq-builtin-refl : ∀ {l : Level} {Γ : Context} {x : Term Γ} {y : Term Γ} → (x ≡ y) → (Γ ⊢ x ≈ y)
+  eq-builtin-refl refl = eq-refl
 
 
   -- Model of a theory
@@ -128,18 +122,39 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
                                                            ; ⟨_,_⟩ = λ x x₁ x₂ → [ x , x₁ ] (splitAt Γ x₂)
                                                            ; project₁ = λ {h = s} {i = h} {i} x → eq-builtin-refl {ℓt} {Γ = s} {x = [ h , i ] (splitAt Γ (lift-prod₁ {Δ} {Γ} x)) } {y = h x} (proj₁{Γ} {Δ} {s} {x} {h} {i})
                                                            ; project₂ = λ {h = s} {i = h} {i} x → eq-builtin-refl {ℓt} {Γ = s} {x = [ h , i ] (splitAt Γ (lift-prod₂ {Δ} {Γ} x)) } {y = i x} (proj₂{Γ} {Δ} {s} {x} {h} {i})
-                                                           ; unique = λ {C} {h} {i} {j} x x₁ x₂ → {!!}
+                                                           ; unique = λ {C} {h} {i} {j} p₁ p₂ x → eq-builtin-refl {ℓt} {!!}
                                                            } }
            }
 
   -- The universal interpretation
+  ×-comm = BinaryProducts.×-comm
+
+  pow-𝒮 : ∀ {a : Nat} → ((pow Σ cartesian-𝒮 1 a) ≡ a)
+  pow-𝒮 {zero} = refl
+  pow-𝒮 {suc n} = trans (com+ (pow Σ cartesian-𝒮 1 n) 1) (congr {f = suc} pow-𝒮)
+
+  transport-pow-𝒮 : ∀ {a : Nat} (x : var (a)) →  var (pow Σ cartesian-𝒮 1 a)
+  transport-pow-𝒮 = Eq.subst var (symm pow-𝒮)
+
   universalI : Interpretation Σ cartesian-𝒮
   universalI =
     let open Category 𝒮 in
     record { interp-carrier = 1
-           ; interp-oper =  λ f x →  tm-var (inject+ (oper-arity f Agda.Builtin.Nat.- {!!}) {!!})
+           ; interp-oper =  λ f x → tm-oper f (λ y → tm-var (transport-pow-𝒮 {oper-arity f} y))
            }
+
+  interp-term = Interpretation.interp-term
+  interp-oper = Interpretation.interp-oper
+
+  -- 𝒮-respect-subst : ∀ {Γ : Context} (u : Term {Σ} Γ) → (interp-term universalI () -- first define the "interpretation of a substitution"
+
+  𝒮-respect-≈ : ∀ {Γ : Context} {u v : Term {Σ} Γ} → (Γ ⊢ u ≈ v) → (interp-term universalI u) ≈s (interp-term universalI v)
+  𝒮-respect-≈ Theory.eq-refl = λ x → eq-refl
+  𝒮-respect-≈ (Theory.eq-symm p) = symm-subst (𝒮-respect-≈ p)
+  𝒮-respect-≈ (Theory.eq-tran p₁ p₂) = trans-subst (𝒮-respect-≈ p₁) (𝒮-respect-≈ p₂)
+  𝒮-respect-≈ (Theory.eq-congr {Γ} {f} {xs} {ys} ps) =  Category.∘-resp-≈ 𝒮 {f = interp-oper universalI f} {h = interp-oper universalI f} {g = pow-tuple Σ cartesian-𝒮 (λ i → interp-term universalI (xs i))} {i = pow-tuple Σ cartesian-𝒮 (λ i → interp-term universalI (ys i))} (refl-subst) (pow-tuple-eq Σ cartesian-𝒮 (λ i x → 𝒮-respect-≈ (ps i) x))
+  𝒮-respect-≈ (Theory.eq-axiom ε σ) = {!!} -- 𝒮-respect-≈ (eq-subst σ {u = eq-lhs ε} {v = eq-rhs ε} {!!}) -- Here, I think that we want to show that the interpretation "commutes" (wrt ≈) with substitution (interpreted substitution in fact)
 
   -- The universal model
   UniversalM : Model universalI
-  UniversalM = record { model-eq = {!!} }
+  UniversalM = record { model-eq = λ ε x → equiv-subst (interp-term universalI (eq-lhs ε)) (interp-term universalI (eq-rhs ε)) (𝒮-respect-≈ {u = eq-lhs ε} {v = eq-rhs ε} {!!}) {!!}}
