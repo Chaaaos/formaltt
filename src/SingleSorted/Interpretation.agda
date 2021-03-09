@@ -84,7 +84,8 @@ module SingleSorted.Interpretation
   IdI : ∀ (A : Interpretation) → HomI A A
   IdI A = record
           { hom-morphism = id
-          ; hom-commute = λ f → identityˡ ○ ((⟺ identityʳ) ○ (refl⟩∘⟨ ⟺ (pow-tuple-id2 {f = λ i → id ∘ pow-π i} (λ i → identityˡ))))
+          ; hom-commute = λ f → identityˡ ○ ((⟺ identityʳ) ○
+                                 (refl⟩∘⟨ ⟺ (pow-tuple-id2 {A = interp-carrier A} {n = oper-arity Σ f} {f = λ i → id ∘ pow-π i} (λ i → identityˡ))))
           }
 
   -- Compositon of homomorphisms
