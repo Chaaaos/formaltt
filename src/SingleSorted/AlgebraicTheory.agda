@@ -73,6 +73,16 @@ record Theory ℓ (Σ : Signature) : Set (lsuc ℓ) where
     eq-axiom : ∀ (ε : eq) {Γ : Context} (σ : substitution Σ Γ (eq-ctx ε)) →
                Γ ⊢ eq-lhs ε [ σ ]s ≈ eq-rhs ε [ σ ]s
 
+  -- the action of the identity substitution is the identity
+  id-action : ∀ {Σ : Signature} {Γ : Context} {a : Term Γ} → (Γ ⊢ a ≈ (a [ id-substitution ]s))
+  id-action {a = tm-var a} = eq-refl
+  id-action {a = tm-oper f x} = eq-congr (λ i → id-action {Σ} {a = x i})
+
+  -- an equality is stable by the action of the identity
+
+  eq-id-action : ∀ {Σ : Signature} {Γ : Context} {u v : Term Γ} → (Γ ⊢ (u [ id-substitution ]s) ≈ (v [ id-substitution ]s)) → (Γ ⊢ u ≈ v)
+  eq-id-action {u = u} {v = v} p = eq-tran (id-action {Σ} {a = u}) (eq-tran p (eq-symm (id-action {Σ} {a = v})))
+
   -- equality of substitutions
   _≈s_ : ∀ {Γ Δ : Context} → substitution Σ Γ Δ → substitution Σ Γ Δ → Set (lsuc ℓ)
   _≈s_ {Γ = Γ} σ ρ = ∀ x → Γ ⊢ σ x ≈ ρ x
