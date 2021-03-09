@@ -46,8 +46,8 @@ module SingleSorted.Interpretation
   pow-tuple-eq {n = zero} = λ x → Equiv.refl
   pow-tuple-eq {n = suc n} = λ x → Equiv.trans (⟨⟩-congʳ (pow-tuple-eq (λ i → x (suc i)))) (⟨⟩-congˡ (x zero))
 
-  pow-tuple-id2 : ∀ {A : Obj} {n} → pow-tuple {A = pow A n} {n = n} (λ i → id ∘ pow-π i) ≈ id
-  pow-tuple-id2 {n = n} = Equiv.trans (pow-tuple-eq {f = λ i → id ∘ pow-π i} {g = pow-π} λ (i : Fin n) → identityˡ) pow-tuple-id
+  pow-tuple-id2 : ∀ {A : Obj} {n} {f : Fin n → pow A n ⇒ A} → (∀ i → f i ≈ pow-π i) → pow-tuple {A = pow A n} {n = n} f ≈ id
+  pow-tuple-id2 {A = A} {n = n} ξ = pow-tuple-eq ξ ○ (pow-tuple-id {A = A} {n = n})
 
   -- An interpretation of Σ in 𝒞
   record Interpretation : Set (o ⊔ ℓ ⊔ e) where
@@ -84,8 +84,7 @@ module SingleSorted.Interpretation
   IdI : ∀ (A : Interpretation) → HomI A A
   IdI A = record
           { hom-morphism = id
-          ; hom-commute = λ f → Equiv.trans identityˡ (Equiv.trans (Equiv.sym identityʳ) (refl⟩∘⟨ Equiv.sym pow-tuple-id2))
--- I don't really understand why this doesn't work ...
+          ; hom-commute = λ f → identityˡ ○ ((⟺ identityʳ) ○ (refl⟩∘⟨ ⟺ (pow-tuple-id2 {f = λ i → id ∘ pow-π i} (λ i → identityˡ))))
           }
 
   -- Compositon of homomorphisms
