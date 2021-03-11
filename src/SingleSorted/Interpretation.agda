@@ -49,6 +49,12 @@ module SingleSorted.Interpretation
   pow-tuple-id2 : ∀ {A : Obj} {n} {f : Fin n → pow A n ⇒ A} → (∀ i → f i ≈ pow-π i) → pow-tuple {A = pow A n} {n = n} f ≈ id
   pow-tuple-id2 {A = A} {n = n} ξ = pow-tuple-eq ξ ○ (pow-tuple-id {A = A} {n = n})
 
+  pow-tuple-π : ∀ {A : Obj} {n} {f : Fin n → pow A n ⇒ A} {i : Fin n} → (pow-π i ∘ (pow-tuple {A = pow A n} {n = n} f)) ≈ (f i)
+  pow-tuple-π = {!!}
+  -- pow-tuple-π {n = suc n} {i = zero} = project₂
+  -- pow-tuple-π {n = suc n} {f = f} {i = suc i} = assoc ○ (⟺ (∘-resp-≈ʳ (⟺ project₁)) ○ (pow-tuple-π {n = suc n}))
+-- _g_256 ≈ pow-π i ∘ π₁ ∘ ⟨ pow-tuple (λ i₁ → f (suc i₁)) , f zero ⟩
+
   -- An interpretation of Σ in 𝒞
   record Interpretation : Set (o ⊔ ℓ ⊔ e) where
 
@@ -90,7 +96,8 @@ module SingleSorted.Interpretation
 
   -- Compositon of homomorphisms
   _∘I_ : ∀ {A B C : Interpretation} → HomI B C → HomI A B → HomI A C
-  ϕ ∘I ψ =
+  _∘I_ {A} {B} {C} ϕ ψ =
     let open HomI in
     record { hom-morphism = (hom-morphism ϕ) ∘ (hom-morphism ψ)
-           ; hom-commute = λ f → {!!} }
+             ; hom-commute = λ f → assoc ○ (∘-resp-≈ʳ (hom-commute ψ f) ○ (sym-assoc ○ (∘-resp-≈ˡ (hom-commute ϕ f) ○ (assoc ○ ((⟺ (∘-resp-≈ʳ (pow-tuple-∘ {n = oper-arity Σ f} {fs = (λ i → hom-morphism ϕ ∘ pow-π i)} {g = pow-tuple (λ i → hom-morphism ψ ∘ pow-π i)}))) ○ ∘-resp-≈ʳ (pow-tuple-eq {f = λ i → (hom-morphism ϕ ∘ pow-π i) ∘ pow-tuple (λ i₁ → hom-morphism ψ ∘ pow-π i₁)} {g = λ i → (hom-morphism ϕ ∘ hom-morphism ψ) ∘ pow-π i} λ i → assoc {f = pow-tuple (λ i₁ → hom-morphism ψ ∘ pow-π i₁) } {g = pow-π i} {h = hom-morphism ϕ} ○ ⟺ (assoc ○ ∘-resp-≈ʳ (⟺ (pow-tuple-π {i = i})))))))))
+           }

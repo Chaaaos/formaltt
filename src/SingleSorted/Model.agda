@@ -101,29 +101,13 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
   lift-prod₂ : ∀ {Δ Γ} → Fin Δ → Fin (Γ plus Δ)
   lift-prod₂ {Δ} {Γ} a =  swap-Fin {Δ} {Γ}(inject+ Γ a)
 
-
-  -- useful to define "project₁" and "project₂"
-  -- old-pre-proj₁ : ∀ {Γ Δ : Nat}  {x : Fin Γ} → (splitAt Γ (lift-prod₁ {Δ} {Γ} x)) ≡ (inj₁ x)
-  -- old-pre-proj₁ {Γ = suc Γ} {Δ = Δ} {x = zero} = {!!}
-  -- old-pre-proj₁ {Γ = suc Γ} {Δ = Δ} {x = suc x} = {!!}
-  -- -- I am pretty conviced that the above works, but not sure because I struggle to prove it
-
   pre-proj₁ : ∀ {Γ Δ : Nat}  {x : Fin Γ} → (splitAt Δ (raise Δ x)) ≡ (inj₂ x)
   pre-proj₁ {Δ = zero} = refl
   pre-proj₁ {Δ = suc Δ} {x = zero} = {!refl!}
   pre-proj₁ {Δ = suc Δ} {x = suc x} = {!!}
 
-  -- old-proj₁ :  ∀ {Γ Δ A : Context}  {x : Fin Γ} {h : substitution Σ A Γ } {i : substitution Σ A Δ} → [ h , i ] (splitAt Γ (lift-prod₁ {Δ} {Γ} x)) ≡ h x
-  -- old-proj₁ {Γ} {Δ} {A} {x} {h} {i} = trans (congr {f = [ h , i ]} {x = (splitAt Γ (lift-prod₁ {Δ} {Γ} x))} {y = inj₁ x} (pre-proj₁ {Γ} {Δ} {x})) refl
-
   proj₁ : ∀ {Γ Δ A : Context} {x : Fin Γ} {h : substitution Σ A Γ} {i : substitution Σ A Δ} → [ i , h ] (splitAt Δ (raise Δ x)) ≡ h x
   proj₁{Γ} {Δ} {A} {x} {h} {i} = trans (congr {f = [ i , h ]} {x = (splitAt Δ (raise Δ x))} {y = inj₂ x} pre-proj₁) refl
-
-  -- old-pre-proj₂ : ∀ {Γ  Δ : Nat}  {x : Fin Δ} → (splitAt Γ (lift-prod₂ {Δ} {Γ} x)) ≡ (inj₂ x)
-  -- old-pre-proj₂ = {!c!}
-
-  -- old-proj₂ :  ∀ {Γ Δ A : Context}  {x : Fin Δ} {h : substitution Σ A Γ } {i : substitution Σ A Δ} → [ h , i ] (splitAt Γ (lift-prod₂ {Δ} {Γ} x)) ≡ i x
-  -- old-proj₂ {Γ} {Δ} {A} {x} {h} {i} = trans (congr {f = [ h , i ]} {x = (splitAt Γ (lift-prod₂ {Δ} {Γ} x))} {y = inj₂ x} (pre-proj₂ {Γ} {Δ} {x})) refl
 
   pre-proj₂ : ∀ {Γ Δ : Nat} {x : Fin Δ} → ((splitAt Δ (inject+ Γ x)) ≡ inj₁ x)
   pre-proj₂ = {!!}
@@ -140,12 +124,12 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
                                                         }
                                }
            ; products =  record { product =  λ {Γ} {Δ} → record
-                                                           { A×B =  Δ plus Γ -- Γ plus Δ
-                                                           ; π₁ =  λ x → tm-var (raise Δ x)   -- λ x → tm-var (lift-prod₁ x)
-                                                           ; π₂ = λ x → tm-var (inject+ Γ x) -- tm-var (lift-prod₂ x)
-                                                           ; ⟨_,_⟩ = λ f g x → [ g , f ] (splitAt Δ x) -- [ f , g ] {!!} -- λ x x₁ x₂ → [ x , x₁ ] (splitAt Γ x₂)
-                                                           ; project₁ = λ {h = s} {i = h} {i} x → eq-builtin-refl {ℓt} {Γ = s} {x = [ i , h ] (splitAt Δ (raise Δ x)) } {y = h x} (proj₁ {Γ} {Δ} {s} {x} {h} {i}) -- λ {h = s} {i = h} {i} x → eq-builtin-refl {ℓt} {Γ = s} {x = [ h , i ] (splitAt Γ (lift-prod₁ {Δ} {Γ} x)) } {y = h x} (proj₁{Γ} {Δ} {s} {x} {h} {i})
-                                                           ; project₂ = λ {h = s} {i = h} {i} x → eq-builtin-refl {ℓt} {Γ = s} {x = [ i , h ] (splitAt Δ (inject+ Γ x)) } {y = i x} ((proj₂ {Γ} {Δ} {s} {x} {h} {i})) -- λ {h = s} {i = h} {i} x → eq-builtin-refl {ℓt} {Γ = s} {x = [ h , i ] (splitAt Γ (lift-prod₂ {Δ} {Γ} x)) } {y = i x} (proj₂{Γ} {Δ} {s} {x} {h} {i})
+                                                           { A×B =  Δ plus Γ
+                                                           ; π₁ =  λ x → tm-var (raise Δ x)
+                                                           ; π₂ = λ x → tm-var (inject+ Γ x)
+                                                           ; ⟨_,_⟩ = λ f g x → [ g , f ] (splitAt Δ x)
+                                                           ; project₁ = λ {h = s} {i = h} {i} x → eq-builtin-refl {ℓt} {Γ = s} {x = [ i , h ] (splitAt Δ (raise Δ x)) } {y = h x} (proj₁ {Γ} {Δ} {s} {x} {h} {i})
+                                                           ; project₂ = λ {h = s} {i = h} {i} x → eq-builtin-refl {ℓt} {Γ = s} {x = [ i , h ] (splitAt Δ (inject+ Γ x)) } {y = i x} ((proj₂ {Γ} {Δ} {s} {x} {h} {i}))
                                                            ; unique = {!!} -- λ {C} {h} {i} {j} p₁ p₂ x → eq-builtin-refl {ℓt} {!!}
                                                            } }
            }
@@ -156,8 +140,6 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
   pow-𝒮 : ∀ {a : Nat} → ((pow Σ cartesian-𝒮 1 a) ≡ a)
   pow-𝒮 {zero} = refl
   pow-𝒮 {suc a} = congr {f = suc} pow-𝒮
-  -- pow-𝒮 {zero} = refl
-  -- pow-𝒮 {suc n} = trans (com+ (pow Σ cartesian-𝒮 1 n) 1) (congr {f = suc} pow-𝒮)
 
   transport-pow-𝒮 : ∀ {a : Nat} (x : var (a)) →  var (pow Σ cartesian-𝒮 1 a)
   transport-pow-𝒮 = Eq.subst var (symm pow-𝒮)
@@ -188,6 +170,3 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
   -- The universal model
   UniversalM : Model universalI
   UniversalM = record { model-eq = λ ε x → equiv-subst (interp-term universalI (eq-lhs ε)) (interp-term universalI (eq-rhs ε)) (𝒮-respect-≈ {u = eq-lhs ε} {v = eq-rhs ε} (eq-id-action {Σ} (eq-axiom ε id-substitution))) (tm-var x) }
-
---interp-term universalI (eq-rhs ε) x [ lift-subst σ ]s ≡
---interp-term universalI (eq-lhs ε) x [ lift-subst σ ]s
