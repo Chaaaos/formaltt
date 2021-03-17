@@ -8,12 +8,14 @@ open import Categories.Category.Cartesian
 
 open import SingleSorted.AlgebraicTheory
 open import SingleSorted.CartesianCategories
+open import SingleSorted.PropertiesSubstitutions
 
 module SingleSorted.Interpretation
          {o ℓ e}
          (Σ : Signature) {𝒞 : Category o ℓ e}
          (cartesian-𝒞 : Cartesian 𝒞) where
   open Signature
+  open SingleSorted.PropertiesSubstitutions public
   open Category 𝒞
   open Cartesian cartesian-𝒞
   open HomReasoning

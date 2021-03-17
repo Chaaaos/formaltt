@@ -1,10 +1,11 @@
+{-# OPTIONS --allow-unsolved-metas #-}
 open import SingleSorted.AlgebraicTheory
 open import SingleSorted.Interpretation using (Interpretation; TrivialI)
 
 module SingleSorted.FiniteSets {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
 
 
-  open import Agda.Builtin.Nat public --using (_+_; Nat)
+  open import Agda.Builtin.Nat public
   open import Agda.Primitive using (Level; lzero; lsuc; _⊔_)
   open import Agda.Builtin.Equality
   open import Data.Fin renaming (_+_ to _+ᶠ_)
