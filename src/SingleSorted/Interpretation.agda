@@ -1,5 +1,4 @@
 {-# OPTIONS --allow-unsolved-metas #-}
-
 open import Agda.Primitive
 open import Agda.Builtin.Nat
 open import Data.Fin
@@ -8,7 +7,7 @@ open import Categories.Category
 open import Categories.Category.Cartesian
 
 open import SingleSorted.AlgebraicTheory
-open import SingleSorted.FactsAboutCartesianCategories
+open import SingleSorted.CartesianCategories
 
 module SingleSorted.Interpretation
          {o ℓ e}

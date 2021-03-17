@@ -1,33 +1,29 @@
-open import Agda.Primitive
-open import Agda.Builtin.Nat
-open import Agda.Builtin.Equality
-open import Data.Fin
-open import Function.Base
-open import Data.Sum.Base
-open import Data.Nat.Properties
-import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong-app; trans) renaming (sym to symm)
-open Eq.≡-Reasoning
-
-open import Categories.Category
-open import Categories.Category.Cartesian
-
+{-# OPTIONS --allow-unsolved-metas #-}
 open import SingleSorted.AlgebraicTheory
-open import SingleSorted.Interpretation
+open import SingleSorted.Interpretation using (Interpretation; TrivialI)
 
 module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
 
+  open import Agda.Builtin.Nat public --using (_+_; Nat)
+  open import Agda.Primitive using (Level; lzero; lsuc; _⊔_)
+  open import Agda.Builtin.Equality
+  open import Data.Fin renaming (_+_ to _+ᶠ_)
+  open import Function.Base
+  open import Data.Sum.Base
+  open import Data.Nat.Properties using (+-comm)
+  import Relation.Binary.PropositionalEquality as Eq
+  open Eq using (_≡_; refl; cong-app; trans) renaming (sym to symm)
+  open Eq.≡-Reasoning
+
+  open import Categories.Category
+
+  open import Categories.Category.Cartesian
+
+  open import SingleSorted.CartesianCategories public
+  open import SingleSorted.FiniteSets public
+
   open Signature Σ
   open Theory T
-
-  postulate
-    funext : ∀ {l : Level} {X : Set l} {Y : X → Set l} {f g : ∀ (x : X) → (Y x)} → (∀ (x : X) → ((f x) ≡ (g x))) → (f ≡ g)
-
-  congr : ∀ {l : Level} {X Y : Set l} {f : ∀ (x : X) → Y} {x y : X} → (x ≡ y) → (f x ≡ f y)
-  congr refl = refl
-
-  eq-builtin-refl : ∀ {l : Level} {Γ : Context} {x : Term Γ} {y : Term Γ} → (x ≡ y) → (Γ ⊢ x ≈ y)
-  eq-builtin-refl refl = eq-refl
 
 
   -- Model of a theory
@@ -46,8 +42,6 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
   TrivialM cart =
      let open Cartesian cart in
      record { model-eq = λ ε → !-unique₂ }
-
-
 
 
 
@@ -78,42 +72,7 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
 
   -- The cartesian structure of the syntactic category
 
-  _plus_ : Nat → Nat → Nat
-  _plus_ = Agda.Builtin.Nat._+_
 
-  com+ = +-comm
-
-  splitAt-comm : ∀ m {n} → Fin (m plus n) → Fin n ⊎ Fin m
-  splitAt-comm zero    i       = inj₁ i
-  splitAt-comm (suc m) zero    = inj₂ zero
-  splitAt-comm (suc m) (suc i) = Data.Sum.Base.map Function.Base.id suc(splitAt-comm m i)
-
-  -- handling finite sets
-  swap-Fin : ∀ {Γ Δ} → Fin (Γ plus Δ) → Fin (Δ plus Γ)
-  swap-Fin {Γ} {Δ} = λ  x → cast (com+ Γ Δ) x
-
-  congr-swap-Fin : ∀ {Γ Δ} {x y : Fin (Γ plus Δ)} → (x ≡ y) → ((swap-Fin {Γ} {Δ} x) ≡ (swap-Fin {Γ} {Δ} y))
-  congr-swap-Fin = λ x₁ → congr x₁
-
-  lift-prod₁ : ∀ {Δ Γ} → Fin Γ → Fin (Γ plus Δ)
-  lift-prod₁ {Δ} {Γ} a = swap-Fin {Δ} {Γ} (raise Δ a)
-
-  lift-prod₂ : ∀ {Δ Γ} → Fin Δ → Fin (Γ plus Δ)
-  lift-prod₂ {Δ} {Γ} a =  swap-Fin {Δ} {Γ}(inject+ Γ a)
-
-  pre-proj₁ : ∀ {Γ Δ : Nat}  {x : Fin Γ} → (splitAt Δ (raise Δ x)) ≡ (inj₂ x)
-  pre-proj₁ {Δ = zero} = refl
-  pre-proj₁ {Δ = suc Δ} {x = zero} = {!refl!}
-  pre-proj₁ {Δ = suc Δ} {x = suc x} = {!!}
-
-  proj₁ : ∀ {Γ Δ A : Context} {x : Fin Γ} {h : substitution Σ A Γ} {i : substitution Σ A Δ} → [ i , h ] (splitAt Δ (raise Δ x)) ≡ h x
-  proj₁{Γ} {Δ} {A} {x} {h} {i} = trans (congr {f = [ i , h ]} {x = (splitAt Δ (raise Δ x))} {y = inj₂ x} pre-proj₁) refl
-
-  pre-proj₂ : ∀ {Γ Δ : Nat} {x : Fin Δ} → ((splitAt Δ (inject+ Γ x)) ≡ inj₁ x)
-  pre-proj₂ = {!!}
-
-  proj₂ : ∀ {Γ Δ A : Context} {x : Fin Δ} {h : substitution Σ A Γ} {i : substitution Σ A Δ} → [ i , h ] (splitAt Δ (inject+ Γ x)) ≡ i x
-  proj₂{Γ} {Δ} {A} {x} {h} {i} = trans (congr {f = [ i , h ]} {x = (splitAt Δ (inject+ Γ x))} {y = inj₁ x} pre-proj₂) refl
 
   -- Cartesian structure of 𝒮
   cartesian-𝒮 : Cartesian 𝒮
@@ -124,7 +83,7 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
                                                         }
                                }
            ; products =  record { product =  λ {Γ} {Δ} → record
-                                                           { A×B =  Δ plus Γ
+                                                           { A×B =  Δ + Γ
                                                            ; π₁ =  λ x → tm-var (raise Δ x)
                                                            ; π₂ = λ x → tm-var (inject+ Γ x)
                                                            ; ⟨_,_⟩ = λ f g x → [ g , f ] (splitAt Δ x)

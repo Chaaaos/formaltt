@@ -73,6 +73,10 @@ record Theory ℓ (Σ : Signature) : Set (lsuc ℓ) where
     eq-axiom : ∀ (ε : eq) {Γ : Context} (σ : substitution Σ Γ (eq-ctx ε)) →
                Γ ⊢ eq-lhs ε [ σ ]s ≈ eq-rhs ε [ σ ]s
 
+
+
+
+
   -- the action of the identity substitution is the identity
   id-action : ∀ {Σ : Signature} {Γ : Context} {a : Term Γ} → (Γ ⊢ a ≈ (a [ id-substitution ]s))
   id-action {a = tm-var a} = eq-refl
