@@ -8,6 +8,7 @@ open import Categories.Category
 open import Categories.Category.Cartesian
 
 open import SingleSorted.AlgebraicTheory
+open import SingleSorted.FactsAboutCartesianCategories
 
 module SingleSorted.Interpretation
          {o ℓ e}
@@ -18,54 +19,20 @@ module SingleSorted.Interpretation
   open Cartesian cartesian-𝒞
   open HomReasoning
 
-  -- We use our own definition of powers, because the one in the library has a silly special case n = 1
-  pow : ∀ (A : Obj) (n : Nat) → Obj
-  pow A zero = ⊤
-  pow A (suc n) = pow A n × A
 
-  pow-π : ∀ {A : Obj} {n : Nat} (i : Fin n) → pow A n ⇒ A
-  pow-π {_} {suc n} zero = π₂
-  pow-π {_} {suc n} (suc i) = (pow-π i) ∘ π₁
-
-  pow-tuple : ∀ {A B : Obj} {n : Nat} → (Fin n → A ⇒ B) → A ⇒ pow B n
-  pow-tuple {n = zero} fs = !
-  pow-tuple {n = suc n} fs = ⟨ (pow-tuple (λ i → fs (suc i))) , (fs zero) ⟩
-
-  pow-tuple-∘ : ∀ {A B C : Obj} {n : Nat} {fs : Fin n → B ⇒ C} {g : A ⇒ B} →
-                pow-tuple (λ i → fs i ∘ g) ≈ pow-tuple fs ∘ g
-  pow-tuple-∘ {n = zero} {fs} {g} = !-unique (! ∘ g)
-  pow-tuple-∘ {n = suc n} {fs = fs} =
-    let open product in
-      (⟨⟩-congʳ (pow-tuple-∘ {fs = λ i → fs (suc i)})) ○ (⟺ ⟨⟩∘)
-
-  pow-tuple-id : ∀ {A : Obj} {n} → pow-tuple {A = pow A n} {n = n} pow-π ≈ id
-  pow-tuple-id {n = zero} = !-unique id
-  pow-tuple-id {n = suc n} = (⟨⟩-congʳ ((pow-tuple-∘ {n = n}) ○ ((pow-tuple-id {n = n} ⟩∘⟨refl) ○ identityˡ))) ○ η
-
-  pow-tuple-eq :  ∀ {A B : Obj} {n} {f g : Fin n → A ⇒ B} → (∀ i →  f i ≈ g i) → (pow-tuple {A = A} {n = n} f) ≈ (pow-tuple {A = A} {n = n} g)
-  pow-tuple-eq {n = zero} = λ x → Equiv.refl
-  pow-tuple-eq {n = suc n} = λ x → Equiv.trans (⟨⟩-congʳ (pow-tuple-eq (λ i → x (suc i)))) (⟨⟩-congˡ (x zero))
-
-  pow-tuple-id2 : ∀ {A : Obj} {n} {f : Fin n → pow A n ⇒ A} → (∀ i → f i ≈ pow-π i) → pow-tuple {A = pow A n} {n = n} f ≈ id
-  pow-tuple-id2 {A = A} {n = n} ξ = pow-tuple-eq ξ ○ (pow-tuple-id {A = A} {n = n})
-
-  pow-tuple-π : ∀ {A : Obj} {n} {f : Fin n → pow A n ⇒ A} {i : Fin n} → (pow-π i ∘ (pow-tuple {A = pow A n} {n = n} f)) ≈ (f i)
-  pow-tuple-π = {!!}
-  -- pow-tuple-π {n = suc n} {i = zero} = project₂
-  -- pow-tuple-π {n = suc n} {f = f} {i = suc i} = assoc ○ (⟺ (∘-resp-≈ʳ (⟺ project₁)) ○ (pow-tuple-π {n = suc n}))
--- _g_256 ≈ pow-π i ∘ π₁ ∘ ⟨ pow-tuple (λ i₁ → f (suc i₁)) , f zero ⟩
+-- I tried to reorganise this file and moved the definitions and lemmas about cartesian categories and powers in another file, but now I have to explicitely say what signature and cartesian  category I use (as in pow-tuple Σ cartesian-𝒞 (λ i → interp-term (ts i)) ) : Is there a way to avoid this ?
 
   -- An interpretation of Σ in 𝒞
   record Interpretation : Set (o ⊔ ℓ ⊔ e) where
 
     field
       interp-carrier : Obj
-      interp-oper : ∀ (f : oper Σ) → pow interp-carrier (oper-arity Σ f) ⇒ interp-carrier
+      interp-oper : ∀ (f : oper Σ) → pow Σ cartesian-𝒞 interp-carrier (oper-arity Σ f) ⇒ interp-carrier
 
     -- the interpretation of a term
-    interp-term : ∀ {Γ : Context} → Term {Σ} Γ →  𝒞 [ (pow interp-carrier Γ) , interp-carrier ]
-    interp-term (tm-var x) = pow-π x
-    interp-term (tm-oper f ts) = interp-oper f ∘ pow-tuple (λ i → interp-term (ts i))
+    interp-term : ∀ {Γ : Context} → Term {Σ} Γ →  𝒞 [ (pow Σ cartesian-𝒞 interp-carrier Γ) , interp-carrier ]
+    interp-term (tm-var x) = pow-π Σ cartesian-𝒞 x
+    interp-term (tm-oper f ts) = interp-oper f ∘ pow-tuple Σ cartesian-𝒞 (λ i → interp-term (ts i))
 
 
   open Interpretation
@@ -83,7 +50,7 @@ module SingleSorted.Interpretation
       hom-commute :
          ∀ (f : oper Σ) →
          hom-morphism ∘ interp-oper A f ≈
-             interp-oper B f ∘ pow-tuple {n = oper-arity Σ f} (λ i → hom-morphism ∘ pow-π i)
+             interp-oper B f ∘ pow-tuple Σ cartesian-𝒞 {n = oper-arity Σ f} (λ i → hom-morphism ∘ pow-π Σ cartesian-𝒞 i)
   open HomI
 
   -- The identity homomorphism
@@ -91,7 +58,7 @@ module SingleSorted.Interpretation
   IdI A = record
           { hom-morphism = id
           ; hom-commute = λ f → identityˡ ○ ((⟺ identityʳ) ○
-                                 (refl⟩∘⟨ ⟺ (pow-tuple-id2 {A = interp-carrier A} {n = oper-arity Σ f} {f = λ i → id ∘ pow-π i} (λ i → identityˡ))))
+                                 (refl⟩∘⟨ ⟺ (pow-tuple-id2 Σ cartesian-𝒞 {A = interp-carrier A} {n = oper-arity Σ f} {f = λ i → id ∘ pow-π Σ cartesian-𝒞 i} (λ i → identityˡ))))
           }
 
   -- Compositon of homomorphisms
@@ -99,5 +66,12 @@ module SingleSorted.Interpretation
   _∘I_ {A} {B} {C} ϕ ψ =
     let open HomI in
     record { hom-morphism = (hom-morphism ϕ) ∘ (hom-morphism ψ)
-             ; hom-commute = λ f → assoc ○ (∘-resp-≈ʳ (hom-commute ψ f) ○ (sym-assoc ○ (∘-resp-≈ˡ (hom-commute ϕ f) ○ (assoc ○ ((⟺ (∘-resp-≈ʳ (pow-tuple-∘ {n = oper-arity Σ f} {fs = (λ i → hom-morphism ϕ ∘ pow-π i)} {g = pow-tuple (λ i → hom-morphism ψ ∘ pow-π i)}))) ○ ∘-resp-≈ʳ (pow-tuple-eq {f = λ i → (hom-morphism ϕ ∘ pow-π i) ∘ pow-tuple (λ i₁ → hom-morphism ψ ∘ pow-π i₁)} {g = λ i → (hom-morphism ϕ ∘ hom-morphism ψ) ∘ pow-π i} λ i → assoc {f = pow-tuple (λ i₁ → hom-morphism ψ ∘ pow-π i₁) } {g = pow-π i} {h = hom-morphism ϕ} ○ ⟺ (assoc ○ ∘-resp-≈ʳ (⟺ (pow-tuple-π {i = i})))))))))
+             ; hom-commute = {!!}
+-- First attempt (doesn't work) : assoc ○ (∘-resp-≈ʳ (hom-commute ψ f) ○ (sym-assoc ○ (∘-resp-≈ˡ (hom-commute ϕ f) ○ (assoc ○ ((⟺ (∘-resp-≈ʳ (pow-tuple-∘ {{!!}} {n = oper-arity Σ f} {fs = (λ i → hom-morphism ϕ ∘ pow-π i)} {g = pow-tuple (λ i → hom-morphism ψ ∘ pow-π i)}))) ○ ∘-resp-≈ʳ (pow-tuple-eq {f = λ i → (hom-morphism ϕ ∘ pow-π i) ∘ pow-tuple (λ i₁ → hom-morphism ψ ∘ pow-π i₁)} {g = λ i → (hom-morphism ϕ ∘ hom-morphism ψ) ∘ pow-π i} λ i → assoc {f = pow-tuple (λ i₁ → hom-morphism ψ ∘ pow-π i₁) } {g = pow-π i} {h = hom-morphism ϕ} ○ ⟺ (assoc ○ ∘-resp-≈ʳ (⟺ (pow-tuple-π {i = i})))))))))
            }
+
+
+-- Here, there is a problem with the way I want to show the following equality : I can not use pow-tuple-∘, maybe because pow-π i depends on i
+-- pow-tuple (λ i → (hom-morphism ϕ ∘ hom-morphism ψ) ∘ pow-π i) ≈
+-- pow-tuple (λ i → hom-morphism ϕ ∘ pow-π i) ∘
+-- pow-tuple (λ i → hom-morphism ψ ∘ pow-π i)
