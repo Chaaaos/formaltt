@@ -1,4 +1,4 @@
-{-# OPTIONS --allow-unsolved-metas #-}
+-- {-# OPTIONS --allow-unsolved-metas #-}
 open import SingleSorted.AlgebraicTheory
 open import SingleSorted.Interpretation using (Interpretation; TrivialI)
 
@@ -37,8 +37,8 @@ module SingleSorted.FiniteSets {ℓt} {Σ : Signature} (T : Theory ℓt Σ) wher
 
   pre-proj₁ : ∀ {Γ Δ : Nat}  {x : Fin Γ} → (splitAt Δ (raise Δ x)) ≡ (inj₂ x)
   pre-proj₁ {Δ = zero} = refl
-  pre-proj₁ {Δ = suc Δ} {x = zero} = {!refl!}
-  pre-proj₁ {Δ = suc Δ} {x = suc x} = {!!}
+  pre-proj₁ {Δ = suc Δ} {x = zero} = trans (congr T {f = map suc (λ x → x)} {x = splitAt Δ (raise Δ zero)} {y = inj₂ zero} pre-proj₁) refl
+  pre-proj₁ {Δ = suc Δ} {x = suc x} = trans (congr T {f = map suc (λ x → x)} {x = splitAt Δ (raise Δ (suc x))} {y = inj₂ (suc x)} pre-proj₁) refl
 
   proj₁ : ∀ {Γ Δ A : Context} {x : Fin Γ} {h : substitution Σ A Γ} {i : substitution Σ A Δ} → [ i , h ] (splitAt Δ (raise Δ x)) ≡ h x
   proj₁{Γ} {Δ} {A} {x} {h} {i} = trans (congr T {f = [ i , h ]} {x = (splitAt Δ (raise Δ x))} {y = inj₂ x} pre-proj₁) refl

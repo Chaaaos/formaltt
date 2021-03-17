@@ -51,9 +51,12 @@ module SingleSorted.CartesianCategories
   pow-tuple-id2 : ∀ {A : Obj} {n} {f : Fin n → pow A n ⇒ A} → (∀ i → f i ≈ pow-π i) → pow-tuple {A = pow A n} {n = n} f ≈ id
   pow-tuple-id2 {A = A} {n = n} ξ = pow-tuple-eq ξ ○ (pow-tuple-id {A = A} {n = n})
 
-  pow-tuple-π : ∀ {A : Obj} {n} {f : Fin n → pow A n ⇒ A} {i : Fin n} → (pow-π i ∘ (pow-tuple {A = pow A n} {n = n} f)) ≈ (f i)
-  pow-tuple-π {n = suc n} {i = zero} = project₂
-  pow-tuple-π {n = suc n} {f = f} {i = suc i} = assoc ○ (⟺ (∘-resp-≈ʳ (⟺ project₁))○ {!pow-tuple-π {n = i} {f = λ i₁ → f (suc i₁)}!})
-  -- pow-tuple-π {n = suc n} {i = zero} = project₂
-  -- pow-tuple-π {n = suc n} {f = f} {i = suc i} = assoc ○ (⟺ (∘-resp-≈ʳ (⟺ project₁)) ○ (pow-tuple-π {n = suc n}))
--- _g_256 ≈ pow-π i ∘ π₁ ∘ ⟨ pow-tuple (λ i₁ → f (suc i₁)) , f zero ⟩
+
+  lower : ∀ {A B : Obj} {n} (f : Fin (suc n) → A ⇒ B) → (Fin n → A ⇒ B)
+  lower f = λ i → f (suc i)
+
+  pow-tuple-π : ∀ {A B : Obj} {n} {f : Fin n → A ⇒ B} {i : Fin n} → (pow-π i ∘ (pow-tuple {A = A} {n = n} f)) ≈ (f i)
+  pow-tuple-π {n = suc n} {i = zero} =  project₂
+  pow-tuple-π {A} {n = suc n} {f = f} {i = suc i} =  assoc
+                                                     ○ ((∘-resp-≈ʳ project₁)
+                                                       ○ pow-tuple-π {A} {n = n} {f = lower f})
