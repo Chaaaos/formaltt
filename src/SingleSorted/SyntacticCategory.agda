@@ -46,8 +46,17 @@ module SingleSorted.SyntacticCategory {ℓt}
   -- The cartesian structure of the syntactic category
 
 
-  eq-builtin-refl : ∀ {Γ : Context} {s : Term Γ} {t : Term Γ} → s ≡ t → Γ ⊢ s ≈ t
-  eq-builtin-refl refl = eq-refl
+  ≡-eq-refl : ∀ {Γ : Context} {s : Term Γ} {t : Term Γ} → s ≡ t → Γ ⊢ s ≈ t
+  ≡-eq-refl refl = eq-refl
+
+  -- This should later go in another file, probably FactsFinite.agda, but for the moment it was easier to write it there
+  pre-unique : ∀ {Γ Δ C : Context} {h  : substitution Σ C (Δ + Γ)} {i  : substitution Σ C Γ} {j  : substitution Σ C Δ} {p₁ : (λ x → h (raise Δ x)) ≈s i} {p₂ : (λ x₁ → h (inject+ Γ x₁)) ≈s j} {x  : var (Δ + Γ)} → (C ⊢ ([ j , i ] (splitAt Δ x)) ≈ (h x))
+  pre-unique {Δ = zero} {h = h} {i = i} {p₁ = p₁} {x = zero} = equiv-subst i h (symm-subst p₁) (tm-var zero)
+  pre-unique {Δ = zero} {h = h} {i = i} {p₁ = p₁} {x = suc x} = equiv-subst i h (symm-subst p₁) (tm-var (suc x))
+  pre-unique {Γ} {Δ = suc Δ} {h = h} {j = j} {p₂ = p₂} {x = zero} = equiv-subst j (λ x → h (inject+ Γ x)) (symm-subst p₂) (tm-var zero)
+  pre-unique {Δ = suc Δ} {h = h} {i} {j} {p₁} {p₂} {x = suc x} = eq-tran (≡-eq-refl {!!}) (pre-unique {Δ = Δ} {h = λ x₁ → h (suc x₁)} {i} {λ x₁ → j (suc x₁)} {p₁} {λ x₁ → (p₂ (suc x₁))} {x = x})
+-- [ j , i ] (map suc (λ x₁ → x₁) (splitAt Δ x)) ≡
+-- [ (λ x₁ → j (suc x₁)) , i ] (splitAt Δ x)
 
   cartesian-𝒮 : Cartesian.Cartesian 𝒮
   cartesian-𝒮 =
@@ -61,9 +70,9 @@ module SingleSorted.SyntacticCategory {ℓt}
                                                            ; π₁ =  λ x → tm-var (raise Δ x)
                                                            ; π₂ = λ x → tm-var (inject+ Γ x)
                                                            ; ⟨_,_⟩ = λ f g x → [ g , f ] (splitAt Δ x)
-                                                           ; project₁ = λ {h = s} {i = h} {i} x → eq-builtin-refl (proj₁ T {Γ = Γ} {Δ} {s} {x} {h} {i})
-                                                           ; project₂ = λ {h = s} {i = h} {i} x → eq-builtin-refl (proj₂ T {Γ = Γ} {Δ} {s} {x} {h} {i}) -- eq-builtin-refl {x = [ i ⊎ h ] (splitAt Δ (inject+ Γ x)) } {y = i x} ((proj₂ T {Γ = Γ} {Δ} {s} {x} {h} {i}))
-                                                           ; unique = λ {C} {h} {i} {j} p₁ p₂ x → {!!} -- eq-builtin-refl {ℓt} {!!}
+                                                           ; project₁ = λ {h = s} {i = h} {i} x → ≡-eq-refl (proj₁ T {Γ = Γ} {Δ} {s} {x} {h} {i})
+                                                           ; project₂ = λ {h = s} {i = h} {i} x → ≡-eq-refl (proj₂ T {Γ = Γ} {Δ} {s} {x} {h} {i})
+                                                           ; unique = λ {C} {h} {i} {j} p₁ p₂ x → pre-unique {Γ} {Δ} {C} {h} {i} {j} {p₁} {p₂}
                                                            } }
            }
 
