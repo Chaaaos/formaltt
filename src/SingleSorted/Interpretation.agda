@@ -2,13 +2,11 @@
 
 open import Agda.Primitive using (_⊔_)
 
-import Relation.Binary.Reasoning.Setoid as SetoidR
-
 import Categories.Category as Category
 import Categories.Category.Cartesian as Cartesian
 
 open import SingleSorted.AlgebraicTheory
-import SingleSorted.CartesianCategories
+import SingleSorted.FactsCartesian
 
 
 module SingleSorted.Interpretation
@@ -16,7 +14,8 @@ module SingleSorted.Interpretation
          (Σ : Signature) {𝒞 : Category.Category o ℓ e}
          (cartesian-𝒞 : Cartesian.Cartesian 𝒞) where
   open Signature Σ
-  open SingleSorted.CartesianCategories 𝒞 cartesian-𝒞
+  open Category.Category 𝒞
+  open SingleSorted.FactsCartesian cartesian-𝒞
 
   -- An interpretation of Σ in 𝒞
   record Interpretation : Set (o ⊔ ℓ ⊔ e) where
@@ -77,7 +76,7 @@ module SingleSorted.Interpretation
                                                                                 ≈⟨  assoc ⟩
                       (interp-oper C f ∘
                         pow-tuple (λ i → hom-morphism ϕ ∘ pow-π i) ∘
-                        pow-tuple (λ i → hom-morphism ψ ∘ pow-π i)) ≈⟨ refl⟩∘⟨ pow-tuple² {!!} {!!} ⟩
+                        pow-tuple (λ i → hom-morphism ψ ∘ pow-π i)) ≈⟨ refl⟩∘⟨ {!!} ⟩
                       {!!}
       }
 

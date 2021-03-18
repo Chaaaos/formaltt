@@ -4,18 +4,18 @@ open import Agda.Primitive
 open import Agda.Builtin.Nat
 open import Data.Fin
 
-open import Categories.Category
-open import Categories.Category.Cartesian
+import Categories.Category as Category
+import Categories.Category.Cartesian as Cartesian
+
 open import SingleSorted.AlgebraicTheory
 
 
-module SingleSorted.FactsAboutCartesianCategories
+module SingleSorted.FactsCartesian
        {o ℓ e}
-       (Σ : Signature) {𝒞 : Category o ℓ e}
-       (cartesian-𝒞 : Cartesian 𝒞) where
-  open Signature
-  open Category 𝒞
-  open Cartesian cartesian-𝒞
+       {𝒞 : Category.Category o ℓ e}
+       (cartesian-𝒞 : Cartesian.Cartesian 𝒞) where
+  open Category.Category 𝒞
+  open Cartesian.Cartesian cartesian-𝒞 public
   open HomReasoning
 
 

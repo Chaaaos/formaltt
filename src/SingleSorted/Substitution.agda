@@ -1,20 +1,19 @@
+open import Data.Fin
+
 open import SingleSorted.AlgebraicTheory
 
-module SingleSorted.PropertiesSubstitutions {ℓ : Level} {Σ : Signature} {T : Theory ℓ Σ} where
-
-  open import SingleSorted.AlgebraicTheory public
-  open import Data.Fin
+module SingleSorted.Substitution {ℓ : Level} {Σ : Signature} (T : Theory ℓ Σ) where
 
   open Theory T
 
   -- the action of the identity substitution is the identity
-  id-action : ∀ {Σ : Signature} {Γ : Context} {a : Term Γ} → (Γ ⊢ a ≈ (a [ id-substitution ]s))
+  id-action : ∀ {Γ : Context} {a : Term Γ} → (Γ ⊢ a ≈ (a [ id-substitution ]s))
   id-action {a = tm-var a} = eq-refl
-  id-action {a = tm-oper f x} = eq-congr (λ i → id-action {Σ} {a = x i})
+  id-action {a = tm-oper f x} = eq-congr (λ i → id-action {a = x i})
 
   -- an equality is preserved by the action of the identity
-  eq-id-action : ∀ {Σ : Signature} {Γ : Context} {u v : Term Γ} → (Γ ⊢ (u [ id-substitution ]s) ≈ (v [ id-substitution ]s)) → (Γ ⊢ u ≈ v)
-  eq-id-action {u = u} {v = v} p = eq-tran (id-action {Σ} {a = u}) (eq-tran p (eq-symm (id-action {Σ} {a = v})))
+  eq-id-action : ∀ {Γ : Context} {u v : Term Γ} → (Γ ⊢ (u [ id-substitution ]s) ≈ (v [ id-substitution ]s)) → (Γ ⊢ u ≈ v)
+  eq-id-action {u = u} {v = v} p = eq-tran (id-action {a = u}) (eq-tran p (eq-symm (id-action {a = v})))
 
   -- equality of substitutions
   _≈s_ : ∀ {Γ Δ : Context} → substitution Σ Γ Δ → substitution Σ Γ Δ → Set (lsuc ℓ)
