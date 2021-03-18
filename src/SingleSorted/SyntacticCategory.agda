@@ -1,23 +1,9 @@
 open import SingleSorted.AlgebraicTheory
 open import SingleSorted.Interpretation using (Interpretation; TrivialI)
-open import SingleSorted.PropertiesSubstitutions
-
 module SingleSorted.SyntacticCategory {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
 
-  open import Agda.Primitive using (Level; lzero; lsuc; _⊔_)
-  open import Agda.Builtin.Equality
-  open import SingleSorted.Model
+  open import SingleSorted.Model public
   open import Data.Fin renaming (_+_ to _+ᶠ_)
-  open import Function.Base
-  open import Data.Sum.Base
-  open import Data.Nat.Properties using (+-comm)
-  import Relation.Binary.PropositionalEquality as Eq
-  open Eq using (_≡_; refl; cong-app; trans) renaming (sym to symm)
-  open Eq.≡-Reasoning
-
-  open import Categories.Category
-
-  open import Categories.Category.Cartesian
 
   open Signature Σ
   open Theory T
@@ -60,9 +46,9 @@ module SingleSorted.SyntacticCategory {ℓt} {Σ : Signature} (T : Theory ℓt �
                                                            { A×B =  Δ + Γ
                                                            ; π₁ =  λ x → tm-var (raise Δ x)
                                                            ; π₂ = λ x → tm-var (inject+ Γ x)
-                                                           ; ⟨_,_⟩ = λ f g x → [ g , f ] (splitAt Δ x)
-                                                           ; project₁ = λ {h = s} {i = h} {i} x → eq-builtin-refl {ℓt} {Σ} T {ℓt} {Γ = s} {x = [ i , h ] (splitAt Δ (raise Δ x)) } {y = h x} (proj₁ T {Γ = Γ} {Δ} {s} {x} {h} {i})
-                                                           ; project₂ = λ {h = s} {i = h} {i} x → eq-builtin-refl {ℓt} {Σ} T {ℓt} {Γ = s} {x = [ i , h ] (splitAt Δ (inject+ Γ x)) } {y = i x} ((proj₂ T {Γ = Γ} {Δ} {s} {x} {h} {i}))
+                                                           ; ⟨_,_⟩ = λ f g x → [ g ⊎ f ] (splitAt Δ x)
+                                                           ; project₁ = λ {h = s} {i = h} {i} x → eq-builtin-refl {ℓt} {Σ} T {ℓt} {Γ = s} {x = [ i ⊎ h ] (splitAt Δ (raise Δ x)) } {y = h x} (proj₁ T {Γ = Γ} {Δ} {s} {x} {h} {i})
+                                                           ; project₂ = λ {h = s} {i = h} {i} x → eq-builtin-refl {ℓt} {Σ} T {ℓt} {Γ = s} {x = [ i ⊎ h ] (splitAt Δ (inject+ Γ x)) } {y = i x} ((proj₂ T {Γ = Γ} {Δ} {s} {x} {h} {i}))
                                                            ; unique = {!!} -- λ {C} {h} {i} {j} p₁ p₂ x → eq-builtin-refl {ℓt} {!!}
                                                            } }
            }
@@ -75,7 +61,7 @@ module SingleSorted.SyntacticCategory {ℓt} {Σ : Signature} (T : Theory ℓt �
   pow-𝒮 {suc a} = congr T {f = suc} pow-𝒮
 
   transport-pow-𝒮 : ∀ {a : Nat} (x : var (a)) →  var (pow Σ cartesian-𝒮 1 a)
-  transport-pow-𝒮 = Eq.subst var (symm pow-𝒮)
+  transport-pow-𝒮 = subst var (symm pow-𝒮)
 
 
   -- The universal interpretation

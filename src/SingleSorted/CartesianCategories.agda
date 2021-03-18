@@ -1,19 +1,16 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
-open import Agda.Primitive
-open import Agda.Builtin.Nat
-open import Data.Fin
-
-open import Categories.Category
-open import Categories.Category.Cartesian
-
-open import SingleSorted.AlgebraicTheory
+open import SingleSorted.Preamble
 
 
 module SingleSorted.CartesianCategories
        {o ℓ e}
        (Σ : Signature) {𝒞 : Category o ℓ e}
        (cartesian-𝒞 : Cartesian 𝒞) where
+
+  open import SingleSorted.Preamble public
+  open import Data.Fin
+
   open Signature
   open Category 𝒞
   open Cartesian cartesian-𝒞

@@ -1,11 +1,10 @@
-open import Agda.Primitive
-open import Agda.Builtin.Nat
-open import Data.Fin
 open import SingleSorted.AlgebraicTheory
 
 module SingleSorted.PropertiesSubstitutions {ℓ : Level} {Σ : Signature} {T : Theory ℓ Σ} where
 
   open import SingleSorted.AlgebraicTheory public
+  open import Data.Fin
+
   open Theory T
 
   -- the action of the identity substitution is the identity

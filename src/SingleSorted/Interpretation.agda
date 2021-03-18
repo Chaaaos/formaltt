@@ -1,21 +1,16 @@
 {-# OPTIONS --allow-unsolved-metas #-}
-open import Agda.Primitive
-open import Agda.Builtin.Nat
-open import Data.Fin
-
-open import Categories.Category
-open import Categories.Category.Cartesian
 
 open import SingleSorted.AlgebraicTheory
 open import SingleSorted.CartesianCategories
-open import SingleSorted.PropertiesSubstitutions
 
 module SingleSorted.Interpretation
          {o ℓ e}
          (Σ : Signature) {𝒞 : Category o ℓ e}
          (cartesian-𝒞 : Cartesian 𝒞) where
+
+  open import SingleSorted.PropertiesSubstitutions public
+
   open Signature
-  open SingleSorted.PropertiesSubstitutions public
   open Category 𝒞
   open Cartesian cartesian-𝒞
   open HomReasoning
@@ -67,8 +62,25 @@ module SingleSorted.Interpretation
   _∘I_ {A} {B} {C} ϕ ψ =
     let open HomI in
     record { hom-morphism = (hom-morphism ϕ) ∘ (hom-morphism ψ)
-             ; hom-commute = {!!}
--- First attempt (doesn't work) : assoc ○ (∘-resp-≈ʳ (hom-commute ψ f) ○ (sym-assoc ○ (∘-resp-≈ˡ (hom-commute ϕ f) ○ (assoc ○ ((⟺ (∘-resp-≈ʳ (pow-tuple-∘ {{!!}} {n = oper-arity Σ f} {fs = (λ i → hom-morphism ϕ ∘ pow-π i)} {g = pow-tuple (λ i → hom-morphism ψ ∘ pow-π i)}))) ○ ∘-resp-≈ʳ (pow-tuple-eq {f = λ i → (hom-morphism ϕ ∘ pow-π i) ∘ pow-tuple (λ i₁ → hom-morphism ψ ∘ pow-π i₁)} {g = λ i → (hom-morphism ϕ ∘ hom-morphism ψ) ∘ pow-π i} λ i → assoc {f = pow-tuple (λ i₁ → hom-morphism ψ ∘ pow-π i₁) } {g = pow-π i} {h = hom-morphism ϕ} ○ ⟺ (assoc ○ ∘-resp-≈ʳ (⟺ (pow-tuple-π {i = i})))))))))
+             ; hom-commute = λ f → assoc
+                             ○ (∘-resp-≈ʳ (hom-commute ψ f)
+                               ○ (sym-assoc
+                                 ○ (∘-resp-≈ˡ (hom-commute ϕ f)
+                                   ○ (assoc
+                                     ○ ((⟺ (∘-resp-≈ʳ (pow-tuple-∘ Σ cartesian-𝒞
+                                                      {{!!}}
+                                                      {n = oper-arity Σ f}
+                                                      {fs = (λ i → hom-morphism ϕ ∘ pow-π Σ cartesian-𝒞 i)}
+                                                      {g = pow-tuple Σ cartesian-𝒞 (λ i → hom-morphism ψ ∘ (pow-π Σ cartesian-𝒞) i)})))
+                                       ○ ∘-resp-≈ʳ (pow-tuple-eq Σ cartesian-𝒞
+                                                   {f = λ i → (hom-morphism ϕ ∘ pow-π Σ cartesian-𝒞 i) ∘ pow-tuple Σ cartesian-𝒞 (λ i₁ → hom-morphism ψ ∘ pow-π Σ cartesian-𝒞 i₁)}
+                                                   {g = λ i → (hom-morphism ϕ ∘ hom-morphism ψ) ∘ pow-π Σ cartesian-𝒞 i}
+                           λ i → assoc
+                                 {f = pow-tuple Σ cartesian-𝒞 (λ i₁ → hom-morphism ψ ∘ pow-π Σ cartesian-𝒞 i₁) }
+                                 {g = pow-π Σ cartesian-𝒞 i}
+                                 {h = hom-morphism ϕ}
+                                      ○ ⟺ (assoc
+                                        ○ ∘-resp-≈ʳ (⟺ (pow-tuple-π Σ cartesian-𝒞)))))))))
            }
 
 
