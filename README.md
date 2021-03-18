@@ -1,13 +1,24 @@
 # Formalization of simple type theory
 
+## Coding standards
+
+We collect here some coding standards.
+
+1. Only `import` what is necessary.
+2. Avoid global `open` and prefer local `open` statements.
+3. Do not have excessively long lines.
+
+
+## Outline of the ideas we are pursing
+
 In this project we are aiming to formalize simple type theories in Agda. We may proceed along two axes, **generality** and **meta-analysis**.
 
-## Generality
+### Generality
 
 Generality is about how large a class of type theories we encompass. There are many ways to measure "generality", but
 here is one that ought to work well and allow us to proceed in steps.
 
-### Single-sorted algebraic theory
+#### Single-sorted algebraic theory
 
 **Parameterized by:**
 
@@ -28,7 +39,7 @@ here is one that ought to work well and allow us to proceed in steps.
 **Examples:** monoid, group, (fintarily branching) inductive types, ring, `R`-module (for a fixed `R`).
 
 
-### Multi-sorted algebraic theory
+#### Multi-sorted algebraic theory
 
 Parameterized by:
 
@@ -51,7 +62,7 @@ Parameterized by:
 **Examples:** module, directed graph, mutually recursive (finitarily branching) inductive types.
 
 
-### Simple type theory I
+#### Simple type theory I
 
 These extend many-sorted algebraic theory in two ways:
 
@@ -81,7 +92,7 @@ Parameterized by:
 **Example:** untyped λ-calculus, simply typed λ-calculus
 
 
-### Simple type theory II
+#### Simple type theory II
 
 These are like simple type theories, but we also allow types to take term arguments. However, types may not contain any free variables. This allows us to form types that depende on terms, such as a subtype `{ x : τ | ϕ }` where `x : τ ⊢ ϕ : bool` -- here `x` is bound in the type.
 
@@ -112,27 +123,27 @@ Important: types may *not* contain any free variables!
 **Example:** internal logic of an elementary topos
 
 
-## Meta-analysis
+### Meta-analysis
 
 We may pursue several directions of study.
 
-### Concreteness of definition
+#### Concreteness of definition
 
 Definitions can be given at different levels of concreteness. For example, we may have raw terms and types, and a
 separate judgement that such raw entities are well formed, or we have a single definition of terms and types that
 prevents us from ever generating an ill-typed term.
 
 
-### Syntactic meta-theorems
+#### Syntactic meta-theorems
 
 We can prove theorems, such as uniqueness of typing, substitution lemmas, admissibility of substitutions, etc.
 
 
-### Semantics
+#### Semantics
 
 
 We can define categorical semantics and show it to be sound.
 
-### Semantic completeness
+#### Semantic completeness
 
 We can show that the semantics is complete by constructing the initial models.
