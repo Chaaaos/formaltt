@@ -52,17 +52,12 @@ module SingleSorted.Interpretation
     record
       { hom-morphism = id
       ; hom-commute =
-          -- THIS WORKS
-          -- λ f → identityˡ ○ ((⟺ identityʳ) ○
-          --       (refl⟩∘⟨ ⟺ (pow-tuple-id2 {n = oper-arity f} (λ i → identityˡ))))
-
-         -- Why doesn't this work? (There are unsolved constraints.)
          λ f →
           begin
             (id ∘ interp-oper f)       ≈⟨ identityˡ ⟩
             interp-oper f             ≈˘⟨ identityʳ ⟩
             (interp-oper f ∘ id)      ≈˘⟨ (refl⟩∘⟨ pow-tuple-id2 {n = oper-arity f} λ i → identityˡ) ⟩
-            (interp-oper f ∘ pow-tuple (λ i → id ∘ pow-π i)) ∎
+            (interp-oper f ∘ pow-tuple {n = oper-arity f} (λ i → id ∘ pow-π i)) ∎
 
       }
 
@@ -75,18 +70,25 @@ module SingleSorted.Interpretation
       ; hom-commute =
           let open Interpretation in
           let open HomReasoning in
-          λ f → begin ((hom-morphism ϕ ∘ hom-morphism ψ) ∘ interp-oper A f)   ≈⟨ assoc ⟩
-                      (hom-morphism ϕ ∘ hom-morphism ψ ∘ interp-oper A f)     ≈⟨ refl⟩∘⟨ hom-commute ψ f ⟩
-                      (hom-morphism ϕ ∘ interp-oper B f ∘ pow-tuple (λ i → hom-morphism ψ ∘ pow-π i))
-                                                                              ≈˘⟨  assoc ⟩
-                      ((hom-morphism ϕ ∘ interp-oper B f) ∘ pow-tuple (λ i → hom-morphism ψ ∘ pow-π i))
-                                                                               ≈⟨  hom-commute ϕ f ⟩∘⟨refl ⟩
-                      ((interp-oper C f ∘ pow-tuple (λ i → hom-morphism ϕ ∘ pow-π i)) ∘ pow-tuple (λ i → hom-morphism ψ ∘ pow-π i))
-                                                                                ≈⟨  assoc ⟩
-                      (interp-oper C f ∘
-                        pow-tuple (λ i → hom-morphism ϕ ∘ pow-π i) ∘
-                        pow-tuple (λ i → hom-morphism ψ ∘ pow-π i)) ≈⟨ refl⟩∘⟨ {!!} ⟩
-                      {!!}
+          λ f → let n = oper-arity f in
+            begin
+              ((hom-morphism ϕ ∘ hom-morphism ψ) ∘ interp-oper A f)
+            ≈⟨ assoc ⟩
+              (hom-morphism ϕ ∘ hom-morphism ψ ∘ interp-oper A f)
+            ≈⟨ refl⟩∘⟨ hom-commute ψ f ⟩
+              (hom-morphism ϕ ∘ interp-oper B f ∘ pow-tuple {n = n} (λ i → hom-morphism ψ ∘ pow-π i))
+            ≈˘⟨  assoc ⟩
+              ((hom-morphism ϕ ∘ interp-oper B f) ∘ pow-tuple {n = n} (λ i → hom-morphism ψ ∘ pow-π i))
+            ≈⟨  hom-commute ϕ f ⟩∘⟨refl ⟩
+              (interp-oper C f ∘
+               pow-tuple {n = n} (λ i → hom-morphism ϕ ∘ pow-π i)) ∘
+               pow-tuple {n = n} (λ i → hom-morphism ψ ∘ pow-π i)
+            ≈⟨ assoc ⟩
+              (interp-oper C f ∘
+               pow-tuple {n = n} (λ i → hom-morphism ϕ ∘ pow-π i) ∘
+               pow-tuple {n = n} (λ i → hom-morphism ψ ∘ pow-π i))
+            ≈⟨ refl⟩∘⟨ {!pow-tuple²!} ⟩
+              {!!}
       }
 
 -- Here, there is a problem with the way I want to show the following equality : I can not use pow-tuple-∘, maybe because pow-π i depends on i
