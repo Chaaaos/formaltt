@@ -8,7 +8,6 @@ import Categories.Category.Cartesian as Cartesian
 open import SingleSorted.AlgebraicTheory
 import SingleSorted.FactsCartesian
 
-
 module SingleSorted.Interpretation
          {o ℓ e}
          (Σ : Signature) {𝒞 : Category.Category o ℓ e}

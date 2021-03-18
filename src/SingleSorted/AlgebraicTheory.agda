@@ -1,8 +1,8 @@
-module SingleSorted.AlgebraicTheory where
+open import Agda.Primitive using (lsuc; _⊔_)
+open import Agda.Builtin.Nat using (Nat)
+open import Data.Fin using (Fin)
 
-  open import Agda.Primitive using (Level; lzero; lsuc; _⊔_) public
-  open import Agda.Builtin.Nat public
-  open import Data.Fin
+module SingleSorted.AlgebraicTheory where
 
   -- Signature
   -- an algebraic signature

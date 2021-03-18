@@ -1,7 +1,9 @@
 open import Relation.Binary.PropositionalEquality
 
-open import Data.Fin renaming (_+_ to _+ᶠ_)
+open import Agda.Primitive
+open import Data.Fin hiding (_+_)
 open import Data.Sum.Base
+open import Agda.Builtin.Nat
 
 import Categories.Category as Category
 import Categories.Category.Cartesian as Cartesian

@@ -1,8 +1,9 @@
-open import Data.Fin
+open import Agda.Primitive using (lsuc; _⊔_)
+open import Data.Fin using (Fin)
 
 open import SingleSorted.AlgebraicTheory
 
-module SingleSorted.Substitution {ℓ : Level} {Σ : Signature} (T : Theory ℓ Σ) where
+module SingleSorted.Substitution {ℓ} {Σ : Signature} (T : Theory ℓ Σ) where
 
   open Theory T
 
