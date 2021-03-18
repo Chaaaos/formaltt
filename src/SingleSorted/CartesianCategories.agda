@@ -1,22 +1,18 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
-open import Agda.Primitive
+open import Agda.Primitive using (_⊔_)
 open import Agda.Builtin.Nat
 open import Data.Fin
 
-open import Categories.Category
-open import Categories.Category.Cartesian
-
-open import SingleSorted.AlgebraicTheory
-
+import Categories.Category as Category
+import Categories.Category.Cartesian as Cartesian
 
 module SingleSorted.CartesianCategories
        {o ℓ e}
-       (Σ : Signature) {𝒞 : Category o ℓ e}
-       (cartesian-𝒞 : Cartesian 𝒞) where
-  open Signature
-  open Category 𝒞
-  open Cartesian cartesian-𝒞
+       (𝒞 : Category.Category o ℓ e)
+       (cartesian-𝒞 : Cartesian.Cartesian 𝒞) where
+  open Category.Category 𝒞 public
+  open Cartesian.Cartesian cartesian-𝒞 public
   open HomReasoning
 
 
@@ -44,16 +40,25 @@ module SingleSorted.CartesianCategories
   pow-tuple-id {n = zero} = !-unique id
   pow-tuple-id {n = suc n} = (⟨⟩-congʳ ((pow-tuple-∘ {n = n}) ○ ((pow-tuple-id {n = n} ⟩∘⟨refl) ○ identityˡ))) ○ η
 
-  pow-tuple-eq :  ∀ {A B : Obj} {n} {f g : Fin n → A ⇒ B} → (∀ i →  f i ≈ g i) → (pow-tuple {A = A} {n = n} f) ≈ (pow-tuple {A = A} {n = n} g)
+  pow-tuple-eq :  ∀ {A B : Obj} {n} {f g : Fin n → A ⇒ B} → (∀ i → f i ≈ g i) → (pow-tuple {A = A} {n = n} f) ≈ (pow-tuple {A = A} {n = n} g)
   pow-tuple-eq {n = zero} = λ x → Equiv.refl
   pow-tuple-eq {n = suc n} = λ x → Equiv.trans (⟨⟩-congʳ (pow-tuple-eq (λ i → x (suc i)))) (⟨⟩-congˡ (x zero))
 
   pow-tuple-id2 : ∀ {A : Obj} {n} {f : Fin n → pow A n ⇒ A} → (∀ i → f i ≈ pow-π i) → pow-tuple {A = pow A n} {n = n} f ≈ id
   pow-tuple-id2 {A = A} {n = n} ξ = pow-tuple-eq ξ ○ (pow-tuple-id {A = A} {n = n})
 
-  pow-tuple-π : ∀ {A : Obj} {n} {f : Fin n → pow A n ⇒ A} {i : Fin n} → (pow-π i ∘ (pow-tuple {A = pow A n} {n = n} f)) ≈ (f i)
+  pow-tuple-π : ∀ {A B : Obj} {n} {f : Fin n → A ⇒ B} {i : Fin n} → pow-π i ∘ (pow-tuple f) ≈ f i
   pow-tuple-π {n = suc n} {i = zero} = project₂
-  pow-tuple-π {n = suc n} {f = f} {i = suc i} = assoc ○ (⟺ (∘-resp-≈ʳ (⟺ project₁))○ {!pow-tuple-π {n = i} {f = λ i₁ → f (suc i₁)}!})
-  -- pow-tuple-π {n = suc n} {i = zero} = project₂
-  -- pow-tuple-π {n = suc n} {f = f} {i = suc i} = assoc ○ (⟺ (∘-resp-≈ʳ (⟺ project₁)) ○ (pow-tuple-π {n = suc n}))
--- _g_256 ≈ pow-π i ∘ π₁ ∘ ⟨ pow-tuple (λ i₁ → f (suc i₁)) , f zero ⟩
+  pow-tuple-π {n = suc n} {f = f} {i = suc i} =
+     begin
+       pow-π (suc i) ∘ pow-tuple f            ≈⟨ assoc ⟩
+       pow-π i ∘ π₁ ∘ pow-tuple f             ≈⟨ refl⟩∘⟨ project₁ ⟩
+       pow-π i ∘ pow-tuple (λ j → f (suc j))  ≈⟨ pow-tuple-π {i = i} ⟩
+       f (suc i) ∎
+
+  pow-tuple² :
+    ∀ {A B C : Obj} {n} (g : B ⇒ C) (f : A ⇒ B) →
+      pow-tuple (λ (i : Fin n) → g ∘ pow-π i) ∘ pow-tuple (λ (i : Fin n) → f ∘ pow-π i) ≈
+      pow-tuple (λ (i : Fin n) → (g ∘ f) ∘ pow-π i)
+  pow-tuple² g f =
+      {!!}
