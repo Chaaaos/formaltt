@@ -6,7 +6,6 @@ open import Data.Fin
 
 open import Categories.Category
 open import Categories.Category.Cartesian
-
 open import SingleSorted.AlgebraicTheory
 
 
