@@ -61,8 +61,8 @@ module SingleSorted.SyntacticCategory {ℓt}
                                                            ; π₁ =  λ x → tm-var (raise Δ x)
                                                            ; π₂ = λ x → tm-var (inject+ Γ x)
                                                            ; ⟨_,_⟩ = λ f g x → [ g , f ] (splitAt Δ x)
-                                                           ; project₁ = λ {h = s} {i = h} {i} x → eq-builtin-refl {!!}
-                                                           ; project₂ = λ {h = s} {i = h} {i} x → {!!} -- eq-builtin-refl {ℓt} {Γ = s} {x = [ i ⊎ h ] (splitAt Δ (inject+ Γ x)) } {y = i x} ((proj₂ T {Γ = Γ} {Δ} {s} {x} {h} {i}))
+                                                           ; project₁ = λ {h = s} {i = h} {i} x → eq-builtin-refl (proj₁ T {Γ = Γ} {Δ} {s} {x} {h} {i})
+                                                           ; project₂ = λ {h = s} {i = h} {i} x → eq-builtin-refl (proj₂ T {Γ = Γ} {Δ} {s} {x} {h} {i}) -- eq-builtin-refl {x = [ i ⊎ h ] (splitAt Δ (inject+ Γ x)) } {y = i x} ((proj₂ T {Γ = Γ} {Δ} {s} {x} {h} {i}))
                                                            ; unique = λ {C} {h} {i} {j} p₁ p₂ x → {!!} -- eq-builtin-refl {ℓt} {!!}
                                                            } }
            }
