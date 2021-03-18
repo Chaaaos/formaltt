@@ -16,7 +16,6 @@ module SingleSorted.FactsCartesian
   open Cartesian.Cartesian cartesian-𝒞 public
   open HomReasoning
 
-
   -- We use our own definition of powers, because the one in the library has a silly special case n = 1
   pow : ∀ (A : Obj) (n : Nat) → Obj
   pow A zero = ⊤
@@ -41,12 +40,13 @@ module SingleSorted.FactsCartesian
   pow-tuple-id {n = zero} = !-unique id
   pow-tuple-id {n = suc n} = (⟨⟩-congʳ ((pow-tuple-∘ {n = n}) ○ ((pow-tuple-id {n = n} ⟩∘⟨refl) ○ identityˡ))) ○ η
 
-  pow-tuple-eq :  ∀ {A B : Obj} {n} {f g : Fin n → A ⇒ B} → (∀ i →  f i ≈ g i) → (pow-tuple {A = A} {n = n} f) ≈ (pow-tuple {A = A} {n = n} g)
-  pow-tuple-eq {n = zero} = λ x → Equiv.refl
-  pow-tuple-eq {n = suc n} = λ x → Equiv.trans (⟨⟩-congʳ (pow-tuple-eq (λ i → x (suc i)))) (⟨⟩-congˡ (x zero))
+  pow-tuple-eq :  ∀ {A B : Obj} {n} {f g : Fin n → A ⇒ B} → (∀ i →  f i ≈ g i) →
+                  pow-tuple {A = A} {n = n} f ≈ pow-tuple {A = A} {n = n} g
+  pow-tuple-eq {n = zero} _ = !-unique₂
+  pow-tuple-eq {n = suc n} ξ = ⟨⟩-cong₂ (pow-tuple-eq (λ i → ξ (suc i))) (ξ zero)
 
-  pow-tuple-id2 : ∀ {A : Obj} {n} {f : Fin n → pow A n ⇒ A} → (∀ i → f i ≈ pow-π i) → pow-tuple {A = pow A n} {n = n} f ≈ id
-  pow-tuple-id2 {A = A} {n = n} ξ = pow-tuple-eq ξ ○ (pow-tuple-id {A = A} {n = n})
+  pow-tuple-id2 : ∀ {A : Obj} {n : Nat} {f : Fin n → pow A n ⇒ A} → (∀ i → f i ≈ pow-π i) → pow-tuple {A = pow A n} {n = n} f ≈ id
+  pow-tuple-id2 {A} {n} {f} ξ = pow-tuple-eq ξ ○ (pow-tuple-id {A = A} {n = n})
 
   pow-tuple-π : ∀ {A : Obj} {n} {f : Fin n → pow A n ⇒ A} {i : Fin n} → (pow-π i ∘ (pow-tuple {A = pow A n} {n = n} f)) ≈ (f i)
   pow-tuple-π {n = suc n} {i = zero} = project₂

@@ -52,8 +52,15 @@ module SingleSorted.Interpretation
     record
       { hom-morphism = id
       ; hom-commute =
-          λ f → identityˡ ○ ((⟺ identityʳ) ○
-                (refl⟩∘⟨ ⟺ (pow-tuple-id2 {n = oper-arity f} (λ i → identityˡ))))
+          -- λ f → identityˡ ○ ((⟺ identityʳ) ○
+          --       (refl⟩∘⟨ ⟺ (pow-tuple-id2 (n = oper-arity f) (λ i → identityˡ))))
+         λ f →
+          begin
+            (id ∘ interp-oper f)      ≈⟨ identityˡ ⟩
+            interp-oper f            ≈˘⟨  identityʳ ⟩
+            (interp-oper f ∘ id)      ≈˘⟨ refl⟩∘⟨ (pow-tuple-id2 (oper-arity f) (λ i → identityˡ)) ⟩
+            (interp-oper f ∘ pow-tuple (λ i → id ∘ pow-π i)) ∎
+
       }
 
   -- Compositon of homomorphisms
