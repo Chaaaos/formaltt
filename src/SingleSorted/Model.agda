@@ -1,23 +1,7 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 open import SingleSorted.AlgebraicTheory
-open import SingleSorted.Interpretation using (Interpretation; TrivialI)
 
 module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
-
-  open import Agda.Builtin.Nat public
-  open import Agda.Primitive using (Level; lzero; lsuc; _⊔_)
-  open import Agda.Builtin.Equality
-  open import Data.Fin renaming (_+_ to _+ᶠ_)
-  open import Function.Base
-  open import Data.Sum.Base
-  open import Data.Nat.Properties using (+-comm)
-  import Relation.Binary.PropositionalEquality as Eq
-  open Eq using (_≡_; refl; cong-app; trans) renaming (sym to symm)
-  open Eq.≡-Reasoning
-
-  open import Categories.Category
-
-  open import Categories.Category.Cartesian
 
   open import SingleSorted.Interpretation public
   open import SingleSorted.CartesianCategories public
@@ -25,7 +9,6 @@ module SingleSorted.Model {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
 
   open Signature Σ
   open Theory T
-
 
   -- Model of a theory
 

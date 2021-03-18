@@ -2,13 +2,25 @@ open import SingleSorted.AlgebraicTheory
 
 module SingleSorted.Preamble {ℓt} {Σ : Signature} (T : Theory ℓt Σ) where
 
-  open import Agda.Primitive using (Level; lzero; lsuc; _⊔_)
-  open import Agda.Builtin.Equality
-  open import Function.Base
-  import Relation.Binary.PropositionalEquality as Eq
-  open Eq using (_≡_; refl; cong-app; trans) renaming (sym to symm)
-  open Eq.≡-Reasoning
+  -- Opening a lot of mudules, useful here, but also in other files
+  -- (because they are open as "public", we don't have to open them everywhere)
 
+  -- Equality
+  open import Agda.Builtin.Equality public
+  import Relation.Binary.PropositionalEquality as Eq
+  open Eq using (_≡_; refl; cong-app; trans) renaming (sym to symm) public
+  open Eq.≡-Reasoning public
+  open import Relation.Binary.PropositionalEquality.Core public
+  -- Categories
+  open import Categories.Category public
+  open import Categories.Category.Cartesian public
+  open import Data.Nat.Properties using (+-comm) public
+  -- Other
+  open import SingleSorted.AlgebraicTheory public
+  open import Data.Sum.Base renaming ([_,_] to [_⊎_]) public
+  open import Function.Base renaming (_∘_ to _●_; id to idᶠ) public
+
+  -- Postulates and useful general properties
   open Signature Σ
   open Theory T
 

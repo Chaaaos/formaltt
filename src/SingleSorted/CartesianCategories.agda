@@ -15,7 +15,6 @@ module SingleSorted.CartesianCategories
   open Cartesian.Cartesian cartesian-𝒞 public
   open HomReasoning
 
-
   -- We use our own definition of powers, because the one in the library has a silly special case n = 1
   pow : ∀ (A : Obj) (n : Nat) → Obj
   pow A zero = ⊤
@@ -62,3 +61,6 @@ module SingleSorted.CartesianCategories
       pow-tuple (λ (i : Fin n) → (g ∘ f) ∘ pow-π i)
   pow-tuple² g f =
       {!!}
+
+  lower : ∀ {A B : Obj} {n} (f : Fin (suc n) → A ⇒ B) → (Fin n → A ⇒ B)
+  lower f = λ i → f (suc i)
