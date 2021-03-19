@@ -135,11 +135,18 @@ module SingleSorted.SyntacticCategory {ℓt}
     open Interpretation.Interpretation UniversalI
 
     𝒮-respect-≈ : ∀ {Γ : Context} {u v : Term Γ} → (Γ ⊢ u ≈ v) → (interp-term u) ≈s (interp-term v)
-    𝒮-respect-≈ Theory.eq-refl = λ x → eq-refl
-    𝒮-respect-≈ (Theory.eq-symm p) = symm-subst (𝒮-respect-≈ p)
-    𝒮-respect-≈ (Theory.eq-tran p₁ p₂) = trans-subst (𝒮-respect-≈ p₁) (𝒮-respect-≈ p₂)
-    𝒮-respect-≈ (Theory.eq-congr {_} {f} {xs} {ys} ps) = ∘-resp-≈ {f = interp-oper f} {h = interp-oper f} {g = pow-tuple (oper-arity f) (λ i → interp-term (xs i))} {i = pow-tuple (oper-arity f) (λ i → interp-term (ys i))} (refl-subst) (pow-tuple-eq (λ i x → 𝒮-respect-≈ (ps i) x))
-    𝒮-respect-≈ (Theory.eq-axiom ε σ) = {!!}
+    𝒮-respect-≈ eq-refl = λ x → eq-refl
+    𝒮-respect-≈ (eq-symm p) = symm-subst (𝒮-respect-≈ p)
+    𝒮-respect-≈ (eq-tran p₁ p₂) = trans-subst (𝒮-respect-≈ p₁) (𝒮-respect-≈ p₂)
+    𝒮-respect-≈ (eq-congr {_} {f} {xs} {ys} ps) =
+       ∘-resp-≈
+         {f = interp-oper f}
+         {h = interp-oper f}
+         {g = pow-tuple (oper-arity f) (λ i → interp-term (xs i))}
+         {i = pow-tuple (oper-arity f) (λ i → interp-term (ys i))}
+         (refl-subst)
+         (pow-tuple-eq (λ i x → 𝒮-respect-≈ (ps i) x))
+    𝒮-respect-≈ (eq-axiom ε σ) = {!!}
     -- First attempt (didn't work) : λ x → eq-tran (𝒮-respect-subst (eq-lhs ε) σ x) (eq-symm (eq-tran (𝒮-respect-subst (eq-rhs ε) σ x) (eq-subst  (lift-subst σ) {u = (interp-term UniversalI (eq-rhs ε)) x} {v = (interp-term UniversalI (eq-lhs ε)) x} (𝒮-respect-≈ {u = (eq-rhs ε)} {v = (eq-lhs ε)} {!!} {!!}))))
 
     -- The universal model
