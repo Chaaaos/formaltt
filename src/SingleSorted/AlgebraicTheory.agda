@@ -1,6 +1,7 @@
-open import Agda.Primitive using (lsuc; _⊔_)
+open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Agda.Builtin.Nat using (Nat)
 open import Data.Fin using (Fin)
+open import Relation.Binary
 
 module SingleSorted.AlgebraicTheory where
 
@@ -77,3 +78,16 @@ module SingleSorted.AlgebraicTheory where
       -- equational axiom
       eq-axiom : ∀ (ε : eq) {Γ : Context} (σ : substitution Σ Γ (eq-ctx ε)) →
                  Γ ⊢ eq-lhs ε [ σ ]s ≈ eq-rhs ε [ σ ]s
+
+    eq-setoid : ∀ (Γ : Context) → Setoid lzero (lsuc ℓ)
+    eq-setoid Γ =
+      record
+        { Carrier = Term Γ
+        ;  _≈_ = λ s t → (Γ ⊢ s ≈ t)
+        ; isEquivalence =
+            record
+              { refl = eq-refl
+              ; sym = eq-symm
+              ; trans = eq-tran
+           }
+        }

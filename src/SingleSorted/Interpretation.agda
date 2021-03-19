@@ -1,4 +1,4 @@
--- {-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --allow-unsolved-metas #-}
 
 open import Agda.Primitive using (_⊔_)
 
@@ -90,4 +90,3 @@ module SingleSorted.Interpretation
             ≈⟨ (refl⟩∘⟨ Equiv.sym (pow-tuple-∘ {n = oper-arity f} {fs = λ i → hom-morphism ϕ ∘ pow-π i} {g = pow-tuple (oper-arity f) (λ i → hom-morphism ψ ∘ pow-π i)})) ⟩
               {!!}
       }
-

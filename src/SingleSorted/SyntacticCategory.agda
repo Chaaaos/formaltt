@@ -2,9 +2,11 @@ open import Relation.Binary.PropositionalEquality
 
 open import Agda.Primitive
 open import Data.Fin hiding (_+_)
-open import Data.Sum.Base
+open import Data.Sum
+open import Data.Sum.Properties
 open import Agda.Builtin.Nat
 open import Function.Base using (_∘_)
+import Relation.Binary.Reasoning.Setoid as SetoidR
 
 import Categories.Category as Category
 import Categories.Category.Cartesian as Cartesian
@@ -57,7 +59,15 @@ module SingleSorted.SyntacticCategory {ℓt}
 
   -- This should later go in another file, probably FactsFinite.agda, but for the moment it was easier to write it there
 
-  pre-unique : ∀ {Γ Δ C : Context} {h  : substitution Σ C (Δ + Γ)} {i  : substitution Σ C Γ} {j  : substitution Σ C Δ} {p₁ : (λ x → h (raise Δ x)) ≈s i} {p₂ : (λ x₁ → h (inject+ Γ x₁)) ≈s j} {x  : var (Δ + Γ)} → (C ⊢ ([ j , i ] (splitAt Δ x)) ≈ (h x))
+  pre-unique :
+     ∀ {Γ Δ C : Context}
+       {h  : substitution Σ C (Δ + Γ)}
+       {i  : substitution Σ C Γ}
+       {j  : substitution Σ C Δ}
+       {p₁ : (λ x → h (raise Δ x)) ≈s i}
+       {p₂ : (λ y → h (inject+ Γ y)) ≈s j}
+       {x  : var (Δ + Γ)}
+       → C ⊢ ([ j , i ] (splitAt Δ x)) ≈ (h x)
 
   pre-unique {Δ = zero} {h = h} {i = i} {p₁ = p₁} {x = zero} =
     equiv-subst i h (symm-subst p₁) (tm-var zero)
@@ -66,25 +76,19 @@ module SingleSorted.SyntacticCategory {ℓt}
     equiv-subst i h (symm-subst p₁) (tm-var (suc x))
 
   pre-unique {Γ} {Δ = suc Δ} {h = h} {j = j} {p₂ = p₂} {x = zero} =
-    equiv-subst j (λ x → h (inject+ Γ x)) (symm-subst p₂) (tm-var zero)
+    equiv-subst j (h ∘ inject+ Γ) (symm-subst p₂) (tm-var zero)
 
-  pre-unique {Δ = suc Δ} {h = h} {i} {j} {p₁} {p₂} {x = suc x} =
-    eq-tran (≡-eq-refl
-              (cong-app
-                {f = λ x₁ → [ j , i ] (map suc (λ y → y) x₁)}
-                {g = [ (λ x₁ → j (suc x₁)) , i ]}
-                (?)
-                (splitAt Δ x)))
-            (pre-unique
-              {Δ = Δ}
-              {h = λ x₁ → h (suc x₁)}
-              {i}
-              {λ x₁ → j (suc x₁)}
-              {p₁} {λ x₁ → (p₂ (suc x₁))}
-              {x = x})
--- [ j , i ] (map suc (λ x₁ → x₁) (splitAt Δ x)) ≡
--- [ (λ x₁ → j (suc x₁)) , i ] (splitAt Δ x)
--- [ ϕ , γ ] (map f g x) ≡ _j_142 x
+  pre-unique {Δ = suc Δ} {C = C} {h = h} {i} {j} {p₁} {p₂} {x = suc x} =
+    eq-tran
+      (≡-eq-refl ([,]-map-commute (splitAt Δ x)))
+      (pre-unique
+         {Δ = Δ}
+         {h = h ∘ suc}
+         {i}
+         {j = j ∘ suc}
+         {p₁}
+         {p₂ = p₂ ∘ suc}
+         {x = x})
 
   cartesian-𝒮 : Cartesian.Cartesian 𝒮
   cartesian-𝒮 =
@@ -95,9 +99,9 @@ module SingleSorted.SyntacticCategory {ℓt}
                                }
            ; products =  record { product =  λ {Γ} {Δ} → record
                                                            { A×B =  Δ + Γ
-                                                           ; π₁ =  λ x → tm-var (raise Δ x)
-                                                           ; π₂ = λ x → tm-var (inject+ Γ x)
-                                                           ; ⟨_,_⟩ = λ f g x → [ g , f ] (splitAt Δ x)
+                                                           ; π₁ = tm-var ∘ raise Δ
+                                                           ; π₂ = tm-var ∘ inject+ Γ
+                                                           ; ⟨_,_⟩ = λ f g → [ g , f ] ∘ splitAt Δ
                                                            ; project₁ = λ {h = s} {i = h} {i} x → ≡-eq-refl (proj₁ T {Γ = Γ} {Δ} {s} {x} {h} {i})
                                                            ; project₂ = λ {h = s} {i = h} {i} x → ≡-eq-refl (proj₂ T {Γ = Γ} {Δ} {s} {x} {h} {i})
                                                            ; unique = λ {C} {h} {i} {j} p₁ p₂ x → pre-unique {Γ} {Δ} {C} {h} {i} {j} {p₁} {p₂}
@@ -143,5 +147,10 @@ module SingleSorted.SyntacticCategory {ℓt}
     UniversalM =
       record
         { model-eq =
-             λ ε x → equiv-subst (interp-term (eq-lhs ε)) (interp-term (eq-rhs ε)) (𝒮-respect-≈ {u = eq-lhs ε} {v = eq-rhs ε} (eq-id-action (eq-axiom ε id-substitution))) (tm-var x)
+            λ ε x →
+              equiv-subst
+                (interp-term (eq-lhs ε))
+                (interp-term (eq-rhs ε))
+                (𝒮-respect-≈ {u = eq-lhs ε} {v = eq-rhs ε} (eq-id-action (eq-axiom ε id-substitution)))
+                (tm-var x)
         }
