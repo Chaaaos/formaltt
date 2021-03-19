@@ -26,7 +26,7 @@ module SingleSorted.Interpretation
     -- the interpretation of a term
     interp-term : ∀ {Γ : Context} → Term {Σ} Γ →  (pow interp-carrier Γ) ⇒ interp-carrier
     interp-term (tm-var x) = pow-π x
-    interp-term (tm-oper f ts) = interp-oper f ∘ pow-tuple (λ i → interp-term (ts i))
+    interp-term (tm-oper f ts) = interp-oper f ∘ pow-tuple (oper-arity f) (λ i → interp-term (ts i))
 
 
   -- Every signature has the trivial interpretation
@@ -42,7 +42,7 @@ module SingleSorted.Interpretation
       hom-commute :
          ∀ (f : oper) →
          hom-morphism ∘ interp-oper A f ≈
-             interp-oper B f ∘ pow-tuple {n = oper-arity f} (λ i → hom-morphism ∘ pow-π i)
+             interp-oper B f ∘ pow-tuple (oper-arity f) (λ i → hom-morphism ∘ pow-π i)
 
   -- The identity homomorphism
   IdI : ∀ (A : Interpretation) → HomI A A
@@ -57,7 +57,7 @@ module SingleSorted.Interpretation
             (id ∘ interp-oper f)       ≈⟨ identityˡ ⟩
             interp-oper f             ≈˘⟨ identityʳ ⟩
             (interp-oper f ∘ id)      ≈˘⟨ (refl⟩∘⟨ pow-tuple-id2 {n = oper-arity f} λ i → identityˡ) ⟩
-            (interp-oper f ∘ pow-tuple {n = oper-arity f} (λ i → id ∘ pow-π i)) ∎
+            (interp-oper f ∘ pow-tuple (oper-arity f) (λ i → id ∘ pow-π i)) ∎
 
       }
 
@@ -76,17 +76,17 @@ module SingleSorted.Interpretation
             ≈⟨ assoc ⟩
               (hom-morphism ϕ ∘ hom-morphism ψ ∘ interp-oper A f)
             ≈⟨ refl⟩∘⟨ hom-commute ψ f ⟩
-              (hom-morphism ϕ ∘ interp-oper B f ∘ pow-tuple {n = n} (λ i → hom-morphism ψ ∘ pow-π i))
+              (hom-morphism ϕ ∘ interp-oper B f ∘ pow-tuple n (λ i → hom-morphism ψ ∘ pow-π i))
             ≈˘⟨  assoc ⟩
-              ((hom-morphism ϕ ∘ interp-oper B f) ∘ pow-tuple {n = n} (λ i → hom-morphism ψ ∘ pow-π i))
+              ((hom-morphism ϕ ∘ interp-oper B f) ∘ pow-tuple n (λ i → hom-morphism ψ ∘ pow-π i))
             ≈⟨  hom-commute ϕ f ⟩∘⟨refl ⟩
               (interp-oper C f ∘
-               pow-tuple {n = n} (λ i → hom-morphism ϕ ∘ pow-π i)) ∘
-               pow-tuple {n = n} (λ i → hom-morphism ψ ∘ pow-π i)
+               pow-tuple n (λ i → hom-morphism ϕ ∘ pow-π i)) ∘
+               pow-tuple n (λ i → hom-morphism ψ ∘ pow-π i)
             ≈⟨ assoc ⟩
               (interp-oper C f ∘
-               pow-tuple {n = n} (λ i → hom-morphism ϕ ∘ pow-π i) ∘
-               pow-tuple {n = n} (λ i → hom-morphism ψ ∘ pow-π i))
+               pow-tuple n (λ i → hom-morphism ϕ ∘ pow-π i) ∘
+               pow-tuple n (λ i → hom-morphism ψ ∘ pow-π i))
             ≈⟨ refl⟩∘⟨ {!pow-tuple²!} ⟩
               {!!}
       }
