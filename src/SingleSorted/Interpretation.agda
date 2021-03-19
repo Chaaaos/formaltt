@@ -1,6 +1,7 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
 open import Agda.Primitive using (_⊔_)
+open import Agda.Builtin.Nat
 
 import Categories.Category as Category
 import Categories.Category.Cartesian as Cartesian
@@ -28,6 +29,21 @@ module SingleSorted.Interpretation
     interp-term (tm-var x) = pow-π x
     interp-term (tm-oper f ts) = interp-oper f ∘ pow-tuple (oper-arity f) (λ i → interp-term (ts i))
 
+    -- the interpretation of a context
+    interp-ctx : Context → Obj
+    interp-ctx Γ = pow interp-carrier Γ
+
+    -- the interpretation of a substitution
+    interp-subst : ∀ {Γ Δ} → substitution Σ Γ Δ → interp-ctx Γ ⇒ interp-ctx Δ
+    interp-subst {Γ} {Δ} σ = pow-tuple Δ λ i → interp-term (σ i)
+
+    -- interpretation commutes with substitution
+    open HomReasoning
+
+    interp-[]s : ∀ {Γ Δ} (t : Term Δ) (σ : substitution Σ Γ Δ) →
+                 interp-term (t [ σ ]s) ≈ interp-term t ∘ interp-subst σ
+    interp-[]s {Γ} {Δ} (tm-var x) σ = ⟺ (pow-π-tuple {n = Δ})
+    interp-[]s (tm-oper f ts) σ = {!!}
 
   -- Every signature has the trivial interpretation
 

@@ -9,6 +9,7 @@ import SingleSorted.Interpretation as Interpretation
 import SingleSorted.FactsCartesian as FactsCartesian
 
 open import SingleSorted.AlgebraicTheory
+open import SingleSorted.Substitution
 
 module SingleSorted.Model {o ℓ e ℓt}
           {Σ : Signature}
@@ -17,7 +18,6 @@ module SingleSorted.Model {o ℓ e ℓt}
           {cartesian-𝒞 : Cartesian.Cartesian 𝒞} where
 
   open Signature Σ
-  open Theory T
 
   -- Model of a theory
 
@@ -25,9 +25,23 @@ module SingleSorted.Model {o ℓ e ℓt}
 
     open Interpretation.Interpretation I
     open Category.Category 𝒞
+    open HomReasoning
+    open Theory T
 
     field
       model-eq : ∀ (ε : eq) → interp-term (eq-lhs ε) ≈ interp-term (eq-rhs ε)
+
+
+    -- Soundness of semantics
+    module _ where
+      open FactsCartesian cartesian-𝒞
+
+      model-⊢-≈ : ∀ {Γ} {s t : Term Γ} → Γ ⊢ s ≈ t → interp-term s ≈ interp-term t
+      model-⊢-≈ eq-refl =  Equiv.refl
+      model-⊢-≈ (eq-symm ξ) = ⟺ (model-⊢-≈ ξ)
+      model-⊢-≈ (eq-tran ξ θ) = (model-⊢-≈ ξ) ○ (model-⊢-≈ θ)
+      model-⊢-≈ (eq-congr ξ) = refl⟩∘⟨ pow-tuple-eq (λ i → model-⊢-≈ (ξ i))
+      model-⊢-≈ (eq-axiom ε σ) = {!!}
 
   -- Every theory has the trivial model, whose carrier is the terminal object
   TrivialM : Model (Interpretation.TrivialI Σ cartesian-𝒞)
