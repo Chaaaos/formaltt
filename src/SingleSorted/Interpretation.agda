@@ -1,4 +1,4 @@
-{-# OPTIONS --allow-unsolved-metas #-}
+-- {-# OPTIONS --allow-unsolved-metas #-}
 
 open import Agda.Primitive using (_⊔_)
 
@@ -87,11 +87,7 @@ module SingleSorted.Interpretation
               (interp-oper C f ∘
                pow-tuple n (λ i → hom-morphism ϕ ∘ pow-π i) ∘
                pow-tuple n (λ i → hom-morphism ψ ∘ pow-π i))
-            ≈⟨ refl⟩∘⟨ {!pow-tuple²!} ⟩
+            ≈⟨ (refl⟩∘⟨ Equiv.sym (pow-tuple-∘ {n = oper-arity f} {fs = λ i → hom-morphism ϕ ∘ pow-π i} {g = pow-tuple (oper-arity f) (λ i → hom-morphism ψ ∘ pow-π i)})) ⟩
               {!!}
       }
 
--- Here, there is a problem with the way I want to show the following equality : I can not use pow-tuple-∘, maybe because pow-π i depends on i
--- pow-tuple (λ i → (hom-morphism ϕ ∘ hom-morphism ψ) ∘ pow-π i) ≈
--- pow-tuple (λ i → hom-morphism ϕ ∘ pow-π i) ∘
--- pow-tuple (λ i → hom-morphism ψ ∘ pow-π i)

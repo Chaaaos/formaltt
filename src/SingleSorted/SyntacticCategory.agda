@@ -56,7 +56,6 @@ module SingleSorted.SyntacticCategory {ℓt}
   ≡-eq-refl refl = eq-refl
 
   -- This should later go in another file, probably FactsFinite.agda, but for the moment it was easier to write it there
-  -- map-transport : ∀ {A B C D : Set} {}
 
   pre-unique : ∀ {Γ Δ C : Context} {h  : substitution Σ C (Δ + Γ)} {i  : substitution Σ C Γ} {j  : substitution Σ C Δ} {p₁ : (λ x → h (raise Δ x)) ≈s i} {p₂ : (λ x₁ → h (inject+ Γ x₁)) ≈s j} {x  : var (Δ + Γ)} → (C ⊢ ([ j , i ] (splitAt Δ x)) ≈ (h x))
 
@@ -74,7 +73,7 @@ module SingleSorted.SyntacticCategory {ℓt}
               (cong-app
                 {f = λ x₁ → [ j , i ] (map suc (λ y → y) x₁)}
                 {g = [ (λ x₁ → j (suc x₁)) , i ]}
-                {!!}
+                (?)
                 (splitAt Δ x)))
             (pre-unique
               {Δ = Δ}
