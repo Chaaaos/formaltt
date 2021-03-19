@@ -4,6 +4,7 @@ open import Agda.Primitive
 open import Data.Fin hiding (_+_)
 open import Data.Sum.Base
 open import Agda.Builtin.Nat
+open import Function.Base using (_∘_)
 
 import Categories.Category as Category
 import Categories.Category.Cartesian as Cartesian
@@ -23,6 +24,9 @@ module SingleSorted.SyntacticCategory {ℓt}
   open Signature Σ
   open Theory T
   open Substitution T
+
+  postulate
+    funext : ∀ {l} {X : Set l} {Y : X → Set l} {f g : ∀ (x : X) → (Y x)} → (∀ (x : X) → ((f x) ≡ (g x))) → (f ≡ g)
 
   -- The syntactic category
 
@@ -52,13 +56,36 @@ module SingleSorted.SyntacticCategory {ℓt}
   ≡-eq-refl refl = eq-refl
 
   -- This should later go in another file, probably FactsFinite.agda, but for the moment it was easier to write it there
+  -- map-transport : ∀ {A B C D : Set} {}
+
   pre-unique : ∀ {Γ Δ C : Context} {h  : substitution Σ C (Δ + Γ)} {i  : substitution Σ C Γ} {j  : substitution Σ C Δ} {p₁ : (λ x → h (raise Δ x)) ≈s i} {p₂ : (λ x₁ → h (inject+ Γ x₁)) ≈s j} {x  : var (Δ + Γ)} → (C ⊢ ([ j , i ] (splitAt Δ x)) ≈ (h x))
-  pre-unique {Δ = zero} {h = h} {i = i} {p₁ = p₁} {x = zero} = equiv-subst i h (symm-subst p₁) (tm-var zero)
-  pre-unique {Δ = zero} {h = h} {i = i} {p₁ = p₁} {x = suc x} = equiv-subst i h (symm-subst p₁) (tm-var (suc x))
-  pre-unique {Γ} {Δ = suc Δ} {h = h} {j = j} {p₂ = p₂} {x = zero} = equiv-subst j (λ x → h (inject+ Γ x)) (symm-subst p₂) (tm-var zero)
-  pre-unique {Δ = suc Δ} {h = h} {i} {j} {p₁} {p₂} {x = suc x} = eq-tran (≡-eq-refl {!!}) (pre-unique {Δ = Δ} {h = λ x₁ → h (suc x₁)} {i} {λ x₁ → j (suc x₁)} {p₁} {λ x₁ → (p₂ (suc x₁))} {x = x})
+
+  pre-unique {Δ = zero} {h = h} {i = i} {p₁ = p₁} {x = zero} =
+    equiv-subst i h (symm-subst p₁) (tm-var zero)
+
+  pre-unique {Δ = zero} {h = h} {i = i} {p₁ = p₁} {x = suc x} =
+    equiv-subst i h (symm-subst p₁) (tm-var (suc x))
+
+  pre-unique {Γ} {Δ = suc Δ} {h = h} {j = j} {p₂ = p₂} {x = zero} =
+    equiv-subst j (λ x → h (inject+ Γ x)) (symm-subst p₂) (tm-var zero)
+
+  pre-unique {Δ = suc Δ} {h = h} {i} {j} {p₁} {p₂} {x = suc x} =
+    eq-tran (≡-eq-refl
+              (cong-app
+                {f = λ x₁ → [ j , i ] (map suc (λ y → y) x₁)}
+                {g = [ (λ x₁ → j (suc x₁)) , i ]}
+                {!!}
+                (splitAt Δ x)))
+            (pre-unique
+              {Δ = Δ}
+              {h = λ x₁ → h (suc x₁)}
+              {i}
+              {λ x₁ → j (suc x₁)}
+              {p₁} {λ x₁ → (p₂ (suc x₁))}
+              {x = x})
 -- [ j , i ] (map suc (λ x₁ → x₁) (splitAt Δ x)) ≡
 -- [ (λ x₁ → j (suc x₁)) , i ] (splitAt Δ x)
+-- [ ϕ , γ ] (map f g x) ≡ _j_142 x
 
   cartesian-𝒮 : Cartesian.Cartesian 𝒮
   cartesian-𝒮 =
