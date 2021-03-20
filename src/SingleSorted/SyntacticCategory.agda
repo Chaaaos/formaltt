@@ -96,6 +96,7 @@ module SingleSorted.SyntacticCategory {ℓt}
   -- The syntactic category "preserves" the equivalence of terms
   module _ where
     open Category.Category 𝒮
+    open HomReasoning
     open Interpretation.Interpretation UniversalI
 
     𝒮-respect-≈ : ∀ {Γ : Context} {u v : Term Γ} → (Γ ⊢ u ≈ v) → (interp-term u) ≈s (interp-term v)
@@ -110,8 +111,14 @@ module SingleSorted.SyntacticCategory {ℓt}
          {i = pow-tuple (oper-arity f) (λ i → interp-term (ys i))}
          (refl-subst)
          (pow-tuple-eq (λ i x → 𝒮-respect-≈ (ps i) x))
-    𝒮-respect-≈ (eq-axiom ε σ) = {!!}
+    𝒮-respect-≈ {Γ} (eq-axiom ε σ) = (interp-[]s (eq-lhs ε) σ) ○ (∘-resp-≈ˡ {f = interp-term (eq-lhs ε)}  {h = interp-term (eq-rhs ε)} (λ x → eq-id-action (𝒮-respect-≈ {u = interp-term {!!} x} {v = interp-term {! (eq-rhs ε) !} x} ( (eq-id-action {! (eq-axiom ε id) !}) ) x)) ○ ⟺ (interp-[]s (eq-rhs ε) σ))
     -- First attempt (didn't work) : λ x → eq-tran (𝒮-respect-subst (eq-lhs ε) σ x) (eq-symm (eq-tran (𝒮-respect-subst (eq-rhs ε) σ x) (eq-subst  (lift-subst σ) {u = (interp-term UniversalI (eq-rhs ε)) x} {v = (interp-term UniversalI (eq-lhs ε)) x} (𝒮-respect-≈ {u = (eq-rhs ε)} {v = (eq-lhs ε)} {!!} {!!}))))
+
+-- (λ z →
+--    (𝒮 Category.Category.∘ interp-term (eq-lhs ε)) (interp-subst σ) z)
+-- ≈s
+-- (λ z →
+--    (𝒮 Category.Category.∘ interp-term (eq-rhs ε)) (interp-subst σ) z)
 
     -- The universal model
     UniversalM : Model.Model T UniversalI
