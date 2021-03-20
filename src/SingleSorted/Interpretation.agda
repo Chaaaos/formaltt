@@ -43,7 +43,16 @@ module SingleSorted.Interpretation
     interp-[]s : ∀ {Γ Δ} (t : Term Δ) (σ : substitution Σ Γ Δ) →
                  interp-term (t [ σ ]s) ≈ interp-term t ∘ interp-subst σ
     interp-[]s {Γ} {Δ} (tm-var x) σ = ⟺ (pow-π-tuple {n = Δ})
-    interp-[]s (tm-oper f ts) σ = {!!}
+    interp-[]s {Γ} {Δ} (tm-oper f ts) σ = (∘-resp-≈ʳ
+                                            (pow-tuple-eq
+                                              {f = λ i → interp-term (ts i [ σ ]s)}
+                                              {g = λ z → interp-term (ts z) ∘ interp-subst σ}
+                                              (λ i → interp-[]s (ts i) σ)
+                                          ○ (pow-tuple-∘
+                                              {n = oper-arity f}
+                                              {fs = λ z → interp-term (ts z)}
+                                              {g = interp-subst σ})))
+                                            ○ (Equiv.refl ○ sym-assoc)
 
   -- Every signature has the trivial interpretation
 

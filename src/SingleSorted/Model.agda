@@ -41,7 +41,7 @@ module SingleSorted.Model {o ℓ e ℓt}
       model-⊢-≈ (eq-symm ξ) = ⟺ (model-⊢-≈ ξ)
       model-⊢-≈ (eq-tran ξ θ) = (model-⊢-≈ ξ) ○ (model-⊢-≈ θ)
       model-⊢-≈ (eq-congr ξ) = refl⟩∘⟨ pow-tuple-eq (λ i → model-⊢-≈ (ξ i))
-      model-⊢-≈ (eq-axiom ε σ) = {!!}
+      model-⊢-≈ (eq-axiom ε σ) = interp-[]s (eq-lhs ε) σ ○ (∘-resp-≈ˡ (model-eq ε) ○ (⟺ (interp-[]s (eq-rhs ε) σ)))
 
   -- Every theory has the trivial model, whose carrier is the terminal object
   TrivialM : Model (Interpretation.TrivialI Σ cartesian-𝒞)
