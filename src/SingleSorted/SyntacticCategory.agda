@@ -17,7 +17,7 @@ import SingleSorted.Model as Model
 import SingleSorted.Substitution as Substitution
 import SingleSorted.FactsCartesian as FactsCartesian
 
-open import SingleSorted.FactsFinite
+
 
 module SingleSorted.SyntacticCategory {ℓt}
   {Σ : Signature}
@@ -26,6 +26,7 @@ module SingleSorted.SyntacticCategory {ℓt}
   open Signature Σ
   open Theory T
   open Substitution T
+  open import SingleSorted.FactsFinite {ℓt} {Σ} T
 
   postulate
     funext : ∀ {l} {X : Set l} {Y : X → Set l} {f g : ∀ (x : X) → (Y x)} → (∀ (x : X) → ((f x) ≡ (g x))) → (f ≡ g)
@@ -53,43 +54,6 @@ module SingleSorted.SyntacticCategory {ℓt}
 
   -- The cartesian structure of the syntactic category
 
-
-  ≡-eq-refl : ∀ {Γ : Context} {s : Term Γ} {t : Term Γ} → s ≡ t → Γ ⊢ s ≈ t
-  ≡-eq-refl refl = eq-refl
-
-  -- This should later go in another file, probably FactsFinite.agda, but for the moment it was easier to write it there
-
-  pre-unique :
-     ∀ {Γ Δ C : Context}
-       {h  : substitution Σ C (Δ + Γ)}
-       {i  : substitution Σ C Γ}
-       {j  : substitution Σ C Δ}
-       {p₁ : (λ x → h (raise Δ x)) ≈s i}
-       {p₂ : (λ y → h (inject+ Γ y)) ≈s j}
-       {x  : var (Δ + Γ)}
-       → C ⊢ ([ j , i ] (splitAt Δ x)) ≈ (h x)
-
-  pre-unique {Δ = zero} {h = h} {i = i} {p₁ = p₁} {x = zero} =
-    equiv-subst i h (symm-subst p₁) (tm-var zero)
-
-  pre-unique {Δ = zero} {h = h} {i = i} {p₁ = p₁} {x = suc x} =
-    equiv-subst i h (symm-subst p₁) (tm-var (suc x))
-
-  pre-unique {Γ} {Δ = suc Δ} {h = h} {j = j} {p₂ = p₂} {x = zero} =
-    equiv-subst j (h ∘ inject+ Γ) (symm-subst p₂) (tm-var zero)
-
-  pre-unique {Δ = suc Δ} {C = C} {h = h} {i} {j} {p₁} {p₂} {x = suc x} =
-    eq-tran
-      (≡-eq-refl ([,]-map-commute (splitAt Δ x)))
-      (pre-unique
-         {Δ = Δ}
-         {h = h ∘ suc}
-         {i}
-         {j = j ∘ suc}
-         {p₁}
-         {p₂ = p₂ ∘ suc}
-         {x = x})
-
   cartesian-𝒮 : Cartesian.Cartesian 𝒮
   cartesian-𝒮 =
     record { terminal = record { ⊤ = empty-context
@@ -102,8 +66,8 @@ module SingleSorted.SyntacticCategory {ℓt}
                                                            ; π₁ = tm-var ∘ raise Δ
                                                            ; π₂ = tm-var ∘ inject+ Γ
                                                            ; ⟨_,_⟩ = λ f g → [ g , f ] ∘ splitAt Δ
-                                                           ; project₁ = λ {h = s} {i = h} {i} x → ≡-eq-refl (proj₁ T {Γ = Γ} {Δ} {s} {x} {h} {i})
-                                                           ; project₂ = λ {h = s} {i = h} {i} x → ≡-eq-refl (proj₂ T {Γ = Γ} {Δ} {s} {x} {h} {i})
+                                                           ; project₁ = λ {h = s} {i = h} {i} x → ≡-eq-refl (proj₁ {Γ = Γ} {Δ} {s} {x} {h} {i})
+                                                           ; project₂ = λ {h = s} {i = h} {i} x → ≡-eq-refl (proj₂ {Γ = Γ} {Δ} {s} {x} {h} {i})
                                                            ; unique = λ {C} {h} {i} {j} p₁ p₂ x → pre-unique {Γ} {Δ} {C} {h} {i} {j} {p₁} {p₂}
                                                            } }
            }
