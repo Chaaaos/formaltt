@@ -20,10 +20,10 @@ module SingleSorted.Model {o ℓ e ℓt}
 
   record Model (I : Interpretation.Interpretation Σ cartesian-𝒞) : Set (ℓt ⊔ o ⊔ ℓ ⊔ e) where
 
-    open Interpretation.Interpretation I
-    open Category.Category 𝒞
-    open HomReasoning
     open Theory T
+    open Category.Category 𝒞
+    open Interpretation.Interpretation I
+    open HomReasoning
 
     field
       model-eq : ∀ (ε : eq) → interp-term (eq-lhs ε) ≈ interp-term (eq-rhs ε)
@@ -32,13 +32,23 @@ module SingleSorted.Model {o ℓ e ℓt}
     module _ where
       open Power.Powered interp-pow
 
-      -- model-⊢-≈ : ∀ {Γ} {s t : Term Γ} → Γ ⊢ s ≈ t → interp-term s ≈ interp-term t
-      -- model-⊢-≈ eq-refl =  Equiv.refl
-      -- model-⊢-≈ (eq-symm ξ) = ⟺ (model-⊢-≈ ξ)
-      -- model-⊢-≈ (eq-tran ξ θ) = (model-⊢-≈ ξ) ○ (model-⊢-≈ θ)
-      -- model-⊢-≈ (eq-congr ξ) = ∘-resp-≈ʳ (unique (λ i → project ○ model-⊢-≈ (eq-symm (ξ i))))
-      -- model-⊢-≈ (eq-axiom ε σ) =
-      --   interp-[]s {t = eq-lhs ε} {σ = σ} ○ (∘-resp-≈ˡ (model-⊢-≈ (eq-axiom-id ε)) ○ ⟺ (interp-[]s {t = eq-rhs ε} {σ = σ}))
+      -- first we show that substitution preserves validity
+      model-resp-[]s : ∀ {Γ Δ} {u v : Term Γ} {σ : substitution Σ Δ Γ} →
+                       interp-term u ≈ interp-term v → interp-term (u [ σ ]s) ≈ interp-term (v [ σ ]s)
+      model-resp-[]s {u = u} {v = v} {σ = σ} ξ =
+        begin
+          interp-term (u [ σ ]s) ≈⟨  interp-[]s {t = u} ⟩
+          (interp-term u ∘ interp-subst σ)  ≈⟨ ξ ⟩∘⟨refl ⟩
+          (interp-term v ∘ interp-subst σ) ≈˘⟨ interp-[]s {t = v} ⟩
+          interp-term (v [ σ ]s) ∎
+
+      -- the soundness statement
+      model-⊢-≈ : ∀ {Γ} {s t : Term Γ} → Γ ⊢ s ≈ t → interp-term s ≈ interp-term t
+      model-⊢-≈ eq-refl =  Equiv.refl
+      model-⊢-≈ (eq-symm ξ) = ⟺ (model-⊢-≈ ξ)
+      model-⊢-≈ (eq-tran ξ θ) = (model-⊢-≈ ξ) ○ (model-⊢-≈ θ)
+      model-⊢-≈ (eq-congr ξ) = ∘-resp-≈ʳ (unique (λ i → project ○ model-⊢-≈ (eq-symm (ξ i))))
+      model-⊢-≈ (eq-axiom ε σ) = model-resp-[]s {u = eq-lhs ε} {v = eq-rhs ε} (model-eq ε)
 
   -- Every theory has the trivial model, whose carrier is the terminal object
   Trivial : Model (Interpretation.Trivial Σ cartesian-𝒞)
