@@ -37,8 +37,8 @@ module SingleSorted.Power
                  tuple Γ fs ≈ tuple Γ gs
     tuple-cong ξ = unique (λ i →  project ○ ⟺ (ξ i))
 
-    ∘-distribʳ-tuple : ∀ {B C} {Γ} {ts : var Γ → B ⇒ A} {g : C ⇒ B}  →
-                       tuple Γ (λ x → ts x ∘ g) ≈ tuple Γ ts ∘ g
+    ∘-distribʳ-tuple : ∀ {B C} {Γ} {fs : var Γ → B ⇒ A} {g : C ⇒ B}  →
+                       tuple Γ (λ x → fs x ∘ g) ≈ tuple Γ fs ∘ g
     ∘-distribʳ-tuple = unique (λ i → ⟺ assoc ○ ∘-resp-≈ˡ project)
 
   -- A cartesian category has a standard power structure (which we need not use)
@@ -56,9 +56,9 @@ module SingleSorted.Power
     standard-π (var-inr i) = standard-π i ∘ π₂
 
     standard-tuple : ∀ Γ {B} → (var Γ → B ⇒ A) → B ⇒ standard-pow Γ
-    standard-tuple ctx-empty ts = !
-    standard-tuple ctx-slot ts = ts var-var
-    standard-tuple (ctx-concat Γ Δ) ts = ⟨ standard-tuple Γ (λ i → ts (var-inl i)) , standard-tuple Δ (λ j → ts (var-inr j)) ⟩
+    standard-tuple ctx-empty fs = !
+    standard-tuple ctx-slot fs = fs var-var
+    standard-tuple (ctx-concat Γ Δ) fs = ⟨ standard-tuple Γ (λ i → fs (var-inl i)) , standard-tuple Δ (λ j → fs (var-inr j)) ⟩
 
     standard-project : ∀ {Γ} {B} {x : var Γ} {fs : var Γ → B ⇒ A} →
                        standard-π x ∘ standard-tuple Γ fs ≈ fs x
@@ -70,13 +70,16 @@ module SingleSorted.Power
                       standard-tuple Γ fs ≈ g
     standard-unique {ctx-empty} ξ = !-unique _
     standard-unique {ctx-slot} ξ = ⟺ (ξ var-var) ○ identityˡ
-    standard-unique {ctx-concat Γ Δ} ξ = {!!}
+    standard-unique {ctx-concat Γ Δ} {fs = fs} ξ =
+      unique
+         (⟺ (standard-unique (λ x → sym-assoc ○ (ξ (var-inl x)))))
+         (⟺ (standard-unique (λ y → sym-assoc ○ (ξ (var-inr y)))))
 
-    Standard : Powered A
-    Standard =
+    StandardPowered : Powered A
+    StandardPowered =
       record
       { pow = standard-pow
       ; π = standard-π
       ; tuple = standard-tuple
-      ; project = standard-project
+      ; project = λ {Γ} → standard-project {Γ}
       ; unique = standard-unique }

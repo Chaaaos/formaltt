@@ -5,6 +5,7 @@ import SingleSorted.Interpretation as Interpretation
 import SingleSorted.Model as Model
 import SingleSorted.UniversalInterpretation as UniversalInterpretation
 import SingleSorted.Substitution as Substitution
+import SingleSorted.SyntacticCategory as SyntacticCategory
 
 module SingleSorted.UniversalModel
   {ℓt}
@@ -15,8 +16,9 @@ module SingleSorted.UniversalModel
   open Substitution T
   open UniversalInterpretation T
   open Interpretation.Interpretation ℐ
+  open SyntacticCategory T
 
-  𝒰 : Model.Model T ℐ
+  𝒰 : Model.Model T cartesian-𝒮 ℐ
   𝒰 =
      record
         { model-eq =

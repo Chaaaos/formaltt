@@ -7,11 +7,6 @@ module SingleSorted.Substitution {ℓ} {Σ : Signature} (T : Theory ℓ Σ) wher
 
   open Theory T
 
-  -- the action of the identity substitution is the identity
-  id-action : ∀ {Γ : Context} {a : Term Γ} → (Γ ⊢ a ≈ (a [ id-substitution ]s))
-  id-action {a = tm-var a} = eq-refl
-  id-action {a = tm-oper f x} = eq-congr (λ i → id-action {a = x i})
-
   -- an equality is preserved by the action of the identity
   eq-id-action : ∀ {Γ : Context} {u v : Term Γ} → (Γ ⊢ (u [ id-substitution ]s) ≈ (v [ id-substitution ]s)) → (Γ ⊢ u ≈ v)
   eq-id-action {u = u} {v = v} p = eq-tran (id-action {a = u}) (eq-tran p (eq-symm (id-action {a = v})))

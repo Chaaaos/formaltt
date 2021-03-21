@@ -15,7 +15,7 @@ module SingleSorted.UniversalInterpretation
   open SyntacticCategory T
 
   -- The universal interpretation in the syntactic category
-  ℐ : Interpretation.Interpretation Σ 𝒮
+  ℐ : Interpretation.Interpretation Σ cartesian-𝒮
   ℐ =
     record
      { interp-carrier = ctx-slot

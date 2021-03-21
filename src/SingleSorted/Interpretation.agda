@@ -11,7 +11,7 @@ import SingleSorted.Power as Power
 module SingleSorted.Interpretation
          {o ℓ e}
          (Σ : Signature)
-         (𝒞 : Category.Category o ℓ e)
+         {𝒞 : Category.Category o ℓ e}
          (cartesian-𝒞 : Cartesian.Cartesian 𝒞) where
   open Signature Σ
   open Category.Category 𝒞
@@ -22,10 +22,10 @@ module SingleSorted.Interpretation
 
     field
       interp-carrier : Obj
-      interp-power :  Powered interp-carrier
-      interp-oper : ∀ (f : oper) → Powered.pow interp-power (oper-arity f) ⇒ interp-carrier
+      interp-pow :  Powered interp-carrier
+      interp-oper : ∀ (f : oper) → Powered.pow interp-pow (oper-arity f) ⇒ interp-carrier
 
-    open Powered interp-power
+    open Powered interp-pow
 
     -- the interpretation of a term
     interp-term : ∀ {Γ : Context} → Term {Σ} Γ → (pow Γ) ⇒ interp-carrier
@@ -43,17 +43,17 @@ module SingleSorted.Interpretation
     -- interpretation commutes with substitution
     open HomReasoning
 
-    interp-[]s : ∀ {Γ Δ} (t : Term Δ) (σ : substitution Σ Γ Δ) →
+    interp-[]s : ∀ {Γ Δ} {t : Term Δ} {σ : substitution Σ Γ Δ} →
                  interp-term (t [ σ ]s) ≈ interp-term t ∘ interp-subst σ
-    interp-[]s {Γ} {Δ} (tm-var x) σ = ⟺ (project {Γ = Δ})
-    interp-[]s {Γ} {Δ} (tm-oper f ts) σ = (∘-resp-≈ʳ
+    interp-[]s {Γ} {Δ} {tm-var x} {σ} = ⟺ (project {Γ = Δ})
+    interp-[]s {Γ} {Δ} {tm-oper f ts} {σ} = (∘-resp-≈ʳ
                                             (tuple-cong
                                               {fs = λ i → interp-term (ts i [ σ ]s)}
                                               {gs = λ z → interp-term (ts z) ∘ interp-subst σ}
-                                              (λ i → interp-[]s (ts i) σ)
+                                              (λ i → interp-[]s {t = ts i} {σ = σ})
                                           ○ (∘-distribʳ-tuple
                                               {Γ = oper-arity f}
-                                              {ts = λ z → interp-term (ts z)}
+                                              {fs = λ z → interp-term (ts z)}
                                               {g = interp-subst σ})))
                                             ○ (Equiv.refl ○ sym-assoc)
 
@@ -64,35 +64,36 @@ module SingleSorted.Interpretation
     let open Cartesian.Cartesian cartesian-𝒞 in
     record
       { interp-carrier = ⊤
-      ; interp-power = record { pow = λ Γ → ⊤ ; π = {!!} ; tuple = {!!} ; project = {!!} ; unique = {!!} }
-      ; interp-oper = {!!} }
+      ; interp-pow = StandardPowered cartesian-𝒞 ⊤
+      ; interp-oper = λ f → ! }
 
-  -- record HomI (A B : Interpretation) : Set (o ⊔ ℓ ⊔ e) where
-  --   open Interpretation
+  record HomI (A B : Interpretation) : Set (o ⊔ ℓ ⊔ e) where
+    open Interpretation
+    open Powered
 
-  --   field
-  --     hom-morphism : interp-carrier A  ⇒ interp-carrier B
-  --     hom-commute :
-  --        ∀ (f : oper) →
-  --        hom-morphism ∘ interp-oper A f ≈
-  --            interp-oper B f ∘ pow-tuple (oper-arity f) (λ i → hom-morphism ∘ pow-π i)
+    field
+      hom-morphism : interp-carrier A  ⇒ interp-carrier B
+      hom-commute :
+         ∀ (f : oper) →
+         hom-morphism ∘ interp-oper A f ≈
+             interp-oper B f ∘ tuple (interp-pow B) (oper-arity f) (λ i → hom-morphism ∘ π (interp-pow A) i)
 
-  -- -- The identity homomorphism
-  -- IdI : ∀ (A : Interpretation) → HomI A A
-  -- IdI A =
-  --   let open Interpretation A in
-  --   let open HomReasoning in
-  --   record
-  --     { hom-morphism = id
-  --     ; hom-commute =
-  --        λ f →
-  --         begin
-  --           (id ∘ interp-oper f)       ≈⟨ identityˡ ⟩
-  --           interp-oper f             ≈˘⟨ identityʳ ⟩
-  --           (interp-oper f ∘ id)      ≈˘⟨ (refl⟩∘⟨ pow-tuple-id2 {Γ = oper-arity f} λ i → identityˡ) ⟩
-  --           (interp-oper f ∘ pow-tuple (oper-arity f) (λ i → id ∘ pow-π i)) ∎
-
-  --     }
+  -- The identity homomorphism
+  IdI : ∀ (A : Interpretation) → HomI A A
+  IdI A =
+    let open Interpretation A in
+    let open HomReasoning in
+    let open Powered interp-pow in
+    record
+      { hom-morphism = id
+      ; hom-commute =
+         λ f →
+          begin
+            (id ∘ interp-oper f)       ≈⟨ identityˡ ⟩
+            interp-oper f             ≈˘⟨ identityʳ ⟩
+            (interp-oper f ∘ id)      ≈˘⟨ refl⟩∘⟨ unique (λ i → identityʳ ○ ⟺ identityˡ) ⟩
+            (interp-oper f ∘ tuple (oper-arity f) (λ i → id ∘ π i)) ∎
+      }
 
   -- -- Compositon of homomorphisms
   -- _∘I_ : ∀ {A B C : Interpretation} → HomI B C → HomI A B → HomI A C
