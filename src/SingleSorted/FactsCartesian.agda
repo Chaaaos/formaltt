@@ -1,5 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-
 open import Agda.Builtin.Nat
 open import Data.Fin
 

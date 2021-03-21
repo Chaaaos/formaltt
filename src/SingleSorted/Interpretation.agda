@@ -1,5 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-
 open import Agda.Primitive using (_⊔_)
 
 import Categories.Category as Category
