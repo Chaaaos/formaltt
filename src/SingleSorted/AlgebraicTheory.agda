@@ -1,38 +1,32 @@
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
-open import Agda.Builtin.Nat using (Nat)
-open import Data.Fin using (Fin)
+open import Agda.Builtin.Nat
+open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+open import Data.Fin
+
 open import Relation.Binary
 
 module SingleSorted.AlgebraicTheory where
 
-  -- Signature
+  open import SingleSorted.Context public
+
+  Arity : Set
+  Arity = Context
+
+  arg : Arity → Set
+  arg = var
+
   -- an algebraic signature
   record Signature : Set₁ where
     field
       oper : Set -- operations
-      oper-arity : oper → Nat -- the arity of an operation
+      oper-arity : oper → Arity -- the arity of an operation
 
   open Signature
-
-
-  -- Terms
-  -- A context is the same thing as a natural number (telling us how many variables are in the context)
-  Context = Nat
-
-  -- The empty context
-  empty-context = 0
-
-  -- The variables in context Γ are the elemnts of Fin Γ
-  var = Fin
-
-  -- It is absurd to have a variable in the empty context
-  empty-context-absurd : ∀ {ℓ} {A : Set ℓ} → var 0 → A
-  empty-context-absurd ()
 
   -- terms over a signature in a context of a given sort
   data Term {Σ : Signature} (Γ : Context) : Set where
     tm-var : var Γ → Term Γ
-    tm-oper : ∀ (f : oper Σ) → (Fin (oper-arity Σ f) → Term {Σ} Γ) → Term {Σ} Γ
+    tm-oper : ∀ (f : oper Σ) → (arg (oper-arity Σ f) → Term {Σ} Γ) → Term {Σ} Γ
 
   -- Substitutions (definitions - some useful properties are in another file)
   substitution : ∀ (Σ : Signature) (Γ Δ : Context) → Set
@@ -73,11 +67,14 @@ module SingleSorted.AlgebraicTheory where
       eq-symm : ∀ {Γ} {s t : Term Γ} → Γ ⊢ s ≈ t → Γ ⊢ t ≈ s
       eq-tran : ∀ {Γ} {s t u : Term Γ} → Γ ⊢ s ≈ t → Γ ⊢ t ≈ u → Γ ⊢ s ≈ u
       -- congruence rule
-      eq-congr : ∀ {Γ} {f : oper Σ} {xs ys : Fin (oper-arity Σ f) → Term Γ} →
+      eq-congr : ∀ {Γ} {f : oper Σ} {xs ys : arg (oper-arity Σ f) → Term Γ} →
                  (∀ i → Γ ⊢ xs i ≈ ys i) → Γ ⊢ tm-oper f xs ≈ tm-oper f ys
       -- equational axiom
       eq-axiom : ∀ (ε : eq) {Γ : Context} (σ : substitution Σ Γ (eq-ctx ε)) →
                  Γ ⊢ eq-lhs ε [ σ ]s ≈ eq-rhs ε [ σ ]s
+
+    ≡-⊢-≈ : {Γ : Context} {s t : Term Γ} → s ≡ t → Γ ⊢ s ≈ t
+    ≡-⊢-≈ refl = eq-refl
 
     eq-setoid : ∀ (Γ : Context) → Setoid lzero (lsuc ℓ)
     eq-setoid Γ =
