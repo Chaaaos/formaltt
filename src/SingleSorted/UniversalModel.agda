@@ -21,13 +21,12 @@ module SingleSorted.UniversalModel
   𝒰 : Model.Model T cartesian-𝒮 ℐ
   𝒰 =
      record
-        { model-eq =
-            λ ε var-var →
-              let open SetoidR (eq-setoid (eq-ctx ε)) in
-                begin
-                interp-term (eq-lhs ε) var-var   ≈⟨ interp-term-self (eq-lhs ε) var-var ⟩
-                eq-lhs ε                         ≈⟨ id-action ⟩
-                eq-lhs ε [ id-substitution ]s    ≈⟨ eq-axiom ε id-substitution ⟩
-                eq-rhs ε [ id-substitution ]s    ≈˘⟨  id-action ⟩
-                eq-rhs ε                         ≈˘⟨ interp-term-self (eq-rhs ε) var-var ⟩
-                interp-term (eq-rhs ε) var-var   ∎ }
+        { model-eq = λ ε var-var →
+                       let open SetoidR (eq-setoid (eq-ctx ε)) in
+                         begin
+                         interp-term (eq-lhs ε) var-var ≈⟨ interp-term-self (eq-lhs ε) var-var ⟩
+                         eq-lhs ε ≈⟨ id-action ⟩
+                         eq-lhs ε [ id-substitution ]s ≈⟨ eq-axiom ε id-substitution ⟩
+                         eq-rhs ε [ id-substitution ]s ≈˘⟨ id-action ⟩
+                         eq-rhs ε ≈˘⟨ interp-term-self (eq-rhs ε) var-var ⟩
+                         interp-term (eq-rhs ε) var-var ∎ }

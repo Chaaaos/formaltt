@@ -19,7 +19,7 @@ module SingleSorted.UniversalInterpretation
   ℐ =
     record
      { interp-carrier = ctx-slot
-     ; interp-power = power-𝒮
+     ; interp-pow = power-𝒮
      ; interp-oper = λ f var-var → tm-oper f (λ i → tm-var i)
      }
 
