@@ -93,32 +93,54 @@ module SingleSorted.Interpretation
             (interp-oper f ∘ tuple (oper-arity f) (λ i → id ∘ π i)) ∎
       }
 
-  -- -- Compositon of homomorphisms
-  -- _∘I_ : ∀ {A B C : Interpretation} → HomI B C → HomI A B → HomI A C
-  -- _∘I_ {A} {B} {C} ϕ ψ =
-  --   let open HomI in
-  --   record
-  --     { hom-morphism = (hom-morphism ϕ) ∘ (hom-morphism ψ)
-  --     ; hom-commute =
-  --         let open Interpretation in
-  --         let open HomReasoning in
-  --         λ f → let n = oper-arity f in
-  --           begin
-  --             ((hom-morphism ϕ ∘ hom-morphism ψ) ∘ interp-oper A f)
-  --           ≈⟨ assoc ⟩
-  --             (hom-morphism ϕ ∘ hom-morphism ψ ∘ interp-oper A f)
-  --           ≈⟨ refl⟩∘⟨ hom-commute ψ f ⟩
-  --             (hom-morphism ϕ ∘ interp-oper B f ∘ pow-tuple n (λ i → hom-morphism ψ ∘ pow-π i))
-  --           ≈˘⟨  assoc ⟩
-  --             ((hom-morphism ϕ ∘ interp-oper B f) ∘ pow-tuple n (λ i → hom-morphism ψ ∘ pow-π i))
-  --           ≈⟨  hom-commute ϕ f ⟩∘⟨refl ⟩
-  --             (interp-oper C f ∘
-  --              pow-tuple n (λ i → hom-morphism ϕ ∘ pow-π i)) ∘
-  --              pow-tuple n (λ i → hom-morphism ψ ∘ pow-π i)
-  --           ≈⟨ assoc ⟩
-  --             (interp-oper C f ∘
-  --              pow-tuple n (λ i → hom-morphism ϕ ∘ pow-π i) ∘
-  --              pow-tuple n (λ i → hom-morphism ψ ∘ pow-π i))
-  --           ≈⟨ (refl⟩∘⟨ Equiv.sym (pow-tuple-∘ {Γ = oper-arity f} {fs = λ i → hom-morphism ϕ ∘ pow-π i} {g = pow-tuple (oper-arity f) (λ i → hom-morphism ψ ∘ pow-π i)})) ⟩
-  --             {!!}
-  --     }
+  -- Compositon of homomorphisms
+  _∘I_ : ∀ {A B C : Interpretation} → HomI B C → HomI A B → HomI A C
+  _∘I_ {A} {B} {C} ϕ ψ =
+     let open HomI in
+     record { hom-morphism = hom-morphism ϕ ∘ hom-morphism ψ
+            ; hom-commute =
+                let open Interpretation in
+                let open Powered in
+                let open HomReasoning in
+                λ f →
+                  begin
+                    (((hom-morphism ϕ) ∘ hom-morphism ψ) ∘ interp-oper A f) ≈⟨ assoc ⟩
+                    (hom-morphism ϕ ∘ hom-morphism ψ ∘ interp-oper A f) ≈⟨ (refl⟩∘⟨ hom-commute ψ f) ⟩
+                    (hom-morphism ϕ ∘
+                      interp-oper B f ∘
+                      tuple (interp-pow B) (oper-arity f)
+                      (λ i → hom-morphism ψ ∘ π (interp-pow A) i)) ≈˘⟨ assoc ⟩
+                    ((hom-morphism ϕ ∘ interp-oper B f) ∘
+                      tuple (interp-pow B) (oper-arity f)
+                      (λ i → hom-morphism ψ ∘ π (interp-pow A) i)) ≈⟨ (hom-commute ϕ f ⟩∘⟨refl) ⟩
+                    ((interp-oper C f ∘
+                       tuple (interp-pow C) (oper-arity f)
+                       (λ i → hom-morphism ϕ ∘ π (interp-pow B) i))
+                      ∘
+                      tuple (interp-pow B) (oper-arity f)
+                      (λ i → hom-morphism ψ ∘ π (interp-pow A) i)) ≈⟨ assoc ⟩
+                    (interp-oper C f ∘
+                      tuple (interp-pow C) (oper-arity f)
+                      (λ i → hom-morphism ϕ ∘ π (interp-pow B) i)
+                      ∘
+                      tuple (interp-pow B) (oper-arity f)
+                      (λ i → hom-morphism ψ ∘ π (interp-pow A) i)) ≈⟨ (refl⟩∘⟨ ⟺ (∘-distribʳ-tuple (interp-pow C))) ⟩
+                    (interp-oper C f ∘
+                      tuple (interp-pow C) (oper-arity f)
+                      (λ x →
+                         (hom-morphism ϕ ∘ π (interp-pow B) x) ∘
+                         tuple (interp-pow B) (oper-arity f)
+                         (λ i → hom-morphism ψ ∘ π (interp-pow A) i))) ≈⟨ (refl⟩∘⟨ tuple-cong (interp-pow C) λ i → assoc) ⟩
+                    (interp-oper C f ∘
+                      tuple (interp-pow C) (oper-arity f)
+                      (λ z →
+                         hom-morphism ϕ ∘
+                         π (interp-pow B) z ∘
+                         tuple (interp-pow B) (oper-arity f)
+                         (λ i → hom-morphism ψ ∘ π (interp-pow A) i))) ≈⟨ (refl⟩∘⟨ tuple-cong (interp-pow C) λ i → refl⟩∘⟨ project (interp-pow B)) ⟩
+                    (interp-oper C f ∘
+                      tuple (interp-pow C) (oper-arity f)
+                      (λ z → hom-morphism ϕ ∘ hom-morphism ψ ∘ π (interp-pow A) z)) ≈⟨ (refl⟩∘⟨ tuple-cong (interp-pow C) λ i → sym-assoc) ⟩
+                   (interp-oper C f ∘
+                     tuple (interp-pow C) (oper-arity f)
+                     (λ z → (hom-morphism ϕ ∘ hom-morphism ψ) ∘ π (interp-pow A) z)) ∎}
