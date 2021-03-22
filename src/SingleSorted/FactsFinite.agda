@@ -1,4 +1,4 @@
-{-# OPTIONS --allow-unsolved-metas #-}
+-- This file is very likely obsolete as we do not use natural numbers and finite sets anymore
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans; cong)
 
