@@ -1,20 +1,24 @@
 module MultiSorted.Context (Sort : Set)  where
 
-
 -- An attempt to define more structured context
 -- that directly support the cartesian structure
 
 data Context : Set where
   ctx-empty : Context
-  ctx-slot : Context
+  ctx-slot : Sort → Context
   ctx-concat : Context → Context → Context
 
 -- the variables in a context
-data var (A : Sort) : Context → Set where
-  var-var  : var A ctx-slot
-  var-inl  : ∀ {Γ Δ} → var A Γ → var A (ctx-concat Γ Δ)
-  var-inr  : ∀ {Γ Δ} → var A Δ → var A (ctx-concat Γ Δ)
+data var : Context → Set where
+  var-var  : ∀ {A} → var (ctx-slot A)
+  var-inl  : ∀ {Γ Δ} → var Γ → var (ctx-concat Γ Δ)
+  var-inr  : ∀ {Γ Δ} → var Δ → var (ctx-concat Γ Δ)
+
+sort-of : ∀ (Γ : Context) → var Γ → Sort
+sort-of (ctx-slot A) var-var = A
+sort-of (ctx-concat Γ Δ) (var-inl x) = sort-of Γ x
+sort-of (ctx-concat Γ Δ) (var-inr x) = sort-of Δ x
 
 -- It is absurd to have a variable in the empty context
-ctx-empty-absurd : ∀ {ℓ} {B : Set ℓ} {A : Sort} → var A ctx-empty → B
+ctx-empty-absurd : ∀ {ℓ} {B : Set ℓ} {A : Sort} → var ctx-empty → B
 ctx-empty-absurd ()
