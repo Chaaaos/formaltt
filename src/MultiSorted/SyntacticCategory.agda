@@ -44,13 +44,16 @@ module MultiSorted.SyntacticCategory
       ; ∘-resp-≈ = ∘s-resp-≈s
       }
 
+  -- I don't think the name of the following property is the best, I did not fine a better one for the moment
+  interp-resp-sort : ∀ {Γ} {x : var Γ} {y} →  Term Γ (sort-of Γ x) → Term Γ (sort-of (Product.interp-sort-var 𝒮 {Σ = Σ} ctx-slot x) y)
+  interp-resp-sort {y = var-var} = λ t → t
 
   -- We use the power structure which gives back the context directly
   power-𝒮 : Product.Producted 𝒮 {Σ = Σ} ctx-slot
   power-𝒮 =
     record
       { prod = λ Γ → Γ
-      ; π = λ x y → {!!} -- tm-var x
+      ; π = λ {Γ} x y → interp-resp-sort {Γ} {x} {y} (tm-var x) -- tm-var x
       ; tuple = λ Γ {Δ} ts x → ts x var-var
       ; project = λ {Γ} {Δ} {x} {fs} y → ≡-⊢-≈ (cong₂ {!!} refl var-var-unique) -- ≡-⊢-≈ (cong₂ fs refl var-var-unique)
       ; unique = λ {Δ} {fs} {σ} {ts} ξ x → eq-symm (ξ x var-var)
