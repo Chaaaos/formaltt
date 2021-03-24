@@ -1,3 +1,5 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+
 open import MultiSorted.AlgebraicTheory
 
 import MultiSorted.Interpretation as Interpretation
@@ -18,14 +20,14 @@ module MultiSorted.UniversalInterpretation
   ℐ : Interpretation.Interpretation Σ cartesian-𝒮
   ℐ =
     record
-     { interp-carrier = ctx-slot
-     ; interp-pow = power-𝒮
-     ; interp-oper = λ f var-var → tm-oper f (λ i → tm-var i)
+     { interp-sort = ctx-slot
+     ; interp-ctx = power-𝒮
+     ; interp-oper = λ f var-var → {!!} -- tm-oper f (λ i → tm-var i)
      }
 
   open Interpretation.Interpretation ℐ
 
   -- A term is essentially interpreted by itself
-  interp-term-self : ∀ {Γ} (t : Term Γ) y → Γ ⊢ interp-term t y ≈ t
+  interp-term-self : ∀ {Γ} {A} (t : Term Γ A) y → {!!} -- Γ ⊢ interp-term t y ≈ t ⦂ A
   interp-term-self (tm-var x) _ = eq-refl
   interp-term-self (tm-oper f xs) y = eq-congr (λ i → interp-term-self (xs i) var-var)

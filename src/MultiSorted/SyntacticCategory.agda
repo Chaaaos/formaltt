@@ -1,3 +1,5 @@
+{-#  OPTIONS --allow-unsolved-metas #-}
+
 open import Agda.Primitive using (lzero; lsuc)
 
 open import Relation.Binary.PropositionalEquality
@@ -10,14 +12,13 @@ open import Categories.Object.Product using (Product)
 
 open import MultiSorted.AlgebraicTheory
 import MultiSorted.Substitution as Substitution
-import MultiSorted.Power as Power
+import MultiSorted.Product as Product
 
 module MultiSorted.SyntacticCategory
   {ℓt}
   {Σ : Signature}
   (T : Theory ℓt Σ) where
 
-  open Signature Σ
   open Theory T
   open Substitution T
 
@@ -27,9 +28,9 @@ module MultiSorted.SyntacticCategory
   𝒮 =
     record
       { Obj = Context
-      ; _⇒_ = substitution
+      ; _⇒_ = _⇒s_
       ; _≈_ = _≈s_
-      ; id =  id-substitution
+      ; id =  id-s
       ; _∘_ =  _∘s_
       ; assoc = λ {_ _ _ _ _ _ σ} x → subst-∘s (σ x)
       ; sym-assoc =  λ {_ _ _ _ _ _ σ} x → eq-symm (subst-∘s (σ x))
@@ -45,17 +46,17 @@ module MultiSorted.SyntacticCategory
 
 
   -- We use the power structure which gives back the context directly
-  power-𝒮 : Power.Powered 𝒮 ctx-slot
+  power-𝒮 : Product.Producted 𝒮 {Σ = Σ} ctx-slot
   power-𝒮 =
     record
-      { pow = λ Γ → Γ
-      ; π = λ x _ → tm-var x
+      { prod = λ Γ → Γ
+      ; π = λ x y → {!!} -- tm-var x
       ; tuple = λ Γ {Δ} ts x → ts x var-var
-      ; project = λ {Γ} {Δ} {x} {fs} y → ≡-⊢-≈ (cong₂ fs refl var-var-unique)
+      ; project = λ {Γ} {Δ} {x} {fs} y → ≡-⊢-≈ (cong₂ {!!} refl var-var-unique) -- ≡-⊢-≈ (cong₂ fs refl var-var-unique)
       ; unique = λ {Δ} {fs} {σ} {ts} ξ x → eq-symm (ξ x var-var)
       }
-    where var-var-unique : ∀ {x : var ctx-slot} → var-var ≡ x
-          var-var-unique {var-var} = refl
+    where var-var-unique : ∀ {A} {x : var (ctx-slot A)} → var-var ≡ x
+          var-var-unique {x = var-var} = refl
 
   -- The terminal object is the empty context
   terminal-𝒮 : Terminal 𝒮
@@ -64,7 +65,7 @@ module MultiSorted.SyntacticCategory
       { ⊤ = ctx-empty
       ; ⊤-is-terminal =
           record { ! = ctx-empty-absurd
-                 ; !-unique = λ σ x → ctx-empty-absurd x } }
+                 ; !-unique = λ σ x → ctx-empty-absurd {ℓ = lsuc ℓt} x } }
 
   -- Binary product is context contatenation
   product-𝒮 : ∀ {Γ Δ} → Product 𝒮 Γ Δ

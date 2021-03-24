@@ -26,7 +26,7 @@ module MultiSorted.UniversalModel
                          begin
                          interp-term (eq-lhs ε) var-var ≈⟨ interp-term-self (eq-lhs ε) var-var ⟩
                          eq-lhs ε ≈⟨ id-action ⟩
-                         eq-lhs ε [ id-substitution ]s ≈⟨ eq-axiom ε id-substitution ⟩
-                         eq-rhs ε [ id-substitution ]s ≈˘⟨ id-action ⟩
+                         eq-lhs ε [ id-s ]s ≈⟨ eq-axiom ε id-s ⟩
+                         eq-rhs ε [ id-s ]s ≈˘⟨ id-action ⟩
                          eq-rhs ε ≈˘⟨ interp-term-self (eq-rhs ε) var-var ⟩
                          interp-term (eq-rhs ε) var-var ∎ }
