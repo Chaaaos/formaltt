@@ -4,7 +4,7 @@ import Categories.Category as Category
 import Categories.Category.Cartesian as Cartesian
 
 open import MultiSorted.AlgebraicTheory
-import MultiSorted.Power as Power
+import MultiSorted.Product as Product
 
 module MultiSorted.Interpretation
          {o ℓ e}
@@ -13,134 +13,131 @@ module MultiSorted.Interpretation
          (cartesian-𝒞 : Cartesian.Cartesian 𝒞) where
   open Signature Σ
   open Category.Category 𝒞
-  open Power 𝒞
 
   -- An interpretation of Σ in 𝒞
   record Interpretation : Set (o ⊔ ℓ ⊔ e) where
 
     field
-      interp-carrier : Obj
-      interp-pow :  Powered interp-carrier
-      interp-oper : ∀ (f : oper) → Powered.pow interp-pow (oper-arity f) ⇒ interp-carrier
+      interp-sort : sort → Obj
+      interp-ctx : Product.Producted 𝒞 {Σ = Σ} interp-sort
+      interp-oper : ∀ (f : oper) → Product.Producted.prod interp-ctx (oper-arity f) ⇒ interp-sort (oper-sort f)
 
-    open Powered interp-pow
+    open Product.Producted interp-ctx
 
     -- the interpretation of a term
-    interp-term : ∀ {Γ : Context} → Term {Σ} Γ → (pow Γ) ⇒ interp-carrier
+    interp-term : ∀ {Γ : Context} {A} → Term Γ A → prod Γ ⇒ interp-sort A
     interp-term (tm-var x) = π x
     interp-term (tm-oper f ts) = interp-oper f ∘ tuple (oper-arity f) (λ i → interp-term (ts i))
 
-    -- the interpretation of a context
-    interp-ctx : Context → Obj
-    interp-ctx Γ = pow Γ
-
     -- the interpretation of a substitution
-    interp-subst : ∀ {Γ Δ} → Γ ⇒s Δ → interp-ctx Γ ⇒ interp-ctx Δ
+    interp-subst : ∀ {Γ Δ} → Γ ⇒s Δ → prod Γ ⇒ prod Δ
     interp-subst {Γ} {Δ} σ = tuple Δ λ i → interp-term (σ i)
 
     -- interpretation commutes with substitution
     open HomReasoning
 
-    interp-[]s : ∀ {Γ Δ} {t : Term Δ} {σ : Γ ⇒s Δ} →
+    interp-[]s : ∀ {Γ Δ} {A} {t : Term Δ A} {σ : Γ ⇒s Δ} →
                  interp-term (t [ σ ]s) ≈ interp-term t ∘ interp-subst σ
-    interp-[]s {Γ} {Δ} {tm-var x} {σ} = ⟺ (project {Γ = Δ})
-    interp-[]s {Γ} {Δ} {tm-oper f ts} {σ} = (∘-resp-≈ʳ
-                                            (tuple-cong
-                                              {fs = λ i → interp-term (ts i [ σ ]s)}
-                                              {gs = λ z → interp-term (ts z) ∘ interp-subst σ}
-                                              (λ i → interp-[]s {t = ts i} {σ = σ})
-                                          ○ (∘-distribʳ-tuple
-                                              {Γ = oper-arity f}
-                                              {fs = λ z → interp-term (ts z)}
-                                              {g = interp-subst σ})))
-                                            ○ (Equiv.refl ○ sym-assoc)
+    interp-[]s {Γ} {Δ} {A} {tm-var x} {σ} = ⟺ (project {Γ = Δ})
+    interp-[]s {Γ} {Δ} {A} {tm-oper f ts} {σ} = (∘-resp-≈ʳ
+                                                (tuple-cong
+                                                  {fs = λ i → interp-term (ts i [ σ ]s)}
+                                                  {gs = λ z → interp-term (ts z) ∘ interp-subst σ}
+                                                  (λ i → interp-[]s {t = ts i} {σ = σ})
+                                              ○ (∘-distribʳ-tuple
+                                                  {Γ = oper-arity f}
+                                                  {fs = λ z → interp-term (ts z)}
+                                                  {g = interp-subst σ})))
+                                                ○ (Equiv.refl ○ sym-assoc)
 
   -- -- Every signature has the trivial interpretation
+
+  open Product 𝒞
 
   Trivial : Interpretation
   Trivial =
     let open Cartesian.Cartesian cartesian-𝒞 in
     record
-      { interp-carrier = ⊤
-      ; interp-pow = StandardPowered cartesian-𝒞 ⊤
+      { interp-sort = (λ _ → ⊤)
+      ; interp-ctx = StandardProducted (λ _ → ⊤) cartesian-𝒞
       ; interp-oper = λ f → ! }
 
-  record HomI (A B : Interpretation) : Set (o ⊔ ℓ ⊔ e) where
-    open Interpretation
-    open Powered
+  -- record HomI (A B : Interpretation) : Set (o ⊔ ℓ ⊔ e) where
+  --   open Interpretation
+  --   open Producted
 
-    field
-      hom-morphism : interp-carrier A  ⇒ interp-carrier B
-      hom-commute :
-         ∀ (f : oper) →
-         hom-morphism ∘ interp-oper A f ≈
-             interp-oper B f ∘ tuple (interp-pow B) (oper-arity f) (λ i → hom-morphism ∘ π (interp-pow A) i)
+  --   field
+  --     hom-morphism : interp-sort A  ⇒ interp-sort B
+  --     hom-commute :
+  --        ∀ (f : oper) →
+  --        hom-morphism ∘ interp-oper A f ≈
+  --            interp-oper B f ∘ tuple (interp-ctx B) (oper-arity f) (λ i → hom-morphism ∘ π (interp-ctx A) i)
 
-  -- The identity homomorphism
-  IdI : ∀ (A : Interpretation) → HomI A A
-  IdI A =
-    let open Interpretation A in
-    let open HomReasoning in
-    let open Powered interp-pow in
-    record
-      { hom-morphism = id
-      ; hom-commute =
-         λ f →
-          begin
-            (id ∘ interp-oper f)       ≈⟨ identityˡ ⟩
-            interp-oper f             ≈˘⟨ identityʳ ⟩
-            (interp-oper f ∘ id)      ≈˘⟨ refl⟩∘⟨ unique (λ i → identityʳ ○ ⟺ identityˡ) ⟩
-            (interp-oper f ∘ tuple (oper-arity f) (λ i → id ∘ π i)) ∎
-      }
+  -- -- The identity homomorphism
+  -- IdI : ∀ (A : Interpretation) → HomI A A
+  -- IdI A =
+  --   let open Interpretation A in
+  --   let open HomReasoning in
+  --   let open Producted interp-ctx in
+  --   record
+  --     { hom-morphism = id
+  --     ; hom-commute =
+  --        λ f →
+  --         begin
+  --           (id ∘ interp-oper f)       ≈⟨ identityˡ ⟩
+  --           interp-oper f             ≈˘⟨ identityʳ ⟩
+  --           (interp-oper f ∘ id)      ≈˘⟨ refl⟩∘⟨ unique (λ i → identityʳ ○ ⟺ identityˡ) ⟩
+  --           (interp-oper f ∘ tuple (oper-arity f) (λ i → id ∘ π i)) ∎
+  --     }
 
-  -- Compositon of homomorphisms
-  _∘I_ : ∀ {A B C : Interpretation} → HomI B C → HomI A B → HomI A C
-  _∘I_ {A} {B} {C} ϕ ψ =
-     let open HomI in
-     record { hom-morphism = hom-morphism ϕ ∘ hom-morphism ψ
-            ; hom-commute =
-                let open Interpretation in
-                let open Powered in
-                let open HomReasoning in
-                λ f →
-                  begin
-                    (((hom-morphism ϕ) ∘ hom-morphism ψ) ∘ interp-oper A f) ≈⟨ assoc ⟩
-                    (hom-morphism ϕ ∘ hom-morphism ψ ∘ interp-oper A f) ≈⟨ (refl⟩∘⟨ hom-commute ψ f) ⟩
-                    (hom-morphism ϕ ∘
-                      interp-oper B f ∘
-                      tuple (interp-pow B) (oper-arity f)
-                      (λ i → hom-morphism ψ ∘ π (interp-pow A) i)) ≈˘⟨ assoc ⟩
-                    ((hom-morphism ϕ ∘ interp-oper B f) ∘
-                      tuple (interp-pow B) (oper-arity f)
-                      (λ i → hom-morphism ψ ∘ π (interp-pow A) i)) ≈⟨ (hom-commute ϕ f ⟩∘⟨refl) ⟩
-                    ((interp-oper C f ∘
-                       tuple (interp-pow C) (oper-arity f)
-                       (λ i → hom-morphism ϕ ∘ π (interp-pow B) i))
-                      ∘
-                      tuple (interp-pow B) (oper-arity f)
-                      (λ i → hom-morphism ψ ∘ π (interp-pow A) i)) ≈⟨ assoc ⟩
-                    (interp-oper C f ∘
-                      tuple (interp-pow C) (oper-arity f)
-                      (λ i → hom-morphism ϕ ∘ π (interp-pow B) i)
-                      ∘
-                      tuple (interp-pow B) (oper-arity f)
-                      (λ i → hom-morphism ψ ∘ π (interp-pow A) i)) ≈⟨ (refl⟩∘⟨ ⟺ (∘-distribʳ-tuple (interp-pow C))) ⟩
-                    (interp-oper C f ∘
-                      tuple (interp-pow C) (oper-arity f)
-                      (λ x →
-                         (hom-morphism ϕ ∘ π (interp-pow B) x) ∘
-                         tuple (interp-pow B) (oper-arity f)
-                         (λ i → hom-morphism ψ ∘ π (interp-pow A) i))) ≈⟨ (refl⟩∘⟨ tuple-cong (interp-pow C) λ i → assoc) ⟩
-                    (interp-oper C f ∘
-                      tuple (interp-pow C) (oper-arity f)
-                      (λ z →
-                         hom-morphism ϕ ∘
-                         π (interp-pow B) z ∘
-                         tuple (interp-pow B) (oper-arity f)
-                         (λ i → hom-morphism ψ ∘ π (interp-pow A) i))) ≈⟨ (refl⟩∘⟨ tuple-cong (interp-pow C) λ i → refl⟩∘⟨ project (interp-pow B)) ⟩
-                    (interp-oper C f ∘
-                      tuple (interp-pow C) (oper-arity f)
-                      (λ z → hom-morphism ϕ ∘ hom-morphism ψ ∘ π (interp-pow A) z)) ≈⟨ (refl⟩∘⟨ tuple-cong (interp-pow C) λ i → sym-assoc) ⟩
-                   (interp-oper C f ∘
-                     tuple (interp-pow C) (oper-arity f)
-                     (λ z → (hom-morphism ϕ ∘ hom-morphism ψ) ∘ π (interp-pow A) z)) ∎}
+  -- -- Compositon of homomorphisms
+  -- _∘I_ : ∀ {A B C : Interpretation} → HomI B C → HomI A B → HomI A C
+  -- _∘I_ {A} {B} {C} ϕ ψ =
+  --    let open HomI in
+  --    record { hom-morphism = hom-morphism ϕ ∘ hom-morphism ψ
+  --           ; hom-commute =
+  --               let open Interpretation in
+  --               let open Producted in
+  --               let open HomReasoning in
+  --               λ f →
+  --                 begin
+  --                   (((hom-morphism ϕ) ∘ hom-morphism ψ) ∘ interp-oper A f) ≈⟨ assoc ⟩
+  --                   (hom-morphism ϕ ∘ hom-morphism ψ ∘ interp-oper A f) ≈⟨ (refl⟩∘⟨ hom-commute ψ f) ⟩
+  --                   (hom-morphism ϕ ∘
+  --                     interp-oper B f ∘
+  --                     tuple (interp-ctx B) (oper-arity f)
+  --                     (λ i → hom-morphism ψ ∘ π (interp-ctx A) i)) ≈˘⟨ assoc ⟩
+  --                   ((hom-morphism ϕ ∘ interp-oper B f) ∘
+  --                     tuple (interp-ctx B) (oper-arity f)
+  --                     (λ i → hom-morphism ψ ∘ π (interp-ctx A) i)) ≈⟨ (hom-commute ϕ f ⟩∘⟨refl) ⟩
+  --                   ((interp-oper C f ∘
+  --                      tuple (interp-ctx C) (oper-arity f)
+  --                      (λ i → hom-morphism ϕ ∘ π (interp-ctx B) i))
+  --                     ∘
+  --                     tuple (interp-ctx B) (oper-arity f)
+  --                     (λ i → hom-morphism ψ ∘ π (interp-ctx A) i)) ≈⟨ assoc ⟩
+  --                   (interp-oper C f ∘
+  --                     tuple (interp-ctx C) (oper-arity f)
+  --                     (λ i → hom-morphism ϕ ∘ π (interp-ctx B) i)
+  --                     ∘
+  --                     tuple (interp-ctx B) (oper-arity f)
+  --                     (λ i → hom-morphism ψ ∘ π (interp-ctx A) i)) ≈⟨ (refl⟩∘⟨ ⟺ (∘-distribʳ-tuple (interp-ctx C))) ⟩
+  --                   (interp-oper C f ∘
+  --                     tuple (interp-ctx C) (oper-arity f)
+  --                     (λ x →
+  --                        (hom-morphism ϕ ∘ π (interp-ctx B) x) ∘
+  --                        tuple (interp-ctx B) (oper-arity f)
+  --                        (λ i → hom-morphism ψ ∘ π (interp-ctx A) i))) ≈⟨ (refl⟩∘⟨ tuple-cong (interp-ctx C) λ i → assoc) ⟩
+  --                   (interp-oper C f ∘
+  --                     tuple (interp-ctx C) (oper-arity f)
+  --                     (λ z →
+  --                        hom-morphism ϕ ∘
+  --                        π (interp-ctx B) z ∘
+  --                        tuple (interp-ctx B) (oper-arity f)
+  --                        (λ i → hom-morphism ψ ∘ π (interp-ctx A) i))) ≈⟨ (refl⟩∘⟨ tuple-cong (interp-ctx C) λ i → refl⟩∘⟨ project (interp-ctx B)) ⟩
+  --                   (interp-oper C f ∘
+  --                     tuple (interp-ctx C) (oper-arity f)
+  --                     (λ z → hom-morphism ϕ ∘ hom-morphism ψ ∘ π (interp-ctx A) z)) ≈⟨ (refl⟩∘⟨ tuple-cong (interp-ctx C) λ i → sym-assoc) ⟩
+  --                  (interp-oper C f ∘
+  --                    tuple (interp-ctx C) (oper-arity f)
+  --                    (λ z → (hom-morphism ϕ ∘ hom-morphism ψ) ∘ π (interp-ctx A) z)) ∎}
