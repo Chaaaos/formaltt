@@ -34,17 +34,16 @@ module MultiSorted.AlgebraicTheory where
   -- terms over a signature in a context of a given sort
   module _ (Σ : Signature) where
     open Signature Σ
-
     data Term (Γ : Context) : ∀ (A : sort) → Set where
-       tm-var : ∀ (x : var Γ) → Term Γ (sort-of Γ x)
-       tm-oper : ∀ (f : oper) → (∀ (i : arg (oper-arity f)) → Term Γ (arg-sort f i)) → Term Γ (oper-sort f)
+      tm-var : ∀ (x : var Γ) → Term Γ (sort-of Γ x)
+      tm-oper : ∀ (f : oper) → (∀ (i : arg (oper-arity f)) → Term Γ (arg-sort f i)) → Term Γ (oper-sort f)
 
     -- Substitutions (definitions - some useful properties are in another file)
     substitution : ∀ (Γ Δ : Context) → Set
     substitution Γ Δ = ∀ (x : var Δ) → Term Γ (sort-of Δ x)
 
     -- identity substitution
-    id-substitution : ∀ {Σ : Signature} {Γ : Context} → substitution Γ Γ
+    id-substitution : ∀ {Γ : Context} → substitution Γ Γ
     id-substitution = tm-var
 
     -- the action of a substitution on a term (contravariant)
@@ -62,7 +61,7 @@ module MultiSorted.AlgebraicTheory where
 
     -- Theory
     -- an equational theory is a family of equations over a given sort
-    record Theory ℓ (Σ : Signature) : Set (lsuc ℓ) where
+    record Theory ℓ : Set (lsuc ℓ) where
       field
         eq : Set ℓ -- the equations
         eq-ctx : eq → Context -- the context of the equation ε
@@ -83,27 +82,26 @@ module MultiSorted.AlgebraicTheory where
         eq-axiom : ∀ (ε : eq) {Γ : Context} (σ : substitution Γ (eq-ctx ε)) →
                    eq-term Γ (eq-sort ε) (eq-lhs ε [ σ ]s)  (eq-rhs ε [ σ ]s)
 
-      syntax eq-term Γ A s t = Γ ⊢ s ≈ t :: A
+      syntax eq-term Γ A s t = Γ ⊢ s ≈ t ⦂ A
+      infix 4 eq-term
 
-      infix 4 _⊢_≈_::_
-
-      ≡-⊢-≈ : ∀ {Γ : Context} {A} {s t : Term Γ A} → s ≡ t → Γ ⊢ s ≈ t :: A
+      ≡-⊢-≈ : ∀ {Γ : Context} {A} {s t : Term Γ A} → s ≡ t → Γ ⊢ s ≈ t ⦂ A
       ≡-⊢-≈ refl = eq-refl
 
       -- the action of the identity substitution is the identity
-      id-action : ∀ {Γ : Context} {A} {a : Term Γ A} → (Γ ⊢ a ≈ (a [ id-substitution {Σ = Σ} {Γ = Γ} ]s) :: A)
+      id-action : ∀ {Γ : Context} {A} {a : Term Γ A} → (Γ ⊢ a ≈ (a [ id-substitution {Γ = Γ} ]s) ⦂ A)
       id-action {a = tm-var a} = eq-refl
       id-action {a = tm-oper f x} = eq-congr (λ i → id-action {a = x i})
 
-      eq-axiom-id : ∀ (ε : eq) → eq-ctx ε ⊢ eq-lhs ε ≈ eq-rhs ε :: (eq-sort ε)
-      eq-axiom-id ε = eq-tran id-action (eq-tran (eq-axiom ε (id-substitution {Σ = Σ} {Γ = eq-ctx ε})) (eq-symm id-action))
+      eq-axiom-id : ∀ (ε : eq) → eq-ctx ε ⊢ eq-lhs ε ≈ eq-rhs ε ⦂ (eq-sort ε)
+      eq-axiom-id ε = eq-tran id-action (eq-tran (eq-axiom ε (id-substitution {Γ = eq-ctx ε})) (eq-symm id-action))
     -- I should try to find out why id-substitution needs its implicit parameters, and if I can avoid it
 
       eq-setoid : ∀ (Γ : Context) (A : sort) → Setoid lzero (lsuc ℓ)
       eq-setoid Γ A =
         record
           { Carrier = Term Γ A
-          ;  _≈_ = λ s t → (Γ ⊢ s ≈ t :: A)
+          ;  _≈_ = λ s t → (Γ ⊢ s ≈ t ⦂ A)
           ; isEquivalence =
               record
                 { refl = eq-refl
