@@ -2,13 +2,13 @@ open import Agda.Primitive using (_⊔_)
 
 import Categories.Category as Category
 import Categories.Category.Cartesian as Cartesian
-import SingleSorted.Interpretation as Interpretation
+import MultiSorted.Interpretation as Interpretation
 
-open import SingleSorted.AlgebraicTheory
-open import SingleSorted.Substitution
-import SingleSorted.Power as Power
+open import MultiSorted.AlgebraicTheory
+open import MultiSorted.Substitution
+import MultiSorted.Power as Power
 
-module SingleSorted.Model {o ℓ e ℓt}
+module MultiSorted.Model {o ℓ e ℓt}
           {Σ : Signature}
           (T : Theory ℓt Σ)
           {𝒞 : Category.Category o ℓ e}
@@ -33,7 +33,7 @@ module SingleSorted.Model {o ℓ e ℓt}
       open Power.Powered interp-pow
 
       -- first we show that substitution preserves validity
-      model-resp-[]s : ∀ {Γ Δ} {u v : Term Γ} {σ : substitution Σ Δ Γ} →
+      model-resp-[]s : ∀ {Γ Δ} {u v : Term Γ} {σ : Δ ⇒s Γ} →
                        interp-term u ≈ interp-term v → interp-term (u [ σ ]s) ≈ interp-term (v [ σ ]s)
       model-resp-[]s {u = u} {v = v} {σ = σ} ξ =
         begin

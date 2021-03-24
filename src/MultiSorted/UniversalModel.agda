@@ -1,13 +1,13 @@
 import Relation.Binary.Reasoning.Setoid as SetoidR
-open import SingleSorted.AlgebraicTheory
+open import MultiSorted.AlgebraicTheory
 
-import SingleSorted.Interpretation as Interpretation
-import SingleSorted.Model as Model
-import SingleSorted.UniversalInterpretation as UniversalInterpretation
-import SingleSorted.Substitution as Substitution
-import SingleSorted.SyntacticCategory as SyntacticCategory
+import MultiSorted.Interpretation as Interpretation
+import MultiSorted.Model as Model
+import MultiSorted.UniversalInterpretation as UniversalInterpretation
+import MultiSorted.Substitution as Substitution
+import MultiSorted.SyntacticCategory as SyntacticCategory
 
-module SingleSorted.UniversalModel
+module MultiSorted.UniversalModel
   {ℓt}
   {Σ : Signature}
   (T : Theory ℓt Σ) where

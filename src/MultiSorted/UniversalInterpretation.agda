@@ -1,11 +1,11 @@
-open import SingleSorted.AlgebraicTheory
+open import MultiSorted.AlgebraicTheory
 
-import SingleSorted.Interpretation as Interpretation
-import SingleSorted.SyntacticCategory as SyntacticCategory
-import SingleSorted.Substitution as Substitution
+import MultiSorted.Interpretation as Interpretation
+import MultiSorted.SyntacticCategory as SyntacticCategory
+import MultiSorted.Substitution as Substitution
 
 
-module SingleSorted.UniversalInterpretation
+module MultiSorted.UniversalInterpretation
   {ℓt}
   {Σ : Signature}
   (T : Theory ℓt Σ) where

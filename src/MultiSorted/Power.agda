@@ -3,9 +3,9 @@ open import Agda.Primitive using (_⊔_)
 import Categories.Category as Category
 import Categories.Category.Cartesian as Cartesian
 
-open import SingleSorted.Context
+open import MultiSorted.Context
 
-module SingleSorted.Power
+module MultiSorted.Power
        {o ℓ e}
        (𝒞 : Category.Category o ℓ e) where
 

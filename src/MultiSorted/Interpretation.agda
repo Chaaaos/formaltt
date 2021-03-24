@@ -3,10 +3,10 @@ open import Agda.Primitive using (_⊔_)
 import Categories.Category as Category
 import Categories.Category.Cartesian as Cartesian
 
-open import SingleSorted.AlgebraicTheory
-import SingleSorted.Power as Power
+open import MultiSorted.AlgebraicTheory
+import MultiSorted.Power as Power
 
-module SingleSorted.Interpretation
+module MultiSorted.Interpretation
          {o ℓ e}
          (Σ : Signature)
          {𝒞 : Category.Category o ℓ e}
@@ -35,13 +35,13 @@ module SingleSorted.Interpretation
     interp-ctx Γ = pow Γ
 
     -- the interpretation of a substitution
-    interp-subst : ∀ {Γ Δ} → substitution Σ Γ Δ → interp-ctx Γ ⇒ interp-ctx Δ
+    interp-subst : ∀ {Γ Δ} → Γ ⇒s Δ → interp-ctx Γ ⇒ interp-ctx Δ
     interp-subst {Γ} {Δ} σ = tuple Δ λ i → interp-term (σ i)
 
     -- interpretation commutes with substitution
     open HomReasoning
 
-    interp-[]s : ∀ {Γ Δ} {t : Term Δ} {σ : substitution Σ Γ Δ} →
+    interp-[]s : ∀ {Γ Δ} {t : Term Δ} {σ : Γ ⇒s Δ} →
                  interp-term (t [ σ ]s) ≈ interp-term t ∘ interp-subst σ
     interp-[]s {Γ} {Δ} {tm-var x} {σ} = ⟺ (project {Γ = Δ})
     interp-[]s {Γ} {Δ} {tm-oper f ts} {σ} = (∘-resp-≈ʳ
