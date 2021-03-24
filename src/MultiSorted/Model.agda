@@ -6,7 +6,7 @@ import MultiSorted.Interpretation as Interpretation
 
 open import MultiSorted.AlgebraicTheory
 open import MultiSorted.Substitution
-import MultiSorted.Power as Power
+import MultiSorted.Product as Product
 
 module MultiSorted.Model {o ℓ e ℓt}
           {Σ : Signature}
@@ -14,7 +14,7 @@ module MultiSorted.Model {o ℓ e ℓt}
           {𝒞 : Category.Category o ℓ e}
           (cartesian-𝒞 : Cartesian.Cartesian 𝒞) where
 
-  open Signature Σ
+  -- open Signature Σ
 
   -- Model of a theory
 
@@ -30,10 +30,10 @@ module MultiSorted.Model {o ℓ e ℓt}
 
     -- Soundness of semantics
     module _ where
-      open Power.Powered interp-pow
+      open Product.Producted interp-ctx
 
       -- first we show that substitution preserves validity
-      model-resp-[]s : ∀ {Γ Δ} {u v : Term Γ} {σ : Δ ⇒s Γ} →
+      model-resp-[]s : ∀ {Γ Δ} {A} {u v : Term Γ A} {σ : Δ ⇒s Γ} →
                        interp-term u ≈ interp-term v → interp-term (u [ σ ]s) ≈ interp-term (v [ σ ]s)
       model-resp-[]s {u = u} {v = v} {σ = σ} ξ =
         begin
@@ -43,11 +43,11 @@ module MultiSorted.Model {o ℓ e ℓt}
           interp-term (v [ σ ]s) ∎
 
       -- the soundness statement
-      model-⊢-≈ : ∀ {Γ} {s t : Term Γ} → Γ ⊢ s ≈ t → interp-term s ≈ interp-term t
+      model-⊢-≈ : ∀ {Γ} {A} {s t : Term Γ A} → Γ ⊢ s ≈ t ⦂ A → interp-term s ≈ interp-term t
       model-⊢-≈ eq-refl =  Equiv.refl
       model-⊢-≈ (eq-symm ξ) = ⟺ (model-⊢-≈ ξ)
       model-⊢-≈ (eq-tran ξ θ) = (model-⊢-≈ ξ) ○ (model-⊢-≈ θ)
-      model-⊢-≈ (eq-congr ξ) = ∘-resp-≈ʳ (unique (λ i → project ○ model-⊢-≈ (eq-symm (ξ i))))
+      model-⊢-≈ (eq-congr ξ) = ∘-resp-≈ʳ (unique λ i → project ○ ⟺ (model-⊢-≈ (ξ i)) )
       model-⊢-≈ (eq-axiom ε σ) = model-resp-[]s {u = eq-lhs ε} {v = eq-rhs ε} (model-eq ε)
 
   -- Every theory has the trivial model, whose carrier is the terminal object
