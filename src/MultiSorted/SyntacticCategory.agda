@@ -49,26 +49,48 @@ module MultiSorted.SyntacticCategory
   interp-resp-sort {y = var-var} = λ t → t
 
   -- We use the power structure which gives back the context directly
-  power-𝒮 : Product.Producted 𝒮 {Σ = Σ} ctx-slot
-  power-𝒮 =
+  π-𝒮 : ∀ {Γ} (x : var Γ) → Γ ⇒s ctx-slot (sort-of Γ x)
+  π-𝒮 x var-var = tm-var x
+
+  tuple-𝒮 : ∀ Γ {Δ} → (∀ (x : var Γ) → Δ ⇒s (ctx-slot (sort-of Γ x))) → Δ ⇒s Γ
+  tuple-𝒮 Γ ts = λ x → ts x var-var
+
+  project-𝒮 : ∀ {Γ Δ} {x : var Γ} {ts : ∀ (x : var Γ) → Δ ⇒s (ctx-slot (sort-of Γ x))} →
+              π-𝒮 x ∘s tuple-𝒮 Γ ts ≈s ts x
+  project-𝒮 {Γ} {Δ} {x} {ts} var-var = eq-refl
+
+  unique-𝒮 : ∀ {Γ Δ} {ts : ∀ (x : var Γ) → Δ ⇒s (ctx-slot (sort-of Γ x))} {g : Δ ⇒s Γ} →
+             (∀ x → π-𝒮 x ∘s g ≈s ts x) → tuple-𝒮 Γ ts ≈s g
+  unique-𝒮 ξ x = eq-symm (ξ x var-var)
+
+
+  producted-𝒮 : Product.Producted 𝒮 {Σ = Σ} ctx-slot
+  producted-𝒮 =
     record
       { prod = λ Γ → Γ
-      ; π = λ {Γ} x y → interp-resp-sort {Γ} {x} {y} (tm-var x) -- tm-var x
-      ; tuple = λ Γ {Δ} ts x → ts x var-var
-      ; project = λ {Γ} {Δ} {x} {fs} y → ≡-⊢-≈ (cong₂ {!!} refl var-var-unique) -- ≡-⊢-≈ (cong₂ fs refl var-var-unique)
-      ; unique = λ {Δ} {fs} {σ} {ts} ξ x → eq-symm (ξ x var-var)
+      ; π =  π-𝒮
+      ; tuple = tuple-𝒮
+      ; project = λ {Γ Δ x ts} → project-𝒮 {ts = ts}
+      ; unique = unique-𝒮
       }
-    where var-var-unique : ∀ {A} {x : var (ctx-slot A)} → var-var ≡ x
-          var-var-unique {x = var-var} = refl
 
   -- The terminal object is the empty context
+  ⊤-𝒮 : Context
+  ⊤-𝒮 = ctx-empty
+
+  !-𝒮 : ∀ {Γ} → Γ ⇒s ⊤-𝒮
+  !-𝒮 ()
+
+  !-unique-𝒮 : ∀ {Γ} (σ : Γ ⇒s ⊤-𝒮) → !-𝒮 ≈s σ
+  !-unique-𝒮 σ ()
+
   terminal-𝒮 : Terminal 𝒮
   terminal-𝒮 =
     record
-      { ⊤ = ctx-empty
+      { ⊤ = ⊤-𝒮
       ; ⊤-is-terminal =
-          record { ! = ctx-empty-absurd
-                 ; !-unique = λ σ x → ctx-empty-absurd {ℓ = lsuc ℓt} x } }
+          record { ! = !-𝒮
+                 ; !-unique = !-unique-𝒮 } }
 
   -- Binary product is context contatenation
   product-𝒮 : ∀ {Γ Δ} → Product 𝒮 Γ Δ
