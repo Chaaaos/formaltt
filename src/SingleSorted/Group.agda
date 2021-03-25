@@ -57,15 +57,18 @@ _ = tm-var (var-inr var-var)
 e' : ∀ {Γ : Context} → Term {Σ} Γ
 e' {Γ} = tm-oper e λ()
 
-inv' : ∀ {Γ : Context} → Term {Σ} Γ → Term {Σ} Γ
-inv' x = tm-oper inv λ{ _ → x}
+-- inv' : ∀ {Γ : Context} → Term {Σ} Γ → Term {Σ} Γ
+-- inv' x = tm-oper inv λ{ _ → x}
 
-mul' : ∀ {Γ : Context} → Term {Σ} Γ → Term {Σ} Γ → Term {Σ} Γ
-mul' x y = tm-oper mul λ{ (var-inl _) → x ; (var-inr _) → y}
+-- mul' : ∀ {Γ : Context} → Term {Σ} Γ → Term {Σ} Γ → Term {Σ} Γ
+-- mul' x y = tm-oper mul λ{ (var-inl _) → x ; (var-inr _) → y}
+
+concat-empty : var (ctx-concat ctx-empty ctx-slot) → (var ctx-slot)
+concat-empty (var-inr x) = x
 
 
 x*y : Term {Σ} ctx-2
-x*y = mul' (tm-var (var-inl var-var)) (tm-var (var-inr var-var))
+x*y = tm-oper mul λ{ (var-inl x) → tm-var (var-inl (concat-empty x)) ; (var-inr y) → tm-var (var-inr y)}
 
 -- group equations
 data GroupEq : Set where
@@ -77,11 +80,17 @@ data GroupEq : Set where
 singleton-context : (var ctx-slot) → var (ctx-concat ctx-empty ctx-slot)
 singleton-context (var-var) = var-inr var-var
 
-_∗_ : ∀ {Γ} → Term {Σ} Γ → Term {Σ} Γ → Term {Σ} Γ
-x ∗ y = mul' x y
+σ : ∀ {Γ : Context} {t : Term {Σ} Γ} →  substitution Σ Γ (ctx 1)
+σ {Γ} {t} = λ{ (var-inr var-var) → t}
 
-_ⁱ : ∀ {Γ} → Term {Σ} Γ → Term {Σ} Γ
-x ⁱ = inv' x
+δ : ∀ {Γ : Context} {t : Term {Σ} Γ} {s : Term {Σ} Γ} →  substitution Σ Γ (ctx 2)
+δ {Γ} {t} {s} = λ{ (var-inl x) → t ; (var-inr y) → s}
+
+_∗_ : ∀ {Γ} → Term {Σ} Γ → Term {Σ} Γ → Term {Σ} Γ
+t ∗ s =  tm-oper mul λ{ xs → δ {t = t} {s = s} xs}
+
+_ⁱ : ∀ {Γ : Context} →  Term {Σ} Γ → Term {Σ} Γ
+t ⁱ =  tm-oper inv λ{ x → σ {t = t} x}
 
 infixl 5 _∗_
 infix 6 _ⁱ
@@ -123,10 +132,8 @@ _ = tm-var (var-inl (var-inr var-var)) ∗ tm-var (var-inr var-var)
 
 open Theory 𝒢
 
-σ : ∀ {Γ : Context} {t : Term {Σ} Γ} →  substitution Σ Γ (ctx 1)
-σ {Γ} {t} = λ{ (var-inr var-var) → t}
 
--- e-left-eq : ∀ {Γ : Context} (t : Term {Σ} Γ) → Γ ⊢ e' ∗ t ≈ t
--- e-left-eq {Γ} t = eq-axiom {!!} {Γ} (σ {Γ} {t})
+e-left-eq : (ctx 1) ⊢ e' ∗ (tm-var (var-inr var-var)) ≈ (tm-var (var-inr var-var))
+e-left-eq = eq-axiom {!e-left!} id-substitution
 
 
