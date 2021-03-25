@@ -48,7 +48,10 @@ module MultiSorted.SyntacticCategory
   interp-resp-sort : ∀ {Γ} {x : var Γ} {y} →  Term Γ (sort-of Γ x) → Term Γ (sort-of (Product.interp-sort-var 𝒮 {Σ = Σ} ctx-slot x) y)
   interp-resp-sort {y = var-var} = λ t → t
 
-  -- We use the power structure which gives back the context directly
+  -- We use the product structure which gives back the context directly
+  prod-𝒮 : Context → Context
+  prod-𝒮 Γ = Γ
+
   π-𝒮 : ∀ {Γ} (x : var Γ) → Γ ⇒s ctx-slot (sort-of Γ x)
   π-𝒮 x var-var = tm-var x
 
@@ -67,7 +70,7 @@ module MultiSorted.SyntacticCategory
   producted-𝒮 : Product.Producted 𝒮 {Σ = Σ} ctx-slot
   producted-𝒮 =
     record
-      { prod = λ Γ → Γ
+      { prod = prod-𝒮
       ; π =  π-𝒮
       ; tuple = tuple-𝒮
       ; project = λ {Γ Δ x ts} → project-𝒮 {ts = ts}
