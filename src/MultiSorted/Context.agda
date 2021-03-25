@@ -22,3 +22,6 @@ sort-of (ctx-concat Γ Δ) (var-inr x) = sort-of Δ x
 -- It is absurd to have a variable in the empty context
 ctx-empty-absurd : ∀ {ℓ} {P : var ctx-empty → Set ℓ} (x : var ctx-empty) → P x
 ctx-empty-absurd ()
+
+singleton-context : ∀ (A : Sort) → var (ctx-slot A) → var (ctx-concat ctx-empty (ctx-slot A))
+singleton-context A = λ x → var-inr x
