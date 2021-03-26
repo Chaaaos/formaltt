@@ -44,10 +44,6 @@ module MultiSorted.SyntacticCategory
       ; ∘-resp-≈ = ∘s-resp-≈s
       }
 
-  -- I don't think the name of the following property is the best, I did not find a better one for the moment
-  interp-resp-sort : ∀ {Γ} {x : var Γ} {y} →  Term Γ (sort-of Γ x) → Term Γ (sort-of (Product.interp-sort-var 𝒮 {Σ = Σ} ctx-slot x) y)
-  interp-resp-sort {y = var-var} = λ t → t
-
   -- We use the product structure which gives back the context directly
   prod-𝒮 : Context → Context
   prod-𝒮 Γ = Γ

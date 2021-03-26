@@ -59,18 +59,33 @@ module MultiSorted.AlgebraicTheory where
 
     infixl 7 _∘s_
 
+  -- Axioms
+  record Axiom (Σ : Signature) : Set where
+    field
+      ax-ctx : Signature.Context Σ
+      ax-sort : Signature.sort Σ
+      ax-lhs : Signature.Term Σ ax-ctx ax-sort
+      ax-rhs : Signature.Term Σ ax-ctx ax-sort
+
   -- Theory
   -- an equational theory is a family of equations over a given sort
   record Theory ℓ (Σ : Signature) : Set (lsuc ℓ) where
-
     open Signature Σ public
-
     field
       eq : Set ℓ -- the equations
-      eq-ctx : eq → Context -- the context of the equation ε
-      eq-sort : eq → sort -- the sort of the left-hand and right-hand sides
-      eq-lhs : ∀ (ε : eq) → Term (eq-ctx ε) (eq-sort ε) -- the left-hand side
-      eq-rhs : ∀ (ε : eq) → Term (eq-ctx ε) (eq-sort ε) -- the right-hand side
+      eq-ax : eq → Axiom Σ
+
+    eq-ctx : eq → Context
+    eq-ctx ε = Axiom.ax-ctx (eq-ax ε)
+
+    eq-sort : eq → sort
+    eq-sort ε = Axiom.ax-sort (eq-ax ε)
+
+    eq-lhs : ∀ (ε : eq) → Term (eq-ctx ε) (eq-sort ε)
+    eq-lhs ε = Axiom.ax-lhs (eq-ax ε)
+
+    eq-rhs : ∀ (ε : eq) → Term (eq-ctx ε) (eq-sort ε)
+    eq-rhs ε = Axiom.ax-rhs (eq-ax ε)
 
     -- equality of terms
     data eq-term : (Γ : Context) (A : sort) → Term Γ A → Term Γ A → Set (lsuc ℓ) where
