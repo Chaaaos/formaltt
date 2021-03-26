@@ -21,16 +21,14 @@ module MultiSorted.UniversalModel
   𝒰 : Model.Model T cartesian-𝒮 ℐ
   𝒰 =
      record
-        { model-eq = λ ε var-var →
+        { model-eq = λ ε → λ { var-var →
                        let open SetoidR (eq-setoid (eq-ctx ε) (sort-of (ctx-slot (eq-sort ε)) var-var)) in
-                       begin
-                       Interpretation.Interpretation.interp-term ℐ (eq-lhs ε) var-var ≈⟨ ≡-⊢-≈ (≡-sort-singleton-context) ⟩
-                       {!!}
-                             }
-
- -- sort-singleton-context (interp-term (eq-lhs ε) var-var) ≈⟨ interp-term-self (eq-lhs ε) var-var ⟩
- --                         eq-lhs ε ≈⟨ id-action ⟩
- --                         eq-lhs ε [ id-s ]s ≈⟨ eq-axiom ε id-s ⟩
- --                         eq-rhs ε [ id-s ]s ≈˘⟨ id-action ⟩
- --                         eq-rhs ε ≈˘⟨ interp-term-self (eq-rhs ε) var-var ⟩
- --                         sort-singleton-context (interp-term (eq-rhs ε) var-var) ∎
+                         begin
+                         interp-term (eq-lhs ε) var-var ≈⟨ interp-term-self (eq-lhs ε) var-var ⟩
+                         eq-lhs ε ≈⟨ id-action ⟩
+                         eq-lhs ε [ id-s ]s ≈⟨ eq-axiom ε id-s ⟩
+                         eq-rhs ε [ id-s ]s ≈˘⟨ id-action ⟩
+                         eq-rhs ε ≈˘⟨ interp-term-self (eq-rhs ε) var-var ⟩
+                         interp-term (eq-rhs ε) var-var ∎
+                     }
+        }
