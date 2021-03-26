@@ -1,6 +1,7 @@
 open import SingleSorted.AlgebraicTheory
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+open import SingleSorted.Substitution
 
 module SingleSorted.Group where
 
@@ -92,11 +93,24 @@ t ∗ s =  tm-oper mul λ{ xs → δ {t = t} {s = s} xs}
 _ⁱ : ∀ {Γ : Context} →  Term {Σ} Γ → Term {Σ} Γ
 t ⁱ =  tm-oper inv λ{ x → σ {t = t} x}
 
+-- _∗_ : ∀ {Γ} → Term {Σ} Γ → Term {Σ} Γ → Term {Σ} Γ
+-- t ∗ s =  tm-oper mul λ{ (var-inl x) → t ; (var-inr args) → s}
+
+-- _ⁱ : ∀ {Γ : Context} →  Term {Σ} Γ → Term {Σ} Γ
+-- t ⁱ =  tm-oper inv λ{ x → t }
+
 infixl 5 _∗_
 infix 6 _ⁱ
 
 _ : Term {Σ} (ctx 2)
 _ = tm-var (var-inl (var-inr var-var)) ∗ tm-var (var-inr var-var)
+
+_ : Term {Σ} (ctx 1)
+_ = e' ∗ a
+  where
+  a : Term {Σ} (ctx 1)
+  a = tm-var (var-inr var-var)
+
 
 𝒢 : Theory lzero Σ
 𝒢 = record
@@ -132,8 +146,16 @@ _ = tm-var (var-inl (var-inr var-var)) ∗ tm-var (var-inr var-var)
 
 open Theory 𝒢
 
-
 e-left-eq : (ctx 1) ⊢ e' ∗ (tm-var (var-inr var-var)) ≈ (tm-var (var-inr var-var))
-e-left-eq = eq-axiom {!e-left!} id-substitution
+e-left-eq = eq-axiom-id e-left
+
+-- e-left-eq-general : ∀ {Γ : Context} {x : Term {Σ} Γ} → Γ ⊢ e' ∗ x ≈ x
+-- e-left-eq-general {Γ} {x} = {!!}
 
 
+unique-var : ∀ (x : var (ctx 1)) → x ≡ (var-inr var-var)
+unique-var (var-inr var-var) = refl
+
+-- expansion : ∀ {Γ : Context} (x : Term {Σ} (ctx 1)) → (ctx 1) ⊢ e' ≈ x ⁱ ∗ x
+-- expansion {Γ} (tm-var x) = eq-symm ( {!!})
+-- expansion {Γ} (tm-oper f x) = eq-symm ( {!!})
