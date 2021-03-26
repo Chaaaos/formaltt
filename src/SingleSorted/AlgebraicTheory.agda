@@ -49,14 +49,28 @@ module SingleSorted.AlgebraicTheory where
 
   infixl 7 _∘s_
 
+  -- Axioms are equations in context
+  record Axiom (Σ : Signature) : Set where
+    field
+      ax-ctx : Context
+      ax-lhs : Term {Σ} ax-ctx
+      ax-rhs : Term {Σ} ax-ctx
+
   -- Theory
   -- an equational theory is a family of equations over a given sort
   record Theory ℓ (Σ : Signature) : Set (lsuc ℓ) where
     field
-      eq : Set ℓ -- the equations
-      eq-ctx : ∀ (ε : eq) → Context -- the context of the equation ε
-      eq-lhs : ∀ (ε : eq) → Term {Σ} (eq-ctx ε) -- the left-hand side
-      eq-rhs : ∀ (ε : eq) → Term {Σ} (eq-ctx ε) -- the right-hand side
+      eq : Set ℓ -- the axiom names
+      eq-ax : eq → Axiom Σ -- the axioms
+
+    eq-ctx : eq → Context
+    eq-ctx ε = Axiom.ax-ctx (eq-ax ε)
+
+    eq-lhs : ∀ (ε : eq) → Term {Σ} (eq-ctx ε)
+    eq-lhs ε = Axiom.ax-lhs (eq-ax ε)
+
+    eq-rhs : ∀ (ε : eq) → Term {Σ} (eq-ctx ε)
+    eq-rhs ε = Axiom.ax-rhs (eq-ax ε)
 
     infix 4 _⊢_≈_
 
