@@ -26,7 +26,7 @@ module MultiSorted.Model {o ℓ e ℓt}
     open HomReasoning
 
     field
-      model-eq : ∀ (ε : eq) → interp-term (eq-lhs ε) ≈ interp-term (eq-rhs ε)
+      model-eq : ∀ (ε : ax) → interp-term (ax-lhs ε) ≈ interp-term (ax-rhs ε)
 
     -- Soundness of semantics
     module _ where
@@ -43,12 +43,12 @@ module MultiSorted.Model {o ℓ e ℓt}
           interp-term (v [ σ ]s) ∎
 
       -- the soundness statement
-      model-⊢-≈ : ∀ {Γ} {A} {s t : Term Γ A} → Γ ⊢ s ≈ t ⦂ A → interp-term s ≈ interp-term t
+      model-⊢-≈ : ∀ {Γ} {A} {s t : Term Γ A} → ⊢ Γ ∥ s ≈ t ⦂ A → interp-term s ≈ interp-term t
       model-⊢-≈ eq-refl =  Equiv.refl
       model-⊢-≈ (eq-symm ξ) = ⟺ (model-⊢-≈ ξ)
       model-⊢-≈ (eq-tran ξ θ) = (model-⊢-≈ ξ) ○ (model-⊢-≈ θ)
       model-⊢-≈ (eq-congr ξ) = ∘-resp-≈ʳ (unique λ i → project ○ ⟺ (model-⊢-≈ (ξ i)) )
-      model-⊢-≈ (eq-axiom ε σ) = model-resp-[]s {u = eq-lhs ε} {v = eq-rhs ε} (model-eq ε)
+      model-⊢-≈ (eq-axiom ε σ) = model-resp-[]s {u = ax-lhs ε} {v = ax-rhs ε} (model-eq ε)
 
   -- Every theory has the trivial model, whose carrier is the terminal object
   Trivial : Model (Interpretation.Trivial Σ cartesian-𝒞)

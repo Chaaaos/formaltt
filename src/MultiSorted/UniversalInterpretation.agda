@@ -32,6 +32,6 @@ module MultiSorted.UniversalInterpretation
 
   open Interpretation.Interpretation ℐ
 
-  interp-term-self : ∀ {Γ} {A} (t : Term Γ A) (y : var (interp-sort A)) → Γ ⊢ interp-term t y ≈ t ⦂ A
+  interp-term-self : ∀ {Γ} {A} (t : Term Γ A) (y : var (interp-sort A)) → ⊢ Γ ∥ (interp-term t y) ≈ t ⦂ A
   interp-term-self (tm-var x) _ = eq-refl
   interp-term-self (tm-oper f xs) _ =  eq-congr (λ i → interp-term-self (xs i) var-var)
