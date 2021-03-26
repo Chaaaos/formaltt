@@ -107,18 +107,18 @@ module MultiSorted.AlgebraicTheory where
     ≡-⊢-≈ refl = eq-refl
 
     -- the action of the identity substitution is the identity
-    id-action : ∀ {Γ : Context} {A} {a : Term Γ A} → (Γ ⊢ a ≈ (a [ id-s ]s) ⦂ A)
+    id-action : ∀ {Γ : Context} {A} {a : Term Γ A} → Γ ⊢ a ≈ a [ id-s ]s ⦂ A
     id-action {a = tm-var a} = eq-refl
     id-action {a = tm-oper f x} = eq-congr (λ i → id-action {a = x i})
 
-    eq-axiom-id : ∀ (ε : eq) → eq-ctx ε ⊢ eq-lhs ε ≈ eq-rhs ε ⦂ (eq-sort ε)
+    eq-axiom-id : ∀ (ε : eq) → eq-ctx ε ⊢ eq-lhs ε ≈ eq-rhs ε ⦂ eq-sort ε
     eq-axiom-id ε = eq-tran id-action (eq-tran (eq-axiom ε id-s) (eq-symm id-action))
 
     eq-setoid : ∀ (Γ : Context) (A : sort) → Setoid lzero (lsuc ℓ)
     eq-setoid Γ A =
       record
         { Carrier = Term Γ A
-        ;  _≈_ = λ s t → (Γ ⊢ s ≈ t ⦂ A)
+        ;  _≈_ = λ s t → Γ ⊢ s ≈ t ⦂ A
         ; isEquivalence =
             record
               { refl = eq-refl
