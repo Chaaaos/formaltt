@@ -33,8 +33,8 @@ module SingleSorted.AlgebraicTheory where
     infix  4 _⇒s_
 
     -- identity substitution
-    id-substitution : ∀ {Γ : Context} → Γ ⇒s Γ
-    id-substitution = tm-var
+    id-s : ∀ {Γ : Context} → Γ ⇒s Γ
+    id-s = tm-var
 
     -- the action of a substitution on a term (contravariant)
     _[_]s : ∀ {Γ Δ : Context} → Term Δ → Γ ⇒s Δ → Term Γ
@@ -93,12 +93,12 @@ module SingleSorted.AlgebraicTheory where
     ≡-⊢-≈ refl = eq-refl
 
     -- the action of the identity substitution is the identity
-    id-action : ∀ {Γ : Context} {a : Term Γ} → (Γ ⊢ a ≈ (a [ id-substitution ]s))
+    id-action : ∀ {Γ : Context} {a : Term Γ} → (Γ ⊢ a ≈ (a [ id-s ]s))
     id-action {a = tm-var a} = eq-refl
     id-action {a = tm-oper f x} = eq-congr (λ i → id-action {a = x i})
 
     eq-axiom-id : ∀ (ε : eq) → eq-ctx ε ⊢ eq-lhs ε ≈ eq-rhs ε
-    eq-axiom-id ε = eq-tran id-action (eq-tran (eq-axiom ε id-substitution) (eq-symm id-action))
+    eq-axiom-id ε = eq-tran id-action (eq-tran (eq-axiom ε id-s) (eq-symm id-action))
 
     eq-setoid : ∀ (Γ : Context) → Setoid lzero (lsuc ℓ)
     eq-setoid Γ =

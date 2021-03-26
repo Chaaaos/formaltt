@@ -28,7 +28,7 @@ module SingleSorted.SyntacticCategory
       { Obj = Context
       ; _⇒_ = _⇒s_
       ; _≈_ = _≈s_
-      ; id =  id-substitution
+      ; id =  id-s
       ; _∘_ =  _∘s_
       ; assoc = λ {_ _ _ _ _ _ σ} x → subst-∘s (σ x)
       ; sym-assoc =  λ {_ _ _ _ _ _ σ} x → eq-symm (subst-∘s (σ x))

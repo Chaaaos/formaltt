@@ -8,7 +8,7 @@ module SingleSorted.Substitution {ℓ} {Σ : Signature} (T : Theory ℓ Σ) wher
   open Theory T
 
   -- an equality is preserved by the action of the identity
-  eq-id-action : ∀ {Γ : Context} {u v : Term Γ} → (Γ ⊢ (u [ id-substitution ]s) ≈ (v [ id-substitution ]s)) → (Γ ⊢ u ≈ v)
+  eq-id-action : ∀ {Γ : Context} {u v : Term Γ} → (Γ ⊢ (u [ id-s ]s) ≈ (v [ id-s ]s)) → (Γ ⊢ u ≈ v)
   eq-id-action {u = u} {v = v} p = eq-tran (id-action {a = u}) (eq-tran p (eq-symm (id-action {a = v})))
 
   -- equality of substitutions
@@ -30,7 +30,7 @@ module SingleSorted.Substitution {ℓ} {Σ : Signature} (T : Theory ℓ Σ) wher
   trans-subst {Γ} {Δ} {f} {g} {h} p q = λ x → eq-tran (p x) (q x)
 
   -- neutrality of tm-var
-  tm-var-id : ∀ {Γ : Context} {x : Term Γ} → Γ ⊢ x [ id-substitution ]s ≈ x
+  tm-var-id : ∀ {Γ : Context} {x : Term Γ} → Γ ⊢ x [ id-s ]s ≈ x
   tm-var-id {x = tm-var x} = eq-refl
   tm-var-id {x = tm-oper f x} = eq-congr (λ i → tm-var-id)
 
