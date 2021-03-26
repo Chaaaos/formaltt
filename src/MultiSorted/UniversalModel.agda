@@ -18,7 +18,7 @@ module MultiSorted.UniversalModel
   open Interpretation.Interpretation ℐ
   open SyntacticCategory T
 
-  𝒰 : Model.Model T cartesian-𝒮 ℐ
+  𝒰 : Model.Model T ℐ
   𝒰 =
      record
         { model-eq = λ ε var-var →
@@ -33,8 +33,9 @@ module MultiSorted.UniversalModel
         }
 
 
-  completeness : ∀ (ε : Equation Σ) → (⊨ ε) → (⊢ ε)
-  completeness ε p =
+  -- The universal model is universal
+  universality : ∀ (ε : Equation Σ) → ⊨ ε → ⊢ ε
+  universality ε p =
     let open Equation in
     let open SetoidR (eq-setoid (eq-ctx ε) (eq-sort ε)) in
       (begin
@@ -42,4 +43,3 @@ module MultiSorted.UniversalModel
         interp-term (eq-lhs ε) var-var ≈⟨ p var-var ⟩
         interp-term (eq-rhs ε) var-var ≈⟨ interp-term-self (eq-rhs ε) var-var ⟩
         eq-rhs ε ∎)
--- eq-tran (eq-symm (interp-term-self (eq-lhs ε) var-var))
