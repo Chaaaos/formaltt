@@ -32,3 +32,5 @@ module MultiSorted.UniversalModel
                          interp-term (ax-rhs ε) var-var ∎
         }
 
+  completeness : ∀ (ε : Equation Σ) → (⊨ ε) → (⊢ ε)
+  completeness (make-eq eq-ctx eq-sort eq-lhs eq-rhs) p = {!!}

@@ -33,6 +33,11 @@ module MultiSorted.Interpretation
     interp-subst : ∀ {Γ Δ} → Γ ⇒s Δ → prod Γ ⇒ prod Δ
     interp-subst {Γ} {Δ} σ = tuple Δ λ i → interp-term (σ i)
 
+    -- the equality of interpretations
+    ⊨_ : (ε : Equation Σ) → Set e
+    open Equation
+    ⊨ ε = interp-term (eq-lhs ε) ≈ interp-term (eq-rhs ε)
+
     -- interpretation commutes with substitution
     open HomReasoning
 

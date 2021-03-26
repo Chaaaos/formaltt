@@ -26,7 +26,7 @@ module MultiSorted.Model {o ℓ e ℓt}
     open HomReasoning
 
     field
-      model-eq : ∀ (ε : ax) → interp-term (ax-lhs ε) ≈ interp-term (ax-rhs ε)
+      model-eq : ∀ (ε : ax) → ⊨ ax-eq (ε)
 
     -- Soundness of semantics
     module _ where
@@ -43,7 +43,7 @@ module MultiSorted.Model {o ℓ e ℓt}
           interp-term (v [ σ ]s) ∎
 
       -- the soundness statement
-      model-⊢-≈ : ∀ {Γ} {A} {s t : Term Γ A} → ⊢ Γ ∥ s ≈ t ⦂ A → interp-term s ≈ interp-term t
+      model-⊢-≈ : ∀ {ε : Equation Σ} → ⊢ ε → ⊨ ε
       model-⊢-≈ eq-refl =  Equiv.refl
       model-⊢-≈ (eq-symm ξ) = ⟺ (model-⊢-≈ ξ)
       model-⊢-≈ (eq-tran ξ θ) = (model-⊢-≈ ξ) ○ (model-⊢-≈ θ)
