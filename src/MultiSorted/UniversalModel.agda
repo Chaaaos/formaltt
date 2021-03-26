@@ -32,3 +32,14 @@ module MultiSorted.UniversalModel
                          interp-term (ax-rhs ε) var-var ∎
         }
 
+
+  completeness : ∀ (ε : Equation Σ) → (⊨ ε) → (⊢ ε)
+  completeness ε p =
+    let open Equation in
+    let open SetoidR (eq-setoid (eq-ctx ε) (eq-sort ε)) in
+      (begin
+        eq-lhs ε ≈˘⟨ interp-term-self (eq-lhs ε) var-var ⟩
+        interp-term (eq-lhs ε) var-var ≈⟨ p var-var ⟩
+        interp-term (eq-rhs ε) var-var ≈⟨ interp-term-self (eq-rhs ε) var-var ⟩
+        eq-rhs ε ∎)
+-- eq-tran (eq-symm (interp-term-self (eq-lhs ε) var-var))
