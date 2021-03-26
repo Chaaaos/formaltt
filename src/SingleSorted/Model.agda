@@ -31,7 +31,7 @@ module SingleSorted.Model {o ℓ e ℓt}
       open Power.Powered interp-pow
 
       -- first we show that substitution preserves validity
-      model-resp-[]s : ∀ {Γ Δ} {u v : Term Γ} {σ : substitution Δ Γ} →
+      model-resp-[]s : ∀ {Γ Δ} {u v : Term Γ} {σ : Δ ⇒s Γ} →
                        interp-term u ≈ interp-term v → interp-term (u [ σ ]s) ≈ interp-term (v [ σ ]s)
       model-resp-[]s {u = u} {v = v} {σ = σ} ξ =
         begin

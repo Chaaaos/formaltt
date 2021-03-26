@@ -26,7 +26,7 @@ module SingleSorted.SyntacticCategory
   𝒮 =
     record
       { Obj = Context
-      ; _⇒_ = substitution
+      ; _⇒_ = _⇒s_
       ; _≈_ = _≈s_
       ; id =  id-substitution
       ; _∘_ =  _∘s_
@@ -77,7 +77,7 @@ module SingleSorted.SyntacticCategory
       ; project₂ = λ x → eq-refl
       ; unique = λ {Θ σ σ₁ σ₂} ξ₁ ξ₂ z → u Θ σ σ₁ σ₂ ξ₁ ξ₂ z
       }
-    where u : ∀ Θ (σ : substitution Θ (ctx-concat Γ Δ)) (σ₁ : substitution Θ Γ) (σ₂ : substitution Θ Δ) →
+    where u : ∀ Θ (σ : Θ ⇒s (ctx-concat Γ Δ)) (σ₁ : Θ ⇒s Γ) (σ₂ : Θ ⇒s Δ) →
                   ((λ x → σ (var-inl x)) ≈s σ₁) → ((λ y → σ (var-inr y)) ≈s σ₂) → ⟨ σ₁ , σ₂ ⟩s ≈s σ
           u Θ σ σ₁ σ₂ ξ₁ ξ₂ (var-inl z) = eq-symm (ξ₁ z)
           u Θ σ σ₁ σ₂ ξ₁ ξ₂ (var-inr z) = eq-symm (ξ₂ z)

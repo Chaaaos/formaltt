@@ -35,13 +35,13 @@ module SingleSorted.Interpretation
     interp-ctx Γ = pow Γ
 
     -- the interpretation of a substitution
-    interp-subst : ∀ {Γ Δ} → substitution Γ Δ → interp-ctx Γ ⇒ interp-ctx Δ
+    interp-subst : ∀ {Γ Δ} → Γ ⇒s Δ → interp-ctx Γ ⇒ interp-ctx Δ
     interp-subst {Γ} {Δ} σ = tuple Δ λ i → interp-term (σ i)
 
     -- interpretation commutes with substitution
     open HomReasoning
 
-    interp-[]s : ∀ {Γ Δ} {t : Term Δ} {σ : substitution Γ Δ} →
+    interp-[]s : ∀ {Γ Δ} {t : Term Δ} {σ : Γ ⇒s Δ} →
                  interp-term (t [ σ ]s) ≈ interp-term t ∘ interp-subst σ
     interp-[]s {Γ} {Δ} {tm-var x} {σ} = ⟺ (project {Γ = Δ})
     interp-[]s {Γ} {Δ} {tm-oper f ts} {σ} = (∘-resp-≈ʳ

@@ -27,22 +27,24 @@ module SingleSorted.AlgebraicTheory where
       tm-oper : ∀ (f : oper) → (arg (oper-arity f) → Term Γ) → Term Γ
 
     -- Substitutions (definitions - some useful properties are in another file)
-    substitution : ∀ (Γ Δ : Context) → Set
-    substitution Γ Δ = var Δ → Term Γ
+    _⇒s_ : ∀ (Γ Δ : Context) → Set
+    Γ ⇒s Δ = var Δ → Term Γ
+
+    infix  4 _⇒s_
 
     -- identity substitution
-    id-substitution : ∀ {Γ : Context} → substitution Γ Γ
+    id-substitution : ∀ {Γ : Context} → Γ ⇒s Γ
     id-substitution = tm-var
 
     -- the action of a substitution on a term (contravariant)
-    _[_]s : ∀ {Γ Δ : Context} → Term Δ → substitution Γ Δ → Term Γ
+    _[_]s : ∀ {Γ Δ : Context} → Term Δ → Γ ⇒s Δ → Term Γ
     (tm-var x) [ σ ]s = σ x
     (tm-oper f x) [ σ ]s = tm-oper f (λ i → x i [ σ ]s)
 
     infixr 6 _[_]s
 
     -- composition of substitutions
-    _∘s_ : ∀ {Γ Δ Θ : Context} → substitution Δ Θ → substitution Γ Δ → substitution Γ Θ
+    _∘s_ : ∀ {Γ Δ Θ : Context} → Δ ⇒s Θ → Γ ⇒s Δ → Γ ⇒s Θ
     (σ ∘s ρ) x = σ x [ ρ ]s
 
     infixl 7 _∘s_
@@ -84,7 +86,7 @@ module SingleSorted.AlgebraicTheory where
       eq-congr : ∀ {Γ} {f : oper} {xs ys : arg (oper-arity f) → Term Γ} →
                  (∀ i → Γ ⊢ xs i ≈ ys i) → Γ ⊢ tm-oper f xs ≈ tm-oper f ys
       -- equational axiom
-      eq-axiom : ∀ (ε : eq) {Γ : Context} (σ : substitution Γ (eq-ctx ε)) →
+      eq-axiom : ∀ (ε : eq) {Γ : Context} (σ : Γ ⇒s (eq-ctx ε)) →
                  Γ ⊢ eq-lhs ε [ σ ]s ≈ eq-rhs ε [ σ ]s
 
     ≡-⊢-≈ : {Γ : Context} {s t : Term Γ} → s ≡ t → Γ ⊢ s ≈ t
