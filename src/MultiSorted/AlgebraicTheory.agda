@@ -60,65 +60,69 @@ module MultiSorted.AlgebraicTheory where
     infixl 7 _∘s_
 
   -- Axioms
-  record Axiom (Σ : Signature) : Set where
+  record Equation (Σ : Signature) : Set where
+    constructor _∥_⦂_≈_
     field
-      ax-ctx : Signature.Context Σ
-      ax-sort : Signature.sort Σ
-      ax-lhs : Signature.Term Σ ax-ctx ax-sort
-      ax-rhs : Signature.Term Σ ax-ctx ax-sort
+      eq-ctx : Signature.Context Σ
+      eq-sort : Signature.sort Σ
+      eq-lhs : Signature.Term Σ eq-ctx eq-sort
+      eq-rhs : Signature.Term Σ eq-ctx eq-sort
+  infix 8 _∥_⦂_≈_
 
   -- Theory
   -- an equational theory is a family of equations over a given sort
   record Theory ℓ (Σ : Signature) : Set (lsuc ℓ) where
     open Signature Σ public
     field
-      eq : Set ℓ -- the equations
-      eq-ax : eq → Axiom Σ
+      ax : Set ℓ -- the axioms
+      ax-eq : ax → Equation Σ
 
-    eq-ctx : eq → Context
-    eq-ctx ε = Axiom.ax-ctx (eq-ax ε)
+    ax-ctx : ax → Context
+    ax-ctx ε = Equation.eq-ctx (ax-eq ε)
 
-    eq-sort : eq → sort
-    eq-sort ε = Axiom.ax-sort (eq-ax ε)
+    ax-sort : ax → sort
+    ax-sort ε = Equation.eq-sort (ax-eq ε)
 
-    eq-lhs : ∀ (ε : eq) → Term (eq-ctx ε) (eq-sort ε)
-    eq-lhs ε = Axiom.ax-lhs (eq-ax ε)
+    ax-lhs : ∀ (ε : ax) → Term (ax-ctx ε) (ax-sort ε)
+    ax-lhs ε = Equation.eq-lhs (ax-eq ε)
 
-    eq-rhs : ∀ (ε : eq) → Term (eq-ctx ε) (eq-sort ε)
-    eq-rhs ε = Axiom.ax-rhs (eq-ax ε)
+    ax-rhs : ∀ (ε : ax) → Term (ax-ctx ε) (ax-sort ε)
+    ax-rhs ε = Equation.eq-rhs (ax-eq ε)
 
     -- equality of terms
-    data eq-term : (Γ : Context) (A : sort) → Term Γ A → Term Γ A → Set (lsuc ℓ) where
+    data ⊢_ : Equation Σ → Set (lsuc ℓ) where
       -- general rules
-      eq-refl : ∀ {Γ A} {t : Term Γ A} → eq-term Γ A t t
-      eq-symm : ∀ {Γ A} {s t : Term Γ A} → eq-term Γ A s t → eq-term Γ A t s
-      eq-tran : ∀ {Γ A} {s t u : Term Γ A} → eq-term Γ A s t → eq-term Γ A t u → eq-term Γ A s u
+      eq-refl : ∀ {Γ A} {t : Term Γ A} → ⊢ (Γ ∥ A ⦂ t ≈ t)
+      eq-symm : ∀ {Γ A} {s t : Term Γ A} → ⊢ (Γ ∥ A ⦂ s ≈ t) → ⊢ (Γ ∥ A ⦂ t ≈ s)
+      eq-tran : ∀ {Γ A} {s t u : Term Γ A} → ⊢ (Γ ∥ A ⦂ s ≈ t) → ⊢ (Γ ∥ A ⦂ t ≈ u) → ⊢ (Γ ∥ A ⦂ s ≈ u)
       -- congruence rule
       eq-congr : ∀ {Γ} {f : oper} {xs ys : ∀ (i : arg (oper-arity f)) → Term Γ (sort-of (oper-arity f) i)} →
-                (∀ i → eq-term Γ (sort-of (oper-arity f) i) (xs i)  (ys i)) → eq-term Γ (oper-sort f) (tm-oper f xs)  (tm-oper f ys)
+                (∀ i → ⊢ (Γ ∥ (sort-of (oper-arity f) i) ⦂ (xs i) ≈ (ys i))) → ⊢ (Γ ∥ (oper-sort f) ⦂ (tm-oper f xs) ≈ (tm-oper f ys))
       -- equational axiom
-      eq-axiom : ∀ (ε : eq) {Γ : Context} (σ : Γ ⇒s eq-ctx ε) →
-                 eq-term Γ (eq-sort ε) (eq-lhs ε [ σ ]s)  (eq-rhs ε [ σ ]s)
+      eq-axiom : ∀ (ε : ax) {Γ : Context} (σ : Γ ⇒s ax-ctx ε) →
+                 ⊢ (Γ ∥ (ax-sort ε) ⦂ (ax-lhs ε [ σ ]s) ≈ (ax-rhs ε [ σ ]s))
 
-    syntax eq-term Γ A s t = Γ ⊢ s ≈ t ⦂ A
-    infix 4 eq-term
+    -- syntax eq-term Γ A s t = Γ ⊢ s ≈ t ⦂ A
+    -- infix 4 eq-term
 
-    ≡-⊢-≈ : ∀ {Γ : Context} {A} {s t : Term Γ A} → s ≡ t → Γ ⊢ s ≈ t ⦂ A
+    -- I did not manage to have a nice syntax when I defined the equations, with the sort at the end of the jugement, and I have to fix the fixity in order to have less parenthesis
+
+    ≡-⊢-≈ : ∀ {Γ : Context} {A} {s t : Term Γ A} → s ≡ t → ⊢ (Γ ∥ A ⦂ s ≈ t)
     ≡-⊢-≈ refl = eq-refl
 
     -- the action of the identity substitution is the identity
-    id-action : ∀ {Γ : Context} {A} {a : Term Γ A} → (Γ ⊢ a ≈ (a [ id-s ]s) ⦂ A)
+    id-action : ∀ {Γ : Context} {A} {a : Term Γ A} → (⊢ (Γ ∥ A ⦂ a ≈ (a [ id-s ]s)))
     id-action {a = tm-var a} = eq-refl
     id-action {a = tm-oper f x} = eq-congr (λ i → id-action {a = x i})
 
-    eq-axiom-id : ∀ (ε : eq) → eq-ctx ε ⊢ eq-lhs ε ≈ eq-rhs ε ⦂ (eq-sort ε)
+    eq-axiom-id : ∀ (ε : ax) → ⊢ (ax-ctx ε ∥ (ax-sort ε) ⦂ ax-lhs ε ≈ ax-rhs ε)
     eq-axiom-id ε = eq-tran id-action (eq-tran (eq-axiom ε id-s) (eq-symm id-action))
 
     eq-setoid : ∀ (Γ : Context) (A : sort) → Setoid lzero (lsuc ℓ)
     eq-setoid Γ A =
       record
         { Carrier = Term Γ A
-        ;  _≈_ = λ s t → (Γ ⊢ s ≈ t ⦂ A)
+        ;  _≈_ = λ s t → (⊢ (Γ ∥ A ⦂ s ≈ t))
         ; isEquivalence =
             record
               { refl = eq-refl
