@@ -14,8 +14,6 @@ module SingleSorted.Model {o ℓ e ℓt}
           {𝒞 : Category.Category o ℓ e}
           (cartesian-𝒞 : Cartesian.Cartesian 𝒞) where
 
-  open Signature Σ
-
   -- Model of a theory
 
   record Model (I : Interpretation.Interpretation Σ cartesian-𝒞) : Set (ℓt ⊔ o ⊔ ℓ ⊔ e) where
@@ -33,7 +31,7 @@ module SingleSorted.Model {o ℓ e ℓt}
       open Power.Powered interp-pow
 
       -- first we show that substitution preserves validity
-      model-resp-[]s : ∀ {Γ Δ} {u v : Term Γ} {σ : substitution Σ Δ Γ} →
+      model-resp-[]s : ∀ {Γ Δ} {u v : Term Γ} {σ : substitution Δ Γ} →
                        interp-term u ≈ interp-term v → interp-term (u [ σ ]s) ≈ interp-term (v [ σ ]s)
       model-resp-[]s {u = u} {v = v} {σ = σ} ξ =
         begin
