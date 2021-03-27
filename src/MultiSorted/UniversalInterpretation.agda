@@ -32,18 +32,6 @@ module MultiSorted.UniversalInterpretation
 
   open Interpretation.Interpretation ℐ
 
-  -- A term is essentially interpreted by itself
-  sort-singleton-context : ∀ {Γ} {A} {y : var (ctx-slot A)} → Term Γ (sort-of (ctx-slot A) y) → Term Γ A
-  sort-singleton-context {y = var-var} (tm-var x) = tm-var x
-  sort-singleton-context {y = var-var} (tm-oper f x) = tm-oper f x
-
-  ≡-sort-singleton-context : ∀ {Γ} {A} {t : Term Γ A} → interp-term {Γ = Γ} t var-var ≡ sort-singleton-context {y = var-var} (interp-term {Γ = Γ} t var-var)
-  ≡-sort-singleton-context {t = Signature.tm-var x} = refl
-  ≡-sort-singleton-context {t = Signature.tm-oper f x} = refl
-
-  interp-term-self : ∀ {Γ} {A} (t : Term Γ A) (y : var (interp-sort A)) → Γ ⊢ sort-singleton-context {y = y} (interp-term t y) ≈ t ⦂ A
+  interp-term-self : ∀ {Γ} {A} (t : Term Γ A) (y : var (interp-sort A)) → Γ ⊢ interp-term t y ≈ t ⦂ A
   interp-term-self (tm-var x)  (var-var) = eq-refl
-  interp-term-self (tm-oper f xs)  (var-var) =  eq-congr λ i → eq-tran (≡-⊢-≈ (≡-sort-singleton-context {t = xs i})) (interp-term-self (xs i) var-var) -- eq-congr (λ i → interp-term-self (xs i) var-var)
-
-  -- The names are too long, I have to find better ones...
-  -- Also, I am not sure that this "sort-singleton-context" is the best way to deal with this (it doesn't seem very clean), but the fact that sort-of (ctx-slot A) y != A makes it difficult to even formulate the property "interp-term-self"
+  interp-term-self (tm-oper f xs)  (var-var) =  eq-congr (λ i → interp-term-self (xs i) var-var)
