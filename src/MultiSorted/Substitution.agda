@@ -3,7 +3,7 @@ open import Data.Fin using (Fin)
 
 open import MultiSorted.AlgebraicTheory
 
-module MultiSorted.Substitution {ℓ} {Σ : Signature} (T : Theory ℓ Σ) where
+module MultiSorted.Substitution {ℓ} {𝓈 ℴ} {Σ : Signature {𝓈} {ℴ}} (T : Theory ℓ Σ) where
 
   open Theory T
 
@@ -12,7 +12,7 @@ module MultiSorted.Substitution {ℓ} {Σ : Signature} (T : Theory ℓ Σ) where
   eq-id-action {u = u} {v = v} p = eq-tran (id-action {a = u}) (eq-tran p (eq-symm (id-action {a = v})))
 
   -- equality of substitutions
-  _≈s_ : ∀ {Γ Δ : Context} → Γ ⇒s Δ → Γ ⇒s Δ → Set (lsuc ℓ)
+  _≈s_ : ∀ {Γ Δ : Context} → Γ ⇒s Δ → Γ ⇒s Δ → Set (lsuc (ℓ ⊔ 𝓈 ⊔ ℴ))
   _≈s_ {Γ} {Δ} σ ρ = ∀ x → ⊢ Γ ∥ σ x ≈ ρ x ⦂ sort-of Δ x
 
   infix 5 _≈s_
@@ -77,3 +77,8 @@ module MultiSorted.Substitution {ℓ} {Σ : Signature} (T : Theory ℓ Σ) where
   ∘s-resp-≈s : ∀ {Γ Δ Θ} {σ₁ σ₂ : Γ ⇒s Δ} {τ₁ τ₂ : Δ ⇒s Θ} →
                τ₁ ≈s τ₂ → σ₁ ≈s σ₂ → τ₁ ∘s σ₁ ≈s τ₂ ∘s σ₂
   ∘s-resp-≈s ξ ζ z = equiv-eq-subst ζ (ξ z)
+
+  -- the action of a substitution on an equation
+  open Equation
+  _[_]s-eq : ∀ (ε : Equation Σ) {Γ : Context} ( σ : Γ ⇒s (eq-ctx ε)) → Equation Σ
+  _[_]s-eq ε {Γ} σ = Γ ∥ ((eq-lhs ε) [ σ ]s) ≈ ((eq-rhs ε) [ σ ]s) ⦂ (eq-sort ε)

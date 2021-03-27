@@ -9,7 +9,8 @@ open import MultiSorted.Substitution
 import MultiSorted.Product as Product
 
 module MultiSorted.Model {o ℓ e ℓt}
-          {Σ : Signature}
+          {𝓈 ℴ}
+          {Σ : Signature {𝓈} {ℴ}}
           (T : Theory ℓt Σ)
           {𝒞 : Category.Category o ℓ e}
           {cartesian-𝒞 : Cartesian.Cartesian 𝒞} where

@@ -1,4 +1,4 @@
-open import Agda.Primitive using (lzero; lsuc)
+open import Agda.Primitive using (lzero; lsuc; _⊔_)
 
 open import Relation.Binary.PropositionalEquality
 import Relation.Binary.Reasoning.Setoid as SetoidR
@@ -14,7 +14,8 @@ import MultiSorted.Product as Product
 
 module MultiSorted.SyntacticCategory
   {ℓt}
-  {Σ : Signature}
+  {𝓈 ℴ}
+  {Σ : Signature {𝓈} {ℴ}}
   (T : Theory ℓt Σ) where
 
   open Theory T
@@ -22,7 +23,7 @@ module MultiSorted.SyntacticCategory
 
   -- The syntactic category
 
-  𝒮 : Category.Category lzero lzero (lsuc ℓt)
+  𝒮 : Category.Category 𝓈 (lsuc ℴ) (lsuc (ℓt ⊔ 𝓈 ⊔ ℴ))
   𝒮 =
     record
       { Obj = Context

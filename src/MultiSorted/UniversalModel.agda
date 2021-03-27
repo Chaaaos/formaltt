@@ -9,7 +9,8 @@ import MultiSorted.SyntacticCategory as SyntacticCategory
 
 module MultiSorted.UniversalModel
   {ℓt}
-  {Σ : Signature}
+  {𝓈 ℴ}
+  {Σ : Signature {𝓈} {ℴ}}
   (T : Theory ℓt Σ) where
 
   open Theory T

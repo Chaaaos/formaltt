@@ -11,7 +11,8 @@ open import Relation.Binary.PropositionalEquality using (_≡_; refl ; cong)
 
 module MultiSorted.UniversalInterpretation
   {ℓt}
-  {Σ : Signature}
+  {𝓈 ℴ}
+  {Σ : Signature {𝓈} {ℴ}}
   (T : Theory ℓt Σ) where
 
   open Theory T

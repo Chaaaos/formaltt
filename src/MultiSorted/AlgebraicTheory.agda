@@ -10,15 +10,15 @@ import MultiSorted.Context as Context
 module MultiSorted.AlgebraicTheory where
 
   -- an algebraic signature
-  record Signature : Set₁ where
+  record Signature {𝓈 ℴ} : Set (lsuc (𝓈 ⊔ ℴ)) where
     field
-      sort : Set -- sorts
-      oper : Set -- operations
+      sort : Set 𝓈 -- sorts
+      oper : Set ℴ -- operations
 
     open Context sort public
 
     -- Arity and arguments
-    Arity : Set
+    Arity : Set 𝓈
     Arity = Context
 
     field
@@ -32,12 +32,12 @@ module MultiSorted.AlgebraicTheory where
     arg-sort f = sort-of (oper-arity f)
 
     -- terms in a context of a given sort
-    data Term (Γ : Context) : ∀ (A : sort) → Set where
+    data Term (Γ : Context) : ∀ (A : sort) → Set (lsuc ℴ) where
       tm-var : ∀ (x : var Γ) → Term Γ (sort-of Γ x)
       tm-oper : ∀ (f : oper) → (∀ (i : arg (oper-arity f)) → Term Γ (arg-sort f i)) → Term Γ (oper-sort f)
 
     -- Substitutions (definitions - some useful properties are in another file)
-    _⇒s_ : ∀ (Γ Δ : Context) → Set
+    _⇒s_ : ∀ (Γ Δ : Context) → Set (lsuc ℴ)
     Γ ⇒s Δ = ∀ (x : var Δ) → Term Γ (sort-of Δ x)
 
     infix  4 _⇒s_
@@ -60,7 +60,7 @@ module MultiSorted.AlgebraicTheory where
     infixl 7 _∘s_
 
   -- Equations
-  record Equation (Σ : Signature) : Set where
+  record Equation {s o} (Σ : Signature {s} {o} ) : Set (lsuc (s ⊔ o)) where
     constructor make-eq
     field
       eq-ctx : Signature.Context Σ
@@ -73,7 +73,7 @@ module MultiSorted.AlgebraicTheory where
   syntax make-eq Γ A s t = Γ ∥ s ≈ t ⦂ A
   -- Theory
   -- an equational theory is a family of axioms over a given sort
-  record Theory ℓ (Σ : Signature) : Set (lsuc ℓ) where
+  record Theory ℓ {𝓈 ℴ} (Σ : Signature {𝓈} {ℴ}) : Set (lsuc (ℓ ⊔ 𝓈 ⊔ ℴ)) where
     open Signature Σ public
     field
       ax : Set ℓ -- the axioms
@@ -94,7 +94,7 @@ module MultiSorted.AlgebraicTheory where
     -- equality of terms
     infix 4 ⊢_
 
-    data ⊢_ : Equation Σ → Set (lsuc ℓ) where
+    data ⊢_ : Equation Σ → Set (lsuc (ℓ ⊔ 𝓈 ⊔ ℴ)) where
       -- general rules
       eq-refl : ∀ {Γ A} {t : Term Γ A} → ⊢ Γ ∥ t ≈ t ⦂ A
       eq-symm : ∀ {Γ A} {s t : Term Γ A} → ⊢ Γ ∥ s ≈ t ⦂ A → ⊢ Γ ∥ t ≈ s ⦂ A
@@ -116,7 +116,7 @@ module MultiSorted.AlgebraicTheory where
     eq-axiom-id : ∀ (ε : ax) → ⊢ (ax-ctx ε ∥ ax-lhs ε ≈ ax-rhs ε ⦂  (ax-sort ε))
     eq-axiom-id ε = eq-tran id-action (eq-tran (eq-axiom ε id-s) (eq-symm id-action))
 
-    eq-setoid : ∀ (Γ : Context) (A : sort) → Setoid lzero (lsuc ℓ)
+    eq-setoid : ∀ (Γ : Context) (A : sort) → Setoid (lsuc ℴ) (lsuc (ℓ ⊔ ℴ ⊔ 𝓈))
     eq-setoid Γ A =
       record
         { Carrier = Term Γ A

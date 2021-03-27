@@ -9,7 +9,8 @@ open import MultiSorted.AlgebraicTheory
 module MultiSorted.Product
        {o ℓ e}
        (𝒞 : Category.Category o ℓ e)
-       {Σ : Signature}
+       {𝓈 ℴ}
+       {Σ : Signature {𝓈} {ℴ}}
        (interp-sort : Signature.sort Σ → Category.Category.Obj 𝒞) where
 
   open Signature Σ
@@ -19,7 +20,7 @@ module MultiSorted.Product
   interp-sort-var : {Γ : Context} → var Γ → Obj
   interp-sort-var {Γ} x = interp-sort (sort-of Γ x)
 
-  record Producted : Set (o ⊔ ℓ ⊔ e) where
+  record Producted : Set (o ⊔ ℓ ⊔ e ⊔ 𝓈) where
 
     field
       prod : Context → Obj
