@@ -42,38 +42,35 @@ ctx (suc n) = ctx-concat (ctx n) ctx-slot
 Σ : Signature
 Σ = record { oper = GroupOp ; oper-arity = λ{ e → ctx-empty ; inv → ctx 1 ; mul → ctx 2} }
 
+open Signature Σ
 
 -- some example terms
-_ : Term {Σ} ctx-1
+_ : Term ctx-1
 _ = tm-var var-var
 
-_ : Term {Σ} ctx-2
+_ : Term ctx-2
 _ = tm-var (var-inr var-var)
 
-_ : Term {Σ} ctx-2
+_ : Term ctx-2
 _ = tm-var (var-inr var-var)
 
 
 -- helper functions for creating terms
-e' : ∀ {Γ : Context} → Term {Σ} Γ
+e' : ∀ {Γ : Context} → Term Γ
 e' {Γ} = tm-oper e λ()
 
--- inv' : ∀ {Γ : Context} → Term {Σ} Γ → Term {Σ} Γ
+-- inv' : ∀ {Γ : Context} → Term Γ → Term Γ
 -- inv' x = tm-oper inv λ{ _ → x}
 
--- mul' : ∀ {Γ : Context} → Term {Σ} Γ → Term {Σ} Γ → Term {Σ} Γ
+-- mul' : ∀ {Γ : Context} → Term Γ → Term Γ → Term Γ
 -- mul' x y = tm-oper mul λ{ (var-inl _) → x ; (var-inr _) → y}
 
 concat-empty : var (ctx-concat ctx-empty ctx-slot) → (var ctx-slot)
 concat-empty (var-inr x) = x
 
 
-x*y : Term {Σ} ctx-2
+x*y : Term ctx-2
 x*y = tm-oper mul λ{ (var-inl x) → tm-var (var-inl (concat-empty x)) ; (var-inr y) → tm-var (var-inr y)}
-
--- group equations
-data GroupEq : Set where
-  mul-assoc e-left e-right inv-left inv-right : GroupEq
 
 -- concat-empty-idʳ : ctx-concat ctx-empty ctx-slot ≡ ctx-slot
 -- concat-empty-idʳ = {!!}
@@ -81,81 +78,86 @@ data GroupEq : Set where
 singleton-context : (var ctx-slot) → var (ctx-concat ctx-empty ctx-slot)
 singleton-context (var-var) = var-inr var-var
 
-σ : ∀ {Γ : Context} {t : Term {Σ} Γ} →  substitution Σ Γ (ctx 1)
+σ : ∀ {Γ : Context} {t : Term Γ} →  Γ ⇒s (ctx 1)
 σ {Γ} {t} = λ{ (var-inr var-var) → t}
 
-δ : ∀ {Γ : Context} {t : Term {Σ} Γ} {s : Term {Σ} Γ} →  substitution Σ Γ (ctx 2)
+δ : ∀ {Γ : Context} {t : Term Γ} {s : Term Γ} →   Γ ⇒s (ctx 2)
 δ {Γ} {t} {s} = λ{ (var-inl x) → t ; (var-inr y) → s}
 
-_∗_ : ∀ {Γ} → Term {Σ} Γ → Term {Σ} Γ → Term {Σ} Γ
+_∗_ : ∀ {Γ} → Term Γ → Term Γ → Term Γ
 t ∗ s =  tm-oper mul λ{ xs → δ {t = t} {s = s} xs}
 
-_ⁱ : ∀ {Γ : Context} →  Term {Σ} Γ → Term {Σ} Γ
+_ⁱ : ∀ {Γ : Context} →  Term Γ → Term Γ
 t ⁱ =  tm-oper inv λ{ x → σ {t = t} x}
 
--- _∗_ : ∀ {Γ} → Term {Σ} Γ → Term {Σ} Γ → Term {Σ} Γ
+-- _∗_ : ∀ {Γ} → Term Γ → Term Γ → Term Γ
 -- t ∗ s =  tm-oper mul λ{ (var-inl x) → t ; (var-inr args) → s}
 
--- _ⁱ : ∀ {Γ : Context} →  Term {Σ} Γ → Term {Σ} Γ
+-- _ⁱ : ∀ {Γ : Context} →  Term Γ → Term Γ
 -- t ⁱ =  tm-oper inv λ{ x → t }
 
 infixl 5 _∗_
 infix 6 _ⁱ
 
-_ : Term {Σ} (ctx 2)
+_ : Term (ctx 2)
 _ = tm-var (var-inl (var-inr var-var)) ∗ tm-var (var-inr var-var)
 
-_ : Term {Σ} (ctx 1)
+_ : Term (ctx 1)
 _ = e' ∗ a
   where
-  a : Term {Σ} (ctx 1)
+  a : Term (ctx 1)
   a = tm-var (var-inr var-var)
+
+-- group equations
+data GroupEq : Set where
+  mul-assoc e-left e-right inv-left inv-right : GroupEq
+
+mul-assoc-ax : Axiom
+e-left-ax : Axiom
+e-right-ax : Axiom
+inv-left-ax : Axiom
+inv-right-ax : Axiom
+
+mul-assoc-ax = record { ax-ctx = ctx 3
+                      ; ax-lhs = x ∗ y ∗ z
+                      ; ax-rhs = x ∗ (y ∗ z)
+                      }
+             where
+             x : Term (ctx 3)
+             y : Term (ctx 3)
+             z : Term (ctx 3)
+             x = tm-var (var-inl (var-inl (var-inr var-var)))
+             y = tm-var (var-inl (var-inr var-var))
+             z = tm-var (var-inr var-var)
+
+e-left-ax = record { ax-ctx = ctx 1 ; ax-lhs = e' ∗ x ; ax-rhs = x }
+  where
+  x : Term (ctx 1)
+  x = tm-var (var-inr var-var)
+
+e-right-ax = record { ax-ctx = ctx 1 ; ax-lhs = x ∗ e' ; ax-rhs = x }
+  where
+  x : Term (ctx 1)
+  x = tm-var (var-inr var-var)
+
+
+inv-left-ax = record { ax-ctx = ctx 1 ; ax-lhs = x ⁱ ∗ x ; ax-rhs = e' }
+  where
+  x : Term (ctx 1)
+  x = tm-var (var-inr var-var)
+
+inv-right-ax = record { ax-ctx = ctx 1 ; ax-lhs = x ∗ x ⁱ ; ax-rhs = e' }
+  where
+  x : Term (ctx 1)
+  x = tm-var (var-inr var-var)
 
 
 𝒢 : Theory lzero Σ
-𝒢 = record
-  { eq = GroupEq
-  ; eq-ctx = λ{ mul-assoc → ctx 3
-                ; e-left → ctx 1
-                ; e-right → ctx 1
-                ; inv-left → ctx 1
-                ; inv-right → ctx 1
-              }
-  ; eq-lhs = λ{ mul-assoc → x ∗ y ∗ z
-                ; e-left → e' ∗ a
-                ; e-right → a ∗ e'
-                ; inv-left → a ⁱ ∗ a
-                ; inv-right → a ∗ a ⁱ
-              }
-  ; eq-rhs = λ{ mul-assoc → x ∗ (y ∗ z)
-                ; e-left → a
-                ; e-right → a
-                ; inv-left → e'
-                ; inv-right → e'
-              }
-  }
-  where
-  x : Term {Σ} (ctx 3)
-  y : Term {Σ} (ctx 3)
-  z : Term {Σ} (ctx 3)
-  a : Term {Σ} (ctx 1)
-  x = tm-var (var-inl (var-inl (var-inr var-var)))
-  y = tm-var (var-inl (var-inr var-var))
-  z = tm-var (var-inr var-var)
-  a = tm-var (var-inr var-var)
-
-open Theory 𝒢
-
-e-left-eq : (ctx 1) ⊢ e' ∗ (tm-var (var-inr var-var)) ≈ (tm-var (var-inr var-var))
-e-left-eq = eq-axiom-id e-left
-
--- e-left-eq-general : ∀ {Γ : Context} {x : Term {Σ} Γ} → Γ ⊢ e' ∗ x ≈ x
--- e-left-eq-general {Γ} {x} = {!!}
-
-
-unique-var : ∀ (x : var (ctx 1)) → x ≡ (var-inr var-var)
-unique-var (var-inr var-var) = refl
-
--- expansion : ∀ {Γ : Context} (x : Term {Σ} (ctx 1)) → (ctx 1) ⊢ e' ≈ x ⁱ ∗ x
--- expansion {Γ} (tm-var x) = eq-symm ( {!!})
--- expansion {Γ} (tm-oper f x) = eq-symm ( {!!})
+𝒢 = record { eq = GroupEq
+            ; eq-ax = λ{ mul-assoc → mul-assoc-ax
+                       ; e-left → e-left-ax
+                       ; e-right → e-right-ax
+                       ; inv-left → inv-left-ax
+                       ; inv-right → inv-right-ax
+                       }
+            }
