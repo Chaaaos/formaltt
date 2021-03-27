@@ -1,6 +1,4 @@
-{-#  OPTIONS --allow-unsolved-metas #-}
-
-open import Agda.Primitive using (lzero; lsuc)
+open import Agda.Primitive using (lzero; lsuc; _⊔_)
 
 open import Relation.Binary.PropositionalEquality
 import Relation.Binary.Reasoning.Setoid as SetoidR
@@ -16,7 +14,8 @@ import MultiSorted.Product as Product
 
 module MultiSorted.SyntacticCategory
   {ℓt}
-  {Σ : Signature}
+  {𝓈 ℴ}
+  {Σ : Signature {𝓈} {ℴ}}
   (T : Theory ℓt Σ) where
 
   open Theory T
@@ -24,7 +23,7 @@ module MultiSorted.SyntacticCategory
 
   -- The syntactic category
 
-  𝒮 : Category.Category lzero lzero (lsuc ℓt)
+  𝒮 : Category.Category 𝓈 (lsuc ℴ) (lsuc (ℓt ⊔ 𝓈 ⊔ ℴ))
   𝒮 =
     record
       { Obj = Context
@@ -44,25 +43,21 @@ module MultiSorted.SyntacticCategory
       ; ∘-resp-≈ = ∘s-resp-≈s
       }
 
-  -- I don't think the name of the following property is the best, I did not find a better one for the moment
-  interp-resp-sort : ∀ {Γ} {x : var Γ} {y} →  Term Γ (sort-of Γ x) → Term Γ (sort-of (Product.interp-sort-var 𝒮 {Σ = Σ} ctx-slot x) y)
-  interp-resp-sort {y = var-var} = λ t → t
-
   -- We use the product structure which gives back the context directly
   prod-𝒮 : Context → Context
   prod-𝒮 Γ = Γ
 
   π-𝒮 : ∀ {Γ} (x : var Γ) → Γ ⇒s ctx-slot (sort-of Γ x)
-  π-𝒮 x var-var = tm-var x
+  π-𝒮 x _ = tm-var x
 
-  tuple-𝒮 : ∀ Γ {Δ} → (∀ (x : var Γ) → Δ ⇒s (ctx-slot (sort-of Γ x))) → Δ ⇒s Γ
+  tuple-𝒮 : ∀ Γ {Δ} → (∀ (x : var Γ) → Δ ⇒s ctx-slot (sort-of Γ x)) → Δ ⇒s Γ
   tuple-𝒮 Γ ts = λ x → ts x var-var
 
-  project-𝒮 : ∀ {Γ Δ} {x : var Γ} {ts : ∀ (x : var Γ) → Δ ⇒s (ctx-slot (sort-of Γ x))} →
+  project-𝒮 : ∀ {Γ Δ} {x : var Γ} {ts : ∀ (y : var Γ) → Δ ⇒s ctx-slot (sort-of Γ y)} →
               π-𝒮 x ∘s tuple-𝒮 Γ ts ≈s ts x
   project-𝒮 {Γ} {Δ} {x} {ts} var-var = eq-refl
 
-  unique-𝒮 : ∀ {Γ Δ} {ts : ∀ (x : var Γ) → Δ ⇒s (ctx-slot (sort-of Γ x))} {g : Δ ⇒s Γ} →
+  unique-𝒮 : ∀ {Γ Δ} {ts : ∀ (x : var Γ) → Δ ⇒s ctx-slot (sort-of Γ x)} {g : Δ ⇒s Γ} →
              (∀ x → π-𝒮 x ∘s g ≈s ts x) → tuple-𝒮 Γ ts ≈s g
   unique-𝒮 ξ x = eq-symm (ξ x var-var)
 

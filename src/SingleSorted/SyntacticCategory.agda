@@ -17,7 +17,6 @@ module SingleSorted.SyntacticCategory
   {Σ : Signature}
   (T : Theory ℓt Σ) where
 
-  open Signature Σ
   open Theory T
   open Substitution T
 
@@ -27,9 +26,9 @@ module SingleSorted.SyntacticCategory
   𝒮 =
     record
       { Obj = Context
-      ; _⇒_ = substitution Σ
+      ; _⇒_ = _⇒s_
       ; _≈_ = _≈s_
-      ; id =  id-substitution
+      ; id =  id-s
       ; _∘_ =  _∘s_
       ; assoc = λ {_ _ _ _ _ _ σ} x → subst-∘s (σ x)
       ; sym-assoc =  λ {_ _ _ _ _ _ σ} x → eq-symm (subst-∘s (σ x))
@@ -78,7 +77,7 @@ module SingleSorted.SyntacticCategory
       ; project₂ = λ x → eq-refl
       ; unique = λ {Θ σ σ₁ σ₂} ξ₁ ξ₂ z → u Θ σ σ₁ σ₂ ξ₁ ξ₂ z
       }
-    where u : ∀ Θ (σ : substitution Σ Θ (ctx-concat Γ Δ)) (σ₁ : substitution Σ Θ Γ) (σ₂ : substitution Σ Θ Δ) →
+    where u : ∀ Θ (σ : Θ ⇒s (ctx-concat Γ Δ)) (σ₁ : Θ ⇒s Γ) (σ₂ : Θ ⇒s Δ) →
                   ((λ x → σ (var-inl x)) ≈s σ₁) → ((λ y → σ (var-inr y)) ≈s σ₂) → ⟨ σ₁ , σ₂ ⟩s ≈s σ
           u Θ σ σ₁ σ₂ ξ₁ ξ₂ (var-inl z) = eq-symm (ξ₁ z)
           u Θ σ σ₁ σ₂ ξ₁ ξ₂ (var-inr z) = eq-symm (ξ₂ z)

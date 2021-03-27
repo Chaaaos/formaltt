@@ -8,14 +8,15 @@ import MultiSorted.Product as Product
 
 module MultiSorted.Interpretation
          {o ℓ e}
-         (Σ : Signature)
+         {𝓈 ℴ}
+         (Σ : Signature {𝓈} {ℴ})
          {𝒞 : Category.Category o ℓ e}
          (cartesian-𝒞 : Cartesian.Cartesian 𝒞) where
   open Signature Σ
   open Category.Category 𝒞
 
   -- An interpretation of Σ in 𝒞
-  record Interpretation : Set (o ⊔ ℓ ⊔ e) where
+  record Interpretation : Set (o ⊔ ℓ ⊔ e ⊔ 𝓈 ⊔ ℴ) where
 
     field
       interp-sort : sort → Obj
@@ -32,6 +33,11 @@ module MultiSorted.Interpretation
     -- the interpretation of a substitution
     interp-subst : ∀ {Γ Δ} → Γ ⇒s Δ → prod Γ ⇒ prod Δ
     interp-subst {Γ} {Δ} σ = tuple Δ λ i → interp-term (σ i)
+
+    -- the equality of interpretations
+    ⊨_ : (ε : Equation Σ) → Set e
+    open Equation
+    ⊨ ε = interp-term (eq-lhs ε) ≈ interp-term (eq-rhs ε)
 
     -- interpretation commutes with substitution
     open HomReasoning
@@ -62,7 +68,7 @@ module MultiSorted.Interpretation
       ; interp-ctx = StandardProducted (λ _ → ⊤) cartesian-𝒞
       ; interp-oper = λ f → ! }
 
-  record HomI (I J : Interpretation) : Set (o ⊔ ℓ ⊔ e) where
+  record HomI (I J : Interpretation) : Set (o ⊔ ℓ ⊔ e ⊔ 𝓈 ⊔ ℴ) where
     open Interpretation
     open Producted
 

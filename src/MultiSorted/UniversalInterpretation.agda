@@ -11,7 +11,8 @@ open import Relation.Binary.PropositionalEquality using (_≡_; refl ; cong)
 
 module MultiSorted.UniversalInterpretation
   {ℓt}
-  {Σ : Signature}
+  {𝓈 ℴ}
+  {Σ : Signature {𝓈} {ℴ}}
   (T : Theory ℓt Σ) where
 
   open Theory T
@@ -20,7 +21,7 @@ module MultiSorted.UniversalInterpretation
 
   -- The universal interpretation in the syntactic category
   interp-oper-𝒮 : ∀ (f : oper) → (prod-𝒮 (oper-arity f)) ⇒s (ctx-slot (oper-sort f))
-  interp-oper-𝒮 f var-var = tm-oper f λ i → tm-var i
+  interp-oper-𝒮 f _ = tm-oper f λ i → tm-var i
 
   ℐ : Interpretation.Interpretation Σ cartesian-𝒮
   ℐ =
@@ -32,6 +33,6 @@ module MultiSorted.UniversalInterpretation
 
   open Interpretation.Interpretation ℐ
 
-  interp-term-self : ∀ {Γ} {A} (t : Term Γ A) (y : var (interp-sort A)) → Γ ⊢ interp-term t y ≈ t ⦂ A
-  interp-term-self (tm-var x)  (var-var) = eq-refl
-  interp-term-self (tm-oper f xs)  (var-var) =  eq-congr (λ i → interp-term-self (xs i) var-var)
+  interp-term-self : ∀ {Γ} {A} (t : Term Γ A) (y : var (interp-sort A)) → ⊢ Γ ∥ (interp-term t y) ≈ t ⦂ A
+  interp-term-self (tm-var x) _ = eq-refl
+  interp-term-self (tm-oper f xs) _ =  eq-congr (λ i → interp-term-self (xs i) var-var)

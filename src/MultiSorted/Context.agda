@@ -1,9 +1,9 @@
-module MultiSorted.Context (Sort : Set)  where
+module MultiSorted.Context {s} (Sort : Set s)  where
 
 -- An attempt to define more structured context
 -- that directly support the cartesian structure
 
-data Context : Set where
+data Context : Set s where
   ctx-empty : Context
   ctx-slot : Sort → Context
   ctx-concat : Context → Context → Context

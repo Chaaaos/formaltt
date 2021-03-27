@@ -9,10 +9,11 @@ open import MultiSorted.Substitution
 import MultiSorted.Product as Product
 
 module MultiSorted.Model {o ℓ e ℓt}
-          {Σ : Signature}
+          {𝓈 ℴ}
+          {Σ : Signature {𝓈} {ℴ}}
           (T : Theory ℓt Σ)
           {𝒞 : Category.Category o ℓ e}
-          (cartesian-𝒞 : Cartesian.Cartesian 𝒞) where
+          {cartesian-𝒞 : Cartesian.Cartesian 𝒞} where
 
   -- open Signature Σ
 
@@ -26,7 +27,7 @@ module MultiSorted.Model {o ℓ e ℓt}
     open HomReasoning
 
     field
-      model-eq : ∀ (ε : eq) → interp-term (eq-lhs ε) ≈ interp-term (eq-rhs ε)
+      model-eq : ∀ (ε : ax) → ⊨ ax-eq (ε)
 
     -- Soundness of semantics
     module _ where
@@ -43,12 +44,12 @@ module MultiSorted.Model {o ℓ e ℓt}
           interp-term (v [ σ ]s) ∎
 
       -- the soundness statement
-      model-⊢-≈ : ∀ {Γ} {A} {s t : Term Γ A} → Γ ⊢ s ≈ t ⦂ A → interp-term s ≈ interp-term t
-      model-⊢-≈ eq-refl =  Equiv.refl
-      model-⊢-≈ (eq-symm ξ) = ⟺ (model-⊢-≈ ξ)
-      model-⊢-≈ (eq-tran ξ θ) = (model-⊢-≈ ξ) ○ (model-⊢-≈ θ)
-      model-⊢-≈ (eq-congr ξ) = ∘-resp-≈ʳ (unique λ i → project ○ ⟺ (model-⊢-≈ (ξ i)) )
-      model-⊢-≈ (eq-axiom ε σ) = model-resp-[]s {u = eq-lhs ε} {v = eq-rhs ε} (model-eq ε)
+      ⊢-⊨ : ∀ {ε : Equation Σ} → ⊢ ε → ⊨ ε
+      ⊢-⊨ eq-refl =  Equiv.refl
+      ⊢-⊨ (eq-symm ξ) = ⟺ (⊢-⊨ ξ)
+      ⊢-⊨ (eq-tran ξ θ) = ⊢-⊨ ξ ○ ⊢-⊨ θ
+      ⊢-⊨ (eq-congr ξ) = ∘-resp-≈ʳ (unique λ i → project ○ ⟺ (⊢-⊨ (ξ i)))
+      ⊢-⊨ (eq-axiom ε σ) = model-resp-[]s {u = ax-lhs ε} {v = ax-rhs ε} (model-eq ε)
 
   -- Every theory has the trivial model, whose carrier is the terminal object
   Trivial : Model (Interpretation.Trivial Σ cartesian-𝒞)
