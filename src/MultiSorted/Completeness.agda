@@ -13,15 +13,16 @@ open import MultiSorted.AlgebraicTheory
 
 module MultiSorted.Completeness
          {ℓt}
-         {Σ : Signature}
+         {𝓈 ℴ}
+         {Σ : Signature {𝓈} {ℴ}}
          (T : Theory ℓt Σ) where
 
   open Theory T
   open UniversalModel T
 
   -- An equation is semantically valid when it holds in all models
-  valid : ∀ (ε : Equation Σ) → Set (lsuc (lsuc ℓt))
-  valid ε = ∀ {𝒞 : Category.Category lzero lzero (lsuc ℓt)}
+  valid : ∀ (ε : Equation Σ) → Set (lsuc (lsuc ℓt ⊔ lsuc 𝓈 ⊔ lsuc ℴ))
+  valid ε = ∀ {𝒞 : Category.Category 𝓈 (lsuc ℴ) (lsuc (ℓt ⊔ 𝓈 ⊔ ℴ))}
               {cartesian-𝒞 : Cartesian.Cartesian 𝒞}
               {I : Interpretation.Interpretation Σ cartesian-𝒞}
               (M : Model.Model T I) → Interpretation.Interpretation.⊨_ I ε
