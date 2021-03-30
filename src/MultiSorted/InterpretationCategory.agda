@@ -1,3 +1,4 @@
+{-# OPTIONS --allow-unsolved-metas #-}
 open import Agda.Primitive using (_⊔_ ; lsuc ; Level)
 
 import Categories.Category as Category
@@ -55,34 +56,43 @@ module MultiSorted.InterpretationCategory
           }
 
   -- Cartesian structure on the category on interpretations of Σ in 𝒞
+  open Cartesian.Cartesian
+  open Interpretation.Interpretation
+
   product-ℐ𝓃𝓉 : ∀ {I J} → Product ℐ𝓃𝓉 I J
   product-ℐ𝓃𝓉 {I = I} {J = J} =
                 let open Cartesian.Cartesian in
                 let open Interpretation.Interpretation in
                 let open Product.Producted in
+                let open HomReasoning in
                 record
                   { A×B = record
                           { interp-sort = λ A → (cartesian-𝒞 × interp-sort I A) (interp-sort J A)
                           ; interp-ctx = record
                                          { prod = λ Γ → (cartesian-𝒞 × prod (interp-ctx I) Γ) (prod (interp-ctx J) Γ)
                                          ; π = λ {Γ} (x : var Γ) → (cartesian-𝒞 ⁂ π (interp-ctx I) x) (π (interp-ctx J) x)
-                                         ; tuple = λ Γ fs → {!!}
-                                         ; project = λ {Γ} {B} {x} {fs} → {!!}
+                                         ; tuple = λ Γ fs → ⟨ cartesian-𝒞 , tuple (interp-ctx I) Γ (λ x → π₁ cartesian-𝒞 ∘ fs x) ⟩ (tuple (interp-ctx J) Γ λ x → (π₂ cartesian-𝒞) ∘ fs x)
+                                         ; project = λ {Γ} {B} {x} {fs} → (⁂∘⟨⟩ cartesian-𝒞) ○ ⟨⟩-cong₂ {!!} {!!} {!!}
                                          ; unique = λ x → {!!}
                                          }
                           ; interp-oper = λ f → (cartesian-𝒞 ⁂ interp-oper I f) (interp-oper J f)
                           }
                   ; π₁ = record
                          { hom-morphism = π₁ cartesian-𝒞
-                         ; hom-commute = λ f → {!!} }
+                         ; hom-commute = λ f → {!!}}
                   ; π₂ = record
                          { hom-morphism = π₂ cartesian-𝒞
                          ; hom-commute = {!!} }
-                  ; ⟨_,_⟩ = {!!}
+                  ; ⟨_,_⟩ = λ ϕ ψ → record
+                         { hom-morphism = λ {A} → {!!}
+                         ; hom-commute = {!!}
+                         }
                   ; project₁ = {!!}
                   ; project₂ = {!!}
                   ; unique = {!!}
                   }
+
+
 
   terminal-ℐ𝓃𝓉 : Terminal ℐ𝓃𝓉
   terminal-ℐ𝓃𝓉 = record
