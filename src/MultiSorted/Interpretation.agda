@@ -68,7 +68,7 @@ module MultiSorted.Interpretation
       ; interp-ctx = StandardProducted (λ _ → ⊤) cartesian-𝒞
       ; interp-oper = λ f → ! }
 
-  record HomI (I J : Interpretation) : Set (o ⊔ ℓ ⊔ e ⊔ 𝓈 ⊔ ℴ) where
+  record _⇒I_ (I J : Interpretation) : Set (o ⊔ ℓ ⊔ e ⊔ 𝓈 ⊔ ℴ) where
     open Interpretation
     open Producted
 
@@ -79,9 +79,11 @@ module MultiSorted.Interpretation
          hom-morphism ∘ interp-oper I f ≈
              interp-oper J f ∘ tuple (interp-ctx J) (oper-arity f) (λ i → hom-morphism ∘ π (interp-ctx I) i)
 
+  infix  4 _⇒s_
+
   -- The identity homomorphism
-  IdI : ∀ (A : Interpretation) → HomI A A
-  IdI A =
+  id-I : ∀ {A : Interpretation} → A ⇒I A
+  id-I {A} =
     let open Interpretation A in
     let open HomReasoning in
     let open Producted interp-sort in
@@ -98,9 +100,9 @@ module MultiSorted.Interpretation
       }
 
   -- Compositon of homomorphisms
-  _∘I_ : ∀ {A B C : Interpretation} → HomI B C → HomI A B → HomI A C
+  _∘I_ : ∀ {A B C : Interpretation} → B ⇒I C → A ⇒I B → A ⇒I C
   _∘I_ {A} {B} {C} ϕ ψ =
-     let open HomI in
+     let open _⇒I_ in
      record { hom-morphism = hom-morphism ϕ ∘ hom-morphism ψ
             ; hom-commute =
                 let open Interpretation in
