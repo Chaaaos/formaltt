@@ -61,8 +61,6 @@ module MultiSorted.InterpretationCategory
 
   product-ℐ𝓃𝓉 : ∀ {I J} → Product ℐ𝓃𝓉 I J
   product-ℐ𝓃𝓉 {I = I} {J = J} =
-                let open Cartesian.Cartesian in
-                let open Interpretation.Interpretation in
                 let open Product.Producted in
                 let open HomReasoning in
                 record
@@ -70,7 +68,7 @@ module MultiSorted.InterpretationCategory
                           { interp-sort = λ A → (cartesian-𝒞 × interp-sort I A) (interp-sort J A)
                           ; interp-ctx = record
                                          { prod = λ Γ → (cartesian-𝒞 × prod (interp-ctx I) Γ) (prod (interp-ctx J) Γ)
-                                         ; π = λ {Γ} (x : var Γ) → (cartesian-𝒞 ⁂ π (interp-ctx I) x) (π (interp-ctx J) x)
+                                         ; π = ? -- λ {Γ} (x : var Γ) → (cartesian-𝒞 ⁂ π (interp-ctx I) x) (π (interp-ctx J) x)
                                          ; tuple = λ Γ fs → ⟨ cartesian-𝒞 , tuple (interp-ctx I) Γ (λ x → π₁ cartesian-𝒞 ∘ fs x) ⟩ (tuple (interp-ctx J) Γ λ x → (π₂ cartesian-𝒞) ∘ fs x)
                                          ; project = λ {Γ} {B} {x} {fs} → (⁂∘⟨⟩ cartesian-𝒞) ○ ⟨⟩-cong₂ {!!} {!!} {!!}
                                          ; unique = λ x → {!!}
@@ -79,12 +77,16 @@ module MultiSorted.InterpretationCategory
                           }
                   ; π₁ = record
                          { hom-morphism = π₁ cartesian-𝒞
-                         ; hom-commute = λ f → {!!}}
+                         ; hom-commute = λ f → {!!}
+                                               -- ⟺ (∘-resp-≈ʳ (tuple-cong (interp-ctx I) λ i → project₁ cartesian-𝒞)
+                                               --     ○ (∘-resp-≈ʳ ({!!})
+                                               --       ○ ⟺ (project₁ cartesian-𝒞)))
+                         }
                   ; π₂ = record
                          { hom-morphism = π₂ cartesian-𝒞
                          ; hom-commute = {!!} }
                   ; ⟨_,_⟩ = λ ϕ ψ → record
-                         { hom-morphism = λ {A} → {!!}
+                         { hom-morphism = λ {A} → ⟨ cartesian-𝒞 , HomI.hom-morphism ϕ ⟩ (HomI.hom-morphism ψ)
                          ; hom-commute = {!!}
                          }
                   ; project₁ = {!!}
@@ -98,12 +100,11 @@ module MultiSorted.InterpretationCategory
   terminal-ℐ𝓃𝓉 = record
                  { ⊤ = Trivial
                  ; ⊤-is-terminal =
-                                   let open Cartesian.Cartesian in
                                    record
-                                   { ! = record { hom-morphism = ! cartesian-𝒞
-                                                ; hom-commute = λ f → {!!}
+                                   { ! = record { hom-morphism = Product.Producted.! (interp-ctx Trivial)
+                                                ; hom-commute = λ f → Product.Producted.!-unique₂ (interp-ctx Trivial)
                                                 }
-                                   ; !-unique = λ f A → {!!}
+                                   ; !-unique = λ f A → Product.Producted.!-unique (interp-ctx Trivial)
                                    }
                  }
 
