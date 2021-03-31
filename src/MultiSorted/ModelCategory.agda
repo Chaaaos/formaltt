@@ -53,26 +53,34 @@ module MultiSorted.ModelCategory
                    let open HomI in
                    ∀ A → (hom-morphism ϕ {A}) ≈ (hom-morphism ψ)
 
-  -- The category of Models of Σ in 𝒞
+  -- The identity morphism on models
+  IdM : (M : ⋆Model) → HomM M M
+  IdM = λ M → IdI (interpretation M)
 
+  -- Composition of morphisms of Models
+  _∘M_ : ∀ {M N O : ⋆Model} → HomM N O → HomM M N → HomM M O
+  _∘M_ ϕ ψ = ϕ ∘I ψ
+
+
+  -- The category of Models of Σ in 𝒞
   ℳ : Category.Category ℓℴ ℓ𝒽 ℓ𝓇
   ℳ = record
           { Obj = ⋆Model
           ; _⇒_ = HomM
-          ; _≈_ = _≈M_ -- _≈I_
-          ; id = {!!} -- λ {A} → IdI A
-          ; _∘_ = {!!} -- _∘I_
-          ; assoc = {!!} -- λ A → assoc
-          ; sym-assoc = {!!} -- λ A → sym-assoc
-          ; identityˡ = {!!} -- λ A → identityˡ
-          ; identityʳ = {!!} -- λ A → identityʳ
-          ; identity² = {!!} -- λ A → identity²
-          ; equiv = {!!} -- record { refl = λ A → Equiv.refl
-                          -- ; sym = λ p A → Equiv.sym (p A)
-                          --  ; trans = λ p₁ p₂ A → Equiv.trans (p₁ A) (p₂ A)
-                          --  }
-          ; ∘-resp-≈ = {!!} --λ p₁ p₂ A → ∘-resp-≈ (p₁ A) (p₂ A)
+          ; _≈_ = λ {M} {N} ϕ ψ → _≈M_ {M} {N} ϕ ψ
+          ; id = λ {M} → IdM M
+          ; _∘_ = λ {M} {N} {O} ϕ ψ → _∘M_ {M} {N} {O} ϕ ψ
+          ; assoc = λ A → assoc -- λ A → assoc
+          ; sym-assoc = λ A → sym-assoc
+          ; identityˡ = λ A → identityˡ
+          ; identityʳ = λ A → identityʳ
+          ; identity² = λ A → identity²
+          ; equiv = record { refl = λ A → Equiv.refl
+                           ; sym = λ p A → Equiv.sym (p A)
+                           ; trans = λ p₁ p₂ A → Equiv.trans (p₁ A) (p₂ A)
+                           }
+          ; ∘-resp-≈ = λ p₁ p₂ A → ∘-resp-≈ (p₁ A) (p₂ A)
           }
-  -- The category of models ℳ (T, 𝒞) is a full subcategory of ℐ𝓃𝓉 (Σ , 𝒞)
+  -- The category of models ℳ (T, 𝒞) is (isomorphic to) a full subcategory of ℐ𝓃𝓉 (Σ , 𝒞)
 
   -- The product of ℐ𝓃𝓉 carries over the models
