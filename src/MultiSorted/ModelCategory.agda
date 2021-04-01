@@ -44,21 +44,21 @@ module MultiSorted.ModelCategory
   open ⋆Model
 
   -- Homomorphisms of models
-  HomM : ∀ (M N : ⋆Model) → Set ℓ𝒽
-  HomM M N = HomI (interpretation M) (interpretation N)
+  _⇒M_ : ∀ (M N : ⋆Model) → Set ℓ𝒽
+  _⇒M_ M N = (interpretation M) ⇒I (interpretation N)
 
   -- Equality of homomorphisms of models (the same as for the interpretations)
-  _≈M_ : ∀ {M N : ⋆Model} → HomM M N → HomM M N → Set ℓ𝓇
+  _≈M_ : ∀ {M N : ⋆Model} → M ⇒M N → M ⇒M N → Set ℓ𝓇
   _≈M_ {M} {N} ϕ ψ =
-                   let open HomI in
+                   let open _⇒I_ in
                    ∀ A → (hom-morphism ϕ {A}) ≈ (hom-morphism ψ)
 
   -- The identity morphism on models
-  IdM : (M : ⋆Model) → HomM M M
-  IdM = λ M → IdI (interpretation M)
+  id-M : (M : ⋆Model) → M ⇒M M
+  id-M = λ M → id-I {interpretation M}
 
   -- Composition of morphisms of Models
-  _∘M_ : ∀ {M N O : ⋆Model} → HomM N O → HomM M N → HomM M O
+  _∘M_ : ∀ {M N O : ⋆Model} →  N ⇒M O → M ⇒M N → M ⇒M O
   _∘M_ ϕ ψ = ϕ ∘I ψ
 
 
@@ -66,9 +66,9 @@ module MultiSorted.ModelCategory
   ℳ : Category.Category ℓℴ ℓ𝒽 ℓ𝓇
   ℳ = record
           { Obj = ⋆Model
-          ; _⇒_ = HomM
+          ; _⇒_ = _⇒M_
           ; _≈_ = λ {M} {N} ϕ ψ → _≈M_ {M} {N} ϕ ψ
-          ; id = λ {M} → IdM M
+          ; id = λ {M} → id-M M
           ; _∘_ = λ {M} {N} {O} ϕ ψ → _∘M_ {M} {N} {O} ϕ ψ
           ; assoc = λ A → assoc -- λ A → assoc
           ; sym-assoc = λ A → sym-assoc

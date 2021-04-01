@@ -53,6 +53,7 @@ module MultiSorted.InterpretationCategory
   A×B-ℐ𝓃𝓉 I J =
     let open Product.Producted in
     let open Interpretation in
+    let open HomReasoning in
     record
       { interp-sort = λ A → interp-sort I A × interp-sort J A
       ; interp-ctx =
@@ -60,22 +61,39 @@ module MultiSorted.InterpretationCategory
             { prod = λ Γ → prod (interp-ctx I) Γ × prod (interp-ctx J) Γ
             ; π = λ {Γ} x → (π (interp-ctx I) x) ⁂ (π (interp-ctx J) x)
             ; tuple = λ Γ fs → ⟨ (tuple (interp-ctx I) Γ λ x → π₁ ∘ fs x) , ((tuple (interp-ctx J) Γ λ x → π₂ ∘ fs x)) ⟩
-            ; project = {!!}
-            ; unique = {!!}
+            ; project = λ {Γ} {B} {x} {fs} → begin
+                                              ((π (interp-ctx I) x ⁂ π (interp-ctx J) x) ∘
+                                                ⟨ tuple (interp-ctx I) Γ (λ x₁ → π₁ ∘ fs x₁) ,
+                                                tuple (interp-ctx J) Γ (λ x₁ → π₂ ∘ fs x₁) ⟩) ≈⟨ ⁂∘⟨⟩ ⟩
+                                              ⟨ π (interp-ctx I) x ∘ tuple (interp-ctx I) Γ (λ x₁ → π₁ ∘ fs x₁) ,
+                                                π (interp-ctx J) x ∘ tuple (interp-ctx J) Γ (λ x₁ → π₂ ∘ fs x₁) ⟩ ≈⟨ ⟨⟩-congʳ (project (interp-ctx I)) ⟩
+                                              ⟨ π₁ ∘ fs x ,
+                                                π (interp-ctx J) x ∘ tuple (interp-ctx J) Γ (λ x₁ → π₂ ∘ fs x₁) ⟩ ≈⟨ ⟨⟩-congˡ (project (interp-ctx J)) ⟩
+                                              ⟨ π₁ ∘ fs x , π₂ ∘ fs x ⟩ ≈⟨ Product.unique product Equiv.refl Equiv.refl ⟩
+                                              fs x ∎
+            ; unique = λ ps → Product.unique product
+                                               (⟺ (unique (interp-ctx I) λ i → {!!}))
+                                               (⟺ (unique (interp-ctx J) λ i → {!!}))
             }
       ; interp-oper = λ f → (interp-oper I f) ⁂ (interp-oper J f)
       }
 
   π₁-ℐ𝓃𝓉 : ∀ {I J : Interpretation} → A×B-ℐ𝓃𝓉 I J ⇒I I
-  π₁-ℐ𝓃𝓉 {I} {J} = {!!}
+  π₁-ℐ𝓃𝓉 {I} {J} = record
+                     { hom-morphism = Cartesian.Cartesian.π₁ cartesian-𝒞
+                     ; hom-commute = λ f → {!!}
+                     }
 
   π₂-ℐ𝓃𝓉 : ∀ {I J : Interpretation} → A×B-ℐ𝓃𝓉 I J ⇒I J
-  π₂-ℐ𝓃𝓉 {I} {J} = {!!}
+  π₂-ℐ𝓃𝓉 {I} {J} = record
+                     { hom-morphism = Cartesian.Cartesian.π₂ cartesian-𝒞
+                     ; hom-commute = {!!}
+                     }
 
   ⟨_,_⟩-ℐ𝓃𝓉 : ∀ {I J K : Interpretation} → I ⇒I J → I ⇒I K → I ⇒I A×B-ℐ𝓃𝓉 J K
   ⟨ ϕ , ψ ⟩-ℐ𝓃𝓉 =
      record
-       { hom-morphism = λ {A} → {!!}
+       { hom-morphism = λ {A} → ⟨ _⇒I_.hom-morphism ϕ , _⇒I_.hom-morphism ψ ⟩
        ; hom-commute = {!!}
        }
 
@@ -95,7 +113,7 @@ module MultiSorted.InterpretationCategory
       ; π₁ = π₁-ℐ𝓃𝓉 {I} {J}
       ; π₂ = π₂-ℐ𝓃𝓉 {I} {J}
       ; ⟨_,_⟩ = ⟨_,_⟩-ℐ𝓃𝓉
-      ; project₁ = {! project₂-ℐ𝓃𝓉 !}
+      ; project₁ = {! project₁-ℐ𝓃𝓉 !}
       ; project₂ = {! project₂-ℐ𝓃𝓉 !}
       ; unique = {! unique-ℐ𝓃𝓉 !}
       }
