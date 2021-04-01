@@ -1,4 +1,4 @@
-{-# OPTIONS --allow-unsolved-metas #-}
+-- {-# OPTIONS --allow-unsolved-metas #-}
 open import Agda.Primitive using (_⊔_ ; lsuc ; Level)
 
 import Categories.Category as Category
@@ -48,57 +48,173 @@ module MultiSorted.InterpretationCategory
           }
 
   -- Cartesian structure on the category on interpretations of Σ in 𝒞
+  module _ (I J : Interpretation) where
+    open Interpretation
+    open Product.Producted
+    open HomReasoning
+    A×B-ℐ𝓃𝓉 : Interpretation
+    interp-sort A×B-ℐ𝓃𝓉 A = interp-sort I A × interp-sort J A
+    -- Contexts
+    -- -- Structure
+    prod  (interp-ctx A×B-ℐ𝓃𝓉) Γ = prod (interp-ctx I) Γ × prod (interp-ctx J) Γ
+    π (interp-ctx A×B-ℐ𝓃𝓉) x = (π (interp-ctx I) x) ⁂ (π (interp-ctx J) x)
+    tuple (interp-ctx A×B-ℐ𝓃𝓉) Γ fs = ⟨ (tuple (interp-ctx I) Γ λ x → π₁ ∘ fs x) , ((tuple (interp-ctx J) Γ λ x → π₂ ∘ fs x)) ⟩
+    project (interp-ctx A×B-ℐ𝓃𝓉) {Γ} {B} {x} {fs} =
+      begin
+      π (interp-ctx A×B-ℐ𝓃𝓉) x ∘
+        (tuple (interp-ctx A×B-ℐ𝓃𝓉) Γ fs) ≈⟨ ⁂∘⟨⟩ ⟩
+      ⟨ π (interp-ctx I) x ∘ tuple (interp-ctx I) Γ (λ x₁ → π₁ ∘ fs x₁) ,
+        π (interp-ctx J) x ∘ tuple (interp-ctx J) Γ (λ x₁ → π₂ ∘ fs x₁) ⟩ ≈⟨ ⟨⟩-congʳ (project (interp-ctx I)) ⟩
+      ⟨ π₁ ∘ fs x ,
+        π (interp-ctx J) x ∘ tuple (interp-ctx J) Γ (λ x₁ → π₂ ∘ fs x₁) ⟩ ≈⟨ ⟨⟩-congˡ (project (interp-ctx J)) ⟩
+      ⟨ π₁ ∘ fs x , π₂ ∘ fs x ⟩ ≈⟨ Product.unique product Equiv.refl Equiv.refl ⟩
+      fs x ∎
+    unique (interp-ctx A×B-ℐ𝓃𝓉) {Γ} {A} {g} {fs} ps = Product.unique product
+                                                 (⟺ (unique (interp-ctx I) λ i → begin
+                                                 π (interp-ctx I) i ∘ product.π₁  ∘ fs ≈⟨ sym-assoc ⟩
+                                                 (π (interp-ctx I) i ∘ product.π₁) ∘ fs ≈⟨ (Π-nat₁ i ⟩∘⟨refl)  ⟩
+                                                 (product.π₁ ∘ (π (interp-ctx A×B-ℐ𝓃𝓉) i)) ∘ fs  ≈⟨ assoc ⟩
+                                                 product.π₁ ∘((π (interp-ctx A×B-ℐ𝓃𝓉) i)  ∘ fs) ≈⟨ (refl⟩∘⟨ ps i) ⟩
+                                                 product.π₁ ∘ g i ∎))
+                                                 (⟺ (unique (interp-ctx J) λ i → begin
+                                                 (π (interp-ctx J) i ∘ π₂ ∘ fs) ≈⟨ sym-assoc ⟩
+                                                 ((π (interp-ctx J) i ∘ π₂) ∘ fs) ≈⟨ (Π-nat₂ i ⟩∘⟨refl) ⟩
+                                                 ((product.π₂ ∘ π (interp-ctx A×B-ℐ𝓃𝓉) i) ∘ fs) ≈⟨ assoc ⟩
+                                                 (π₂ ∘ π (interp-ctx A×B-ℐ𝓃𝓉) i ∘ fs) ≈⟨ (refl⟩∘⟨ ps i) ⟩
+                                                 (π₂ ∘ g i) ∎))
+           where
+           Π-nat₁ : {Γ : Context} → (i : var Γ) → π (interp-ctx I) i ∘ product.π₁ ≈ product.π₁ ∘ π (interp-ctx A×B-ℐ𝓃𝓉) i
+           Π-nat₁ = λ i → ⟺ project₁
 
-  A×B-ℐ𝓃𝓉 : Interpretation → Interpretation → Interpretation
-  A×B-ℐ𝓃𝓉 I J =
-    let open Product.Producted in
-    let open Interpretation in
-    let open HomReasoning in
-    record
-      { interp-sort = λ A → interp-sort I A × interp-sort J A
-      ; interp-ctx =
-          record
-            { prod = λ Γ → prod (interp-ctx I) Γ × prod (interp-ctx J) Γ
-            ; π = λ {Γ} x → (π (interp-ctx I) x) ⁂ (π (interp-ctx J) x)
-            ; tuple = λ Γ fs → ⟨ (tuple (interp-ctx I) Γ λ x → π₁ ∘ fs x) , ((tuple (interp-ctx J) Γ λ x → π₂ ∘ fs x)) ⟩
-            ; project = λ {Γ} {B} {x} {fs} → begin
-                                              ((π (interp-ctx I) x ⁂ π (interp-ctx J) x) ∘
-                                                ⟨ tuple (interp-ctx I) Γ (λ x₁ → π₁ ∘ fs x₁) ,
-                                                tuple (interp-ctx J) Γ (λ x₁ → π₂ ∘ fs x₁) ⟩) ≈⟨ ⁂∘⟨⟩ ⟩
-                                              ⟨ π (interp-ctx I) x ∘ tuple (interp-ctx I) Γ (λ x₁ → π₁ ∘ fs x₁) ,
-                                                π (interp-ctx J) x ∘ tuple (interp-ctx J) Γ (λ x₁ → π₂ ∘ fs x₁) ⟩ ≈⟨ ⟨⟩-congʳ (project (interp-ctx I)) ⟩
-                                              ⟨ π₁ ∘ fs x ,
-                                                π (interp-ctx J) x ∘ tuple (interp-ctx J) Γ (λ x₁ → π₂ ∘ fs x₁) ⟩ ≈⟨ ⟨⟩-congˡ (project (interp-ctx J)) ⟩
-                                              ⟨ π₁ ∘ fs x , π₂ ∘ fs x ⟩ ≈⟨ Product.unique product Equiv.refl Equiv.refl ⟩
-                                              fs x ∎
-            ; unique = λ ps → Product.unique product
-                                               (⟺ (unique (interp-ctx I) λ i → {!!}))
-                                               (⟺ (unique (interp-ctx J) λ i → {!!}))
-            }
-      ; interp-oper = λ f → (interp-oper I f) ⁂ (interp-oper J f)
-      }
+           Π-nat₂ : {Γ : Context} → (i : var Γ) → π (interp-ctx J) i ∘ product.π₂ ≈ product.π₂ ∘ π (interp-ctx A×B-ℐ𝓃𝓉) i
+           Π-nat₂ = λ i → ⟺ project₂
+
+    -- Operations
+    interp-oper A×B-ℐ𝓃𝓉 = λ f → (interp-oper I f) ⁂ (interp-oper J f)
+
+
+  module _ (I J : Interpretation) f where
+    open Product.Producted
+    open Interpretation
+    open HomReasoning
+
+    Π-nat₁ : {Γ : Context} → (i : var Γ) → π (interp-ctx I) i ∘ product.π₁ ≈ product.π₁ ∘ π (interp-ctx (A×B-ℐ𝓃𝓉 I J)) i
+    Π-nat₁ = λ i → ⟺ project₁
+
+    Π-nat₂ : {Γ : Context} → (i : var Γ) → π (interp-ctx J) i ∘ product.π₂ ≈ product.π₂ ∘ π (interp-ctx (A×B-ℐ𝓃𝓉 I J)) i
+    Π-nat₂ = λ i → ⟺ project₂
+
+    π₁-tuple : π₁ ≈ tuple (interp-ctx I) (oper-arity f) (λ i → π₁ ∘ (π (interp-ctx I) i ⁂ π (interp-ctx J) i))
+    π₁-tuple = ⟺ (begin
+                     tuple (interp-ctx I) (oper-arity f)
+                       (λ i → π₁ ∘ (π (interp-ctx I) i ⁂ π (interp-ctx J) i)) ≈⟨ tuple-cong (interp-ctx I) (λ i → π₁∘⁂) ⟩
+                     tuple (interp-ctx I) (oper-arity f) (λ x → π (interp-ctx I) x ∘ π₁) ≈⟨ ∘-distribʳ-tuple (interp-ctx I) ⟩
+                     (tuple (interp-ctx I) (oper-arity f) (λ x → π (interp-ctx I) x) ∘ π₁) ≈⟨ ∘-resp-≈ˡ (Product.Producted.η (interp-ctx I)) ⟩
+                     (id ∘ π₁) ≈⟨ identityˡ ⟩
+                     π₁ ∎)
+
+    π₂-tuple : π₂ ≈ tuple (interp-ctx J) (oper-arity f) (λ i → π₂ ∘ (π (interp-ctx I) i ⁂ π (interp-ctx J) i))
+    π₂-tuple = ⟺ (begin
+                      tuple (interp-ctx J) (oper-arity f)
+                        (λ i → π₂ ∘ (π (interp-ctx I) i ⁂ π (interp-ctx J) i)) ≈⟨ tuple-cong (interp-ctx J) (λ i → π₂∘⁂) ⟩
+                      tuple (interp-ctx J) (oper-arity f) (λ x → π (interp-ctx J) x ∘ π₂) ≈⟨ ∘-distribʳ-tuple (interp-ctx J) ⟩
+                      (tuple (interp-ctx J) (oper-arity f) (λ x → π (interp-ctx J) x) ∘ π₂) ≈⟨ ∘-resp-≈ˡ (Product.Producted.η (interp-ctx J)) ⟩
+                      (id ∘ π₂) ≈⟨ identityˡ ⟩
+                      π₂ ∎)
 
   π₁-ℐ𝓃𝓉 : ∀ {I J : Interpretation} → A×B-ℐ𝓃𝓉 I J ⇒I I
-  π₁-ℐ𝓃𝓉 {I} {J} = record
+  π₁-ℐ𝓃𝓉 {I} {J} =
+                   let open HomReasoning in
+                   let open Product.Producted in
+                   let open Interpretation in
+                   record
                      { hom-morphism = Cartesian.Cartesian.π₁ cartesian-𝒞
-                     ; hom-commute = λ f → {!!}
+                     ; hom-commute = λ f → begin
+                                             (π₁ ∘ interp-oper (A×B-ℐ𝓃𝓉 I J) f) ≈⟨ π₁∘⁂ ⟩
+                                             (interp-oper I f ∘ π₁) ≈⟨ ∘-resp-≈ʳ (π₁-tuple I J f) ⟩
+                                             (interp-oper I f ∘
+                                               tuple (interp-ctx I) (oper-arity f)
+                                               (λ i → π₁ ∘ (π (interp-ctx I) i ⁂ π (interp-ctx J) i))) ∎
                      }
 
   π₂-ℐ𝓃𝓉 : ∀ {I J : Interpretation} → A×B-ℐ𝓃𝓉 I J ⇒I J
-  π₂-ℐ𝓃𝓉 {I} {J} = record
+  π₂-ℐ𝓃𝓉 {I} {J} =
+                   let open HomReasoning in
+                   let open Product.Producted in
+                   let open Interpretation in
+                   record
                      { hom-morphism = Cartesian.Cartesian.π₂ cartesian-𝒞
-                     ; hom-commute = {!!}
+                     ; hom-commute = λ f → begin
+                                             (π₂ ∘ interp-oper (A×B-ℐ𝓃𝓉 I J) f) ≈⟨ π₂∘⁂ ⟩
+                                             (interp-oper J f ∘ π₂) ≈⟨ ∘-resp-≈ʳ (π₂-tuple I J f) ⟩
+                                             (interp-oper J f ∘
+                                               tuple (interp-ctx J) (oper-arity f)
+                                               (λ i → π₂ ∘ (π (interp-ctx I) i ⁂ π (interp-ctx J) i))) ∎
                      }
+  module _ (I J K : Interpretation) f (ϕ : I ⇒I J) (ψ : I ⇒I K) where
+         open Interpretation
+         open HomReasoning
+         open Product.Producted
+
+         ⟨⟩-left : interp-oper J f ∘ tuple
+                                        (interp-ctx J)
+                                        (oper-arity f)
+                                        (λ x → π₁ ∘ ⟨ _⇒I_.hom-morphism ϕ , _⇒I_.hom-morphism ψ ⟩ ∘ π (interp-ctx I) x) ≈ _⇒I_.hom-morphism ϕ ∘ interp-oper I f
+         ⟨⟩-left = begin
+                   (interp-oper J f ∘
+                     tuple (interp-ctx J) (oper-arity f)
+                     (λ x →
+                        π₁ ∘
+                        ⟨ _⇒I_.hom-morphism ϕ , _⇒I_.hom-morphism ψ ⟩ ∘ π (interp-ctx I) x)) ≈⟨ ∘-resp-≈ʳ (tuple-cong (interp-ctx J) λ i → sym-assoc) ⟩
+                   (interp-oper J f ∘
+                     tuple (interp-ctx J) (oper-arity f)
+                     (λ x →
+                        (π₁ ∘ ⟨ _⇒I_.hom-morphism ϕ , _⇒I_.hom-morphism ψ ⟩) ∘
+                        π (interp-ctx I) x)) ≈⟨ ∘-resp-≈ʳ (tuple-cong (interp-ctx J) λ i → ∘-resp-≈ˡ project₁) ⟩
+                   (interp-oper J f ∘
+                     tuple (interp-ctx J) (oper-arity f)
+                     (λ x → _⇒I_.hom-morphism ϕ ∘ π (interp-ctx I) x)) ≈⟨ {!!} ⟩
+                   {!!}
+
+         ⟨⟩-right : interp-oper K f ∘ tuple
+                                        (interp-ctx K)
+                                        (oper-arity f)
+                                        (λ x → π₂ ∘ ⟨ _⇒I_.hom-morphism ϕ , _⇒I_.hom-morphism ψ ⟩ ∘ π (interp-ctx I) x) ≈ _⇒I_.hom-morphism ψ ∘ interp-oper I f
+         ⟨⟩-right = {!!}
 
   ⟨_,_⟩-ℐ𝓃𝓉 : ∀ {I J K : Interpretation} → I ⇒I J → I ⇒I K → I ⇒I A×B-ℐ𝓃𝓉 J K
-  ⟨ ϕ , ψ ⟩-ℐ𝓃𝓉 =
+  ⟨_,_⟩-ℐ𝓃𝓉 {I} {J} {K} ϕ ψ =
+     let open HomReasoning in
+     let open Product.Producted in
+     let open Interpretation in
      record
        { hom-morphism = λ {A} → ⟨ _⇒I_.hom-morphism ϕ , _⇒I_.hom-morphism ψ ⟩
-       ; hom-commute = {!!}
+       ; hom-commute = λ f →
+                             ⟺ (begin
+                                     (interp-oper (A×B-ℐ𝓃𝓉 J K) f ∘
+                                       tuple (interp-ctx (A×B-ℐ𝓃𝓉 J K)) (oper-arity f)
+                                       (λ i →
+                                          ⟨ _⇒I_.hom-morphism ϕ , _⇒I_.hom-morphism ψ ⟩ ∘ π (interp-ctx I) i)) ≈⟨ ⁂∘⟨⟩ ⟩
+                                     ⟨
+                                       interp-oper J f ∘
+                                       tuple (interp-ctx J) (oper-arity f)
+                                       (λ x →
+                                          π₁ ∘
+                                          ⟨ _⇒I_.hom-morphism ϕ , _⇒I_.hom-morphism ψ ⟩ ∘ π (interp-ctx I) x)
+                                       ,
+                                       interp-oper K f ∘
+                                       tuple (interp-ctx K) (oper-arity f)
+                                       (λ x →
+                                          π₂ ∘
+                                          ⟨ _⇒I_.hom-morphism ϕ , _⇒I_.hom-morphism ψ ⟩ ∘ π (interp-ctx I) x)
+                                       ⟩ ≈⟨ ⟨⟩-cong₂ (⟨⟩-left I J K f ϕ ψ) (⟨⟩-right I J K f ϕ ψ) ⟩
+                                     product.⟨ _⇒I_.hom-morphism ϕ ∘ interp-oper I f ,
+                                       _⇒I_.hom-morphism ψ ∘ interp-oper I f ⟩ ≈˘⟨ ⟨⟩∘ ⟩
+                                     (⟨ _⇒I_.hom-morphism ϕ , _⇒I_.hom-morphism ψ ⟩ ∘ interp-oper I f) ∎)
        }
 
-  project₁-ℐ𝓃𝓉 : Category.Category.Obj 𝒞
-  project₁-ℐ𝓃𝓉 = Terminal.⊤ (Cartesian.Cartesian.terminal cartesian-𝒞)
+  project₁-ℐ𝓃𝓉 : {!!}
+  project₁-ℐ𝓃𝓉 = {!!}
 
   project₂-ℐ𝓃𝓉 : {!!}
   project₂-ℐ𝓃𝓉 = {!!}
