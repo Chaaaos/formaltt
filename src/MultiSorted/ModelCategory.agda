@@ -83,4 +83,43 @@ module MultiSorted.ModelCategory
           }
   -- The category of models ℳ (T, 𝒞) is (isomorphic to) a full subcategory of ℐ𝓃𝓉 (Σ , 𝒞)
 
-  -- The product of ℐ𝓃𝓉 carries over the models
+  -- The product of "Model proofs"
+
+  module _ (M N : ⋆Model) where
+    open Product.Producted
+    open HomReasoning
+    open InterpretationCategory
+    open Cartesian.Cartesian cartesian-𝒞
+    open Interpretation.Interpretation
+    open import Categories.Object.Product.Morphisms {o} {ℓ} {e} 𝒞
+
+    proof-model-product : Model (A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N))
+    Model.model-eq proof-model-product ε =
+                                           begin
+                                             Interpretation.interp-term
+                                               (A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N))
+                                               (Equation.eq-lhs (ax-eq ε)) ≈⟨ Cartesian.Cartesian.⁂-cong₂ cartesian-𝒞 {!!} {!!} ⟩
+                                             {!!}
+
+-- prod (Interpretation.interp-ctx (interpretation M))
+-- (Equation.eq-ctx (ax-eq ε))
+-- ×
+-- prod (Interpretation.interp-ctx (interpretation N))
+-- (Equation.eq-ctx (ax-eq ε))
+-- ⇒
+-- Interpretation.interp-sort (interpretation M)
+-- (Equation.eq-sort (ax-eq ε))
+-- ×
+-- Interpretation.interp-sort (interpretation N)
+-- (Equation.eq-sort (ax-eq ε))
+
+  -- The product of ℐ𝓃𝓉 carries over the models : the product of two models is a model
+  module _ (M N : ⋆Model) where
+    open Product.Producted
+    open HomReasoning
+    open InterpretationCategory
+    A×B-ℳ : ⋆Model
+    A×B-ℳ = record
+              { interpretation = A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N)
+              ; proof-model = proof-model-product M N
+              }
