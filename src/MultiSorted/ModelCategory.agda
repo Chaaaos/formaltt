@@ -92,26 +92,50 @@ module MultiSorted.ModelCategory
     open Cartesian.Cartesian cartesian-𝒞
     open Interpretation.Interpretation
     open import Categories.Object.Product.Morphisms {o} {ℓ} {e} 𝒞
+    open Equation
+
+    proof-model-pairs : ∀ ε → (interp-term (interpretation M) (Equation.eq-lhs (ax-eq ε)) ⁂  interp-term (interpretation N) (Equation.eq-lhs (ax-eq ε)))
+                               ≈ (interp-term (interpretation M) (Equation.eq-rhs (ax-eq ε)) ⁂  interp-term (interpretation N) (Equation.eq-rhs (ax-eq ε))) →
+                               Interpretation.interp-term (A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N)) (Equation.eq-lhs (ax-eq ε))
+                               ≈ Interpretation.interp-term (A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N)) (Equation.eq-rhs (ax-eq ε))
+    proof-model-pairs ε p =
+                            begin
+                              Interpretation.interp-term
+                                (A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N))
+                                (Equation.eq-lhs (ax-eq ε)) ≈⟨ ⟺
+                                                                 (Cartesian.Cartesian.unique cartesian-𝒞
+                                                                   (natural-π₁ Σ cartesian-𝒞 {I = interpretation M} {interpretation N} (ax-lhs ε))
+                                                                   (natural-π₂ Σ cartesian-𝒞 {I = interpretation M} {interpretation N} (ax-lhs ε))) ⟩
+                              product.⟨
+                                Interpretation.interp-term (interpretation M) (eq-lhs (ax-eq ε)) ∘
+                                π₁
+                                ,
+                                Interpretation.interp-term (interpretation N) (eq-lhs (ax-eq ε)) ∘
+                                π₂
+                                ⟩ ≈⟨ ⟨⟩-cong₂ (∘-resp-≈ˡ (Model.model-eq (proof-model M) ε)) (∘-resp-≈ˡ (Model.model-eq (proof-model N) ε)) ⟩
+                              product.⟨
+                                Interpretation.interp-term (interpretation M) (eq-rhs (ax-eq ε)) ∘
+                                π₁
+                                ,
+                                Interpretation.interp-term (interpretation N) (eq-rhs (ax-eq ε)) ∘
+                                π₂
+                                ⟩ ≈⟨ Cartesian.Cartesian.unique cartesian-𝒞
+                                     (natural-π₁ Σ cartesian-𝒞 {I = interpretation M} {interpretation N} (ax-rhs ε))
+                                     (natural-π₂ Σ cartesian-𝒞 {I = interpretation M} {interpretation N} (ax-rhs ε)) ⟩
+                              Interpretation.interp-term
+                                (A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N))
+                                (eq-rhs (ax-eq ε)) ∎
+
 
     proof-model-product : Model (A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N))
     Model.model-eq proof-model-product ε =
                                            begin
                                              Interpretation.interp-term
                                                (A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N))
-                                               (Equation.eq-lhs (ax-eq ε)) ≈⟨ Cartesian.Cartesian.⁂-cong₂ cartesian-𝒞 {!!} {!!} ⟩
-                                             {!!}
-
--- prod (Interpretation.interp-ctx (interpretation M))
--- (Equation.eq-ctx (ax-eq ε))
--- ×
--- prod (Interpretation.interp-ctx (interpretation N))
--- (Equation.eq-ctx (ax-eq ε))
--- ⇒
--- Interpretation.interp-sort (interpretation M)
--- (Equation.eq-sort (ax-eq ε))
--- ×
--- Interpretation.interp-sort (interpretation N)
--- (Equation.eq-sort (ax-eq ε))
+                                               (Equation.eq-lhs (ax-eq ε)) ≈⟨ proof-model-pairs ε (⁂-cong₂ (Model.model-eq (proof-model M) ε) (Model.model-eq (proof-model N) ε)) ⟩
+                                             Interpretation.interp-term
+                                               (A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N))
+                                               (Equation.eq-rhs (ax-eq ε)) ∎
 
   -- The product of ℐ𝓃𝓉 carries over the models : the product of two models is a model
   module _ (M N : ⋆Model) where
