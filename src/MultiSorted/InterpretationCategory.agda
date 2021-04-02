@@ -1,4 +1,3 @@
--- {-# OPTIONS --allow-unsolved-metas #-}
 open import Agda.Primitive using (_⊔_ ; lsuc ; Level)
 
 import Categories.Category as Category
@@ -173,14 +172,29 @@ module MultiSorted.InterpretationCategory
                         π (interp-ctx I) x)) ≈⟨ ∘-resp-≈ʳ (tuple-cong (interp-ctx J) λ i → ∘-resp-≈ˡ project₁) ⟩
                    (interp-oper J f ∘
                      tuple (interp-ctx J) (oper-arity f)
-                     (λ x → _⇒I_.hom-morphism ϕ ∘ π (interp-ctx I) x)) ≈⟨ {!!} ⟩
-                   {!!}
+                     (λ x → _⇒I_.hom-morphism ϕ ∘ π (interp-ctx I) x)) ≈⟨ ⟺ (_⇒I_.hom-commute ϕ f) ⟩
+                   (_⇒I_.hom-morphism ϕ ∘ interp-oper I f) ∎
 
          ⟨⟩-right : interp-oper K f ∘ tuple
                                         (interp-ctx K)
                                         (oper-arity f)
                                         (λ x → π₂ ∘ ⟨ _⇒I_.hom-morphism ϕ , _⇒I_.hom-morphism ψ ⟩ ∘ π (interp-ctx I) x) ≈ _⇒I_.hom-morphism ψ ∘ interp-oper I f
-         ⟨⟩-right = {!!}
+         ⟨⟩-right = begin
+                   (interp-oper K f ∘
+                     tuple (interp-ctx K) (oper-arity f)
+                     (λ x →
+                        π₂ ∘
+                        ⟨ _⇒I_.hom-morphism ϕ , _⇒I_.hom-morphism ψ ⟩ ∘ π (interp-ctx I) x)) ≈⟨ ∘-resp-≈ʳ (tuple-cong (interp-ctx K) λ i → sym-assoc) ⟩
+                   (interp-oper K f ∘
+                     tuple (interp-ctx K) (oper-arity f)
+                     (λ x →
+                        (π₂ ∘ ⟨ _⇒I_.hom-morphism ϕ , _⇒I_.hom-morphism ψ ⟩) ∘
+                        π (interp-ctx I) x)) ≈⟨ ∘-resp-≈ʳ (tuple-cong (interp-ctx K) λ i → ∘-resp-≈ˡ project₂) ⟩
+                   (interp-oper K f ∘
+                     tuple (interp-ctx K) (oper-arity f)
+                     (λ x → _⇒I_.hom-morphism ψ ∘ π (interp-ctx I) x)) ≈⟨ ⟺ (_⇒I_.hom-commute ψ f) ⟩
+                   (_⇒I_.hom-morphism ψ ∘ interp-oper I f) ∎
+
 
   ⟨_,_⟩-ℐ𝓃𝓉 : ∀ {I J K : Interpretation} → I ⇒I J → I ⇒I K → I ⇒I A×B-ℐ𝓃𝓉 J K
   ⟨_,_⟩-ℐ𝓃𝓉 {I} {J} {K} ϕ ψ =
@@ -213,14 +227,20 @@ module MultiSorted.InterpretationCategory
                                      (⟨ _⇒I_.hom-morphism ϕ , _⇒I_.hom-morphism ψ ⟩ ∘ interp-oper I f) ∎)
        }
 
-  project₁-ℐ𝓃𝓉 : {!!}
-  project₁-ℐ𝓃𝓉 = {!!}
+  project₁-ℐ𝓃𝓉 : {I J K : Interpretation} {h : I ⇒I J} {i : I ⇒I K} (A : sort) → π₁ ∘ ⟨ _⇒I_.hom-morphism {I} {J} h {A} , _⇒I_.hom-morphism {I} {K} i ⟩ ≈ _⇒I_.hom-morphism h
+  project₁-ℐ𝓃𝓉 A = project₁
 
-  project₂-ℐ𝓃𝓉 : {!!}
-  project₂-ℐ𝓃𝓉 = {!!}
+  project₂-ℐ𝓃𝓉 : {I J K : Interpretation} {h : I ⇒I J} {i : I ⇒I K} (A : sort) → π₂ ∘ ⟨ _⇒I_.hom-morphism {I} {J} h {A} , _⇒I_.hom-morphism {I} {K} i ⟩ ≈ _⇒I_.hom-morphism i
+  project₂-ℐ𝓃𝓉 A = project₂
 
-  unique-ℐ𝓃𝓉 : {!!}
-  unique-ℐ𝓃𝓉 = {!!}
+  unique-ℐ𝓃𝓉 : {I J K : Interpretation}
+                 {h : I ⇒I A×B-ℐ𝓃𝓉 J K}
+                 {i : I ⇒I J} {j : I ⇒I K} →
+                 ((A : sort) → π₁ ∘ _⇒I_.hom-morphism h {A} ≈ _⇒I_.hom-morphism i) →
+                 ((A : sort) → π₂ ∘ _⇒I_.hom-morphism h {A} ≈ _⇒I_.hom-morphism j) →
+                 (A : sort) →
+                   ⟨ _⇒I_.hom-morphism i {A} , _⇒I_.hom-morphism j ⟩ ≈ _⇒I_.hom-morphism h
+  unique-ℐ𝓃𝓉 = λ p₁ p₂ A → unique (p₁ A) (p₂ A)
 
   product-ℐ𝓃𝓉 : ∀ {I J} → Product ℐ𝓃𝓉 I J
   product-ℐ𝓃𝓉 {I} {J} =
@@ -229,9 +249,9 @@ module MultiSorted.InterpretationCategory
       ; π₁ = π₁-ℐ𝓃𝓉 {I} {J}
       ; π₂ = π₂-ℐ𝓃𝓉 {I} {J}
       ; ⟨_,_⟩ = ⟨_,_⟩-ℐ𝓃𝓉
-      ; project₁ = {! project₁-ℐ𝓃𝓉 !}
-      ; project₂ = {! project₂-ℐ𝓃𝓉 !}
-      ; unique = {! unique-ℐ𝓃𝓉 !}
+      ; project₁ = λ {K} {h} {i} A → project₁-ℐ𝓃𝓉 {K} {I} {J} {h} {i} A
+      ; project₂ = λ {K} {h} {i} A → project₂-ℐ𝓃𝓉 {K} {I} {J} {h} {i} A
+      ; unique = λ {K} {h} {i} {j} p₁ p₂ A → unique-ℐ𝓃𝓉 {K} {I} {J} {h} {i} {j} p₁ p₂ A
       }
 
   terminal-ℐ𝓃𝓉 : Terminal ℐ𝓃𝓉
