@@ -79,7 +79,7 @@ module MultiSorted.Interpretation
          hom-morphism ∘ interp-oper I f ≈
              interp-oper J f ∘ tuple (interp-ctx J) (oper-arity f) (λ i → hom-morphism ∘ π (interp-ctx I) i)
 
-  infix  4 _⇒s_
+  infix  4 _⇒I_
 
   -- The identity homomorphism
   id-I : ∀ {A : Interpretation} → A ⇒I A
