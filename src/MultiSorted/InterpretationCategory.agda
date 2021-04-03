@@ -275,3 +275,62 @@ module MultiSorted.InterpretationCategory
       { terminal = terminal-ℐ𝓃𝓉
       ; products = record { product = product-ℐ𝓃𝓉 }
       }
+
+  -- Each projection is a natural transformation with respect to the interpretation
+  open Interpretation
+  open HomReasoning
+  open Product.Producted
+
+  natural-π₁ : {I J : Interpretation} {A : sort} {Γ : Context} (t : Term Γ A) → π₁ ∘ (interp-term (A×B-ℐ𝓃𝓉 I J) t) ≈ (interp-term I t) ∘ π₁
+  natural-π₁ {I} {J} (Signature.tm-var x) = project₁
+  natural-π₁ {I} {J} (Signature.tm-oper f xs) = begin
+                                                 (π₁ ∘ interp-term (A×B-ℐ𝓃𝓉 I J) (tm-oper f xs)) ≈⟨ ∘-resp-≈ʳ ⁂∘⟨⟩ ⟩
+                                                 (π₁ ∘
+                                                    ⟨
+                                                    interp-oper I f ∘
+                                                    Product.Producted.tuple (interp-ctx I) (oper-arity f)
+                                                    (λ i → π₁ ∘ interp-term (A×B-ℐ𝓃𝓉 I J) (xs i))
+                                                    ,
+                                                    interp-oper J f ∘
+                                                    Product.Producted.tuple (interp-ctx J) (oper-arity f)
+                                                    (λ i → π₂ ∘ interp-term (A×B-ℐ𝓃𝓉 I J) (xs i))
+                                                    ⟩) ≈⟨ project₁ ⟩
+                                                 (interp-oper I f ∘
+                                                   Product.Producted.tuple (interp-ctx I) (oper-arity f)
+                                                   (λ i → π₁ ∘ interp-term (A×B-ℐ𝓃𝓉 I J) (xs i))) ≈⟨ ∘-resp-≈ʳ (tuple-cong (interp-ctx I) λ i → natural-π₁ {I} {J} {arg-sort f i} (xs i)) ⟩
+                                                 (interp-oper I f ∘
+                                                   tuple (interp-ctx I) (oper-arity f)
+                                                   (λ i → interp-term I (xs i) ∘ π₁)) ≈⟨ ∘-resp-≈ʳ (∘-distribʳ-tuple (interp-ctx I)) ⟩
+                                                 (interp-oper I f ∘
+                                                   tuple (interp-ctx I) (oper-arity f) (λ x → interp-term I (xs x)) ∘
+                                                   π₁) ≈⟨ sym-assoc ⟩
+                                                 ((interp-oper I f ∘
+                                                    tuple (interp-ctx I) (oper-arity f) (λ x → interp-term I (xs x)))
+                                                   ∘ π₁) ∎
+
+  natural-π₂ : {I J : Interpretation} {A : sort} {Γ : Context} (t : Term Γ A) → π₂ ∘ (interp-term (A×B-ℐ𝓃𝓉 I J) t) ≈ (interp-term J t) ∘ π₂
+  natural-π₂ {I} {J} (Signature.tm-var x) = project₂
+  natural-π₂ {I} {J} (Signature.tm-oper f xs) = begin
+                                                 (π₂ ∘ interp-term (A×B-ℐ𝓃𝓉 I J) (tm-oper f xs)) ≈⟨ ∘-resp-≈ʳ ⁂∘⟨⟩ ⟩
+                                                 (π₂ ∘
+                                                    ⟨
+                                                    interp-oper I f ∘
+                                                    Product.Producted.tuple (interp-ctx I) (oper-arity f)
+                                                    (λ i → π₁ ∘ interp-term (A×B-ℐ𝓃𝓉 I J) (xs i))
+                                                    ,
+                                                    interp-oper J f ∘
+                                                    Product.Producted.tuple (interp-ctx J) (oper-arity f)
+                                                    (λ i → π₂ ∘ interp-term (A×B-ℐ𝓃𝓉 I J) (xs i))
+                                                    ⟩) ≈⟨ project₂ ⟩
+                                                 (interp-oper J f ∘
+                                                   Product.Producted.tuple (interp-ctx J) (oper-arity f)
+                                                   (λ i → π₂ ∘ interp-term (A×B-ℐ𝓃𝓉 I J) (xs i))) ≈⟨ ∘-resp-≈ʳ (tuple-cong (interp-ctx J) λ i → natural-π₂ {I} {J} {arg-sort f i} (xs i)) ⟩
+                                                 (interp-oper J f ∘
+                                                   tuple (interp-ctx J) (oper-arity f)
+                                                   (λ i → interp-term J (xs i) ∘ π₂)) ≈⟨ ∘-resp-≈ʳ (∘-distribʳ-tuple (interp-ctx J)) ⟩
+                                                 (interp-oper J f ∘
+                                                   tuple (interp-ctx J) (oper-arity f) (λ x → interp-term J (xs x)) ∘
+                                                   π₂) ≈⟨ sym-assoc ⟩
+                                                 ((interp-oper J f ∘
+                                                    tuple (interp-ctx J) (oper-arity f) (λ x → interp-term J (xs x)))
+                                                   ∘ π₂) ∎

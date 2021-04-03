@@ -15,8 +15,6 @@ module MultiSorted.Model {o ℓ e ℓt}
           {𝒞 : Category.Category o ℓ e}
           {cartesian-𝒞 : Cartesian.Cartesian 𝒞} where
 
-  -- open Signature Σ
-
   -- Model of a theory
 
   record Model (I : Interpretation.Interpretation Σ cartesian-𝒞) : Set (ℓt ⊔ o ⊔ ℓ ⊔ e) where
