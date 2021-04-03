@@ -1,7 +1,7 @@
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import SingleSorted.Substitution
-open import Data.Nat using (ℕ; zero; suc; _+_; _*_)
+open import Data.Nat using (ℕ; zero; suc)
 import MultiSorted.Context as Context 
 
 module MultiSorted.Group where

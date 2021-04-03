@@ -2,10 +2,9 @@ open import SingleSorted.AlgebraicTheory
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import SingleSorted.Substitution
+open import Data.Nat using (ℕ; zero; suc; _+_; _*_)
 
 module SingleSorted.Group where
-
-open import Data.Nat using (ℕ; zero; suc; _+_; _*_)
 
 data GroupOp : Set where
   e : GroupOp
@@ -112,15 +111,15 @@ _ = e' ∗ a
 data GroupEq : Set where
   mul-assoc e-left e-right inv-left inv-right : GroupEq
 
-mul-assoc-ax : Axiom
-e-left-ax : Axiom
-e-right-ax : Axiom
-inv-left-ax : Axiom
-inv-right-ax : Axiom
+mul-assoc-ax : Equation
+e-left-ax : Equation
+e-right-ax : Equation
+inv-left-ax : Equation
+inv-right-ax : Equation
 
-mul-assoc-ax = record { ax-ctx = ctx 3
-                      ; ax-lhs = x ∗ y ∗ z
-                      ; ax-rhs = x ∗ (y ∗ z)
+mul-assoc-ax = record { eq-ctx = ctx 3
+                      ; eq-lhs = x ∗ y ∗ z
+                      ; eq-rhs = x ∗ (y ∗ z)
                       }
              where
              x : Term (ctx 3)
@@ -130,31 +129,31 @@ mul-assoc-ax = record { ax-ctx = ctx 3
              y = tm-var (var-inl (var-inr var-var))
              z = tm-var (var-inr var-var)
 
-e-left-ax = record { ax-ctx = ctx 1 ; ax-lhs = e' ∗ x ; ax-rhs = x }
+e-left-ax = record { eq-ctx = ctx 1 ; eq-lhs = e' ∗ x ; eq-rhs = x }
   where
   x : Term (ctx 1)
   x = tm-var (var-inr var-var)
 
-e-right-ax = record { ax-ctx = ctx 1 ; ax-lhs = x ∗ e' ; ax-rhs = x }
+e-right-ax = record { eq-ctx = ctx 1 ; eq-lhs = x ∗ e' ; eq-rhs = x }
   where
   x : Term (ctx 1)
   x = tm-var (var-inr var-var)
 
 
-inv-left-ax = record { ax-ctx = ctx 1 ; ax-lhs = x ⁱ ∗ x ; ax-rhs = e' }
+inv-left-ax = record { eq-ctx = ctx 1 ; eq-lhs = x ⁱ ∗ x ; eq-rhs = e' }
   where
   x : Term (ctx 1)
   x = tm-var (var-inr var-var)
 
-inv-right-ax = record { ax-ctx = ctx 1 ; ax-lhs = x ∗ x ⁱ ; ax-rhs = e' }
+inv-right-ax = record { eq-ctx = ctx 1 ; eq-lhs = x ∗ x ⁱ ; eq-rhs = e' }
   where
   x : Term (ctx 1)
   x = tm-var (var-inr var-var)
 
 
 𝒢 : Theory lzero Σ
-𝒢 = record { eq = GroupEq
-            ; eq-ax = λ{ mul-assoc → mul-assoc-ax
+𝒢 = record { ax = GroupEq
+            ; ax-eq = λ{ mul-assoc → mul-assoc-ax
                        ; e-left → e-left-ax
                        ; e-right → e-right-ax
                        ; inv-left → inv-left-ax

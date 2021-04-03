@@ -50,11 +50,11 @@ module SingleSorted.AlgebraicTheory where
     infixl 7 _∘s_
 
     -- Axioms are equations in context
-    record Axiom  : Set where
+    record Equation  : Set where
       field
-        ax-ctx : Context
-        ax-lhs : Term ax-ctx
-        ax-rhs : Term ax-ctx
+        eq-ctx : Context
+        eq-lhs : Term eq-ctx
+        eq-rhs : Term eq-ctx
 
   -- Theory
   -- an equational theory is a family of equations over a given sort
@@ -62,17 +62,17 @@ module SingleSorted.AlgebraicTheory where
     open Signature Σ public
 
     field
-      eq : Set ℓ -- the axiom names
-      eq-ax : eq → Axiom -- the axioms
+      ax : Set ℓ -- the axiom names
+      ax-eq : ax → Equation -- the axioms
 
-    eq-ctx : eq → Context
-    eq-ctx ε = Axiom.ax-ctx (eq-ax ε)
+    ax-ctx : ax → Context
+    ax-ctx ε = Equation.eq-ctx (ax-eq ε)
 
-    eq-lhs : ∀ (ε : eq) → Term (eq-ctx ε)
-    eq-lhs ε = Axiom.ax-lhs (eq-ax ε)
+    ax-lhs : ∀ (ε : ax) → Term (ax-ctx ε)
+    ax-lhs ε = Equation.eq-lhs (ax-eq ε)
 
-    eq-rhs : ∀ (ε : eq) → Term (eq-ctx ε)
-    eq-rhs ε = Axiom.ax-rhs (eq-ax ε)
+    ax-rhs : ∀ (ε : ax) → Term (ax-ctx ε)
+    ax-rhs ε = Equation.eq-rhs (ax-eq ε)
 
     infix 4 _⊢_≈_
 
@@ -86,8 +86,8 @@ module SingleSorted.AlgebraicTheory where
       eq-congr : ∀ {Γ} {f : oper} {xs ys : arg (oper-arity f) → Term Γ} →
                  (∀ i → Γ ⊢ xs i ≈ ys i) → Γ ⊢ tm-oper f xs ≈ tm-oper f ys
       -- equational axiom
-      eq-axiom : ∀ (ε : eq) {Γ : Context} (σ : Γ ⇒s (eq-ctx ε)) →
-                 Γ ⊢ eq-lhs ε [ σ ]s ≈ eq-rhs ε [ σ ]s
+      eq-axiom : ∀ (ε : ax) {Γ : Context} (σ : Γ ⇒s (ax-ctx ε)) →
+                 Γ ⊢ ax-lhs ε [ σ ]s ≈ ax-rhs ε [ σ ]s
 
     ≡-⊢-≈ : {Γ : Context} {s t : Term Γ} → s ≡ t → Γ ⊢ s ≈ t
     ≡-⊢-≈ refl = eq-refl
@@ -97,7 +97,7 @@ module SingleSorted.AlgebraicTheory where
     id-action {a = tm-var a} = eq-refl
     id-action {a = tm-oper f x} = eq-congr (λ i → id-action {a = x i})
 
-    eq-axiom-id : ∀ (ε : eq) → eq-ctx ε ⊢ eq-lhs ε ≈ eq-rhs ε
+    eq-axiom-id : ∀ (ε : ax) → ax-ctx ε ⊢ ax-lhs ε ≈ ax-rhs ε
     eq-axiom-id ε = eq-tran id-action (eq-tran (eq-axiom ε id-s) (eq-symm id-action))
 
     eq-setoid : ∀ (Γ : Context) → Setoid lzero (lsuc ℓ)
