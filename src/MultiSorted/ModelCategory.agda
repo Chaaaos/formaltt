@@ -147,3 +147,37 @@ module MultiSorted.ModelCategory
               { interpretation = A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N)
               ; proof-model = proof-model-product M N
               }
+
+
+   -- The cartesian structure of the category of models
+  open InterpretationCategory Σ cartesian-𝒞
+
+  π₁-ℳ : ∀ {M N : ⋆Model} → A×B-ℳ M N ⇒M M
+  π₁-ℳ {M} {N} = π₁-ℐ𝓃𝓉 {interpretation M} {interpretation N}
+
+  π₂-ℳ : ∀ {M N : ⋆Model} → A×B-ℳ M N ⇒M N
+  π₂-ℳ {M} {N} = π₂-ℐ𝓃𝓉 {interpretation M} {interpretation N}
+
+  ⟨_,_⟩-ℳ : ∀ {M N O : ⋆Model} → M ⇒M N → M ⇒M O → M ⇒M A×B-ℳ N O
+  ⟨_,_⟩-ℳ {M} {N} {O} ϕ ψ = ⟨ ϕ , ψ ⟩-ℐ𝓃𝓉
+
+  project₁-ℳ : {M N O : ⋆Model} {h : M ⇒M N} {i : M ⇒M O} → _≈M_ {M} {N} (π₁-ℐ𝓃𝓉 {interpretation N} {interpretation O} ∘I ⟨ h , i ⟩-ℐ𝓃𝓉) h
+  project₁-ℳ {M} {N} {O} {h} {i} A = project₁-ℐ𝓃𝓉 {interpretation M} {interpretation N} {interpretation O} {h} {i} A
+
+  project₂-ℳ : {M N O : ⋆Model} {h : M ⇒M N} {i : M ⇒M O} → _≈M_ {M} {O} (π₂-ℐ𝓃𝓉 {interpretation N} {interpretation O} ∘I ⟨ h , i ⟩-ℐ𝓃𝓉) i
+  project₂-ℳ {M} {N} {O} {h} {i} A = project₂-ℐ𝓃𝓉 {interpretation M} {interpretation N} {interpretation O} {h} {i} A
+
+  unique-ℳ : {M N O : ⋆Model} {h : M ⇒M A×B-ℳ N O} {i : M ⇒M N} {j : M ⇒M O} → _≈M_ {M} {N} (π₁-ℐ𝓃𝓉 {interpretation N} {interpretation O} ∘I h) i → _≈M_ {M} {O} (π₂-ℐ𝓃𝓉 {interpretation N} {interpretation O} ∘I h) j → _≈M_ {M} {A×B-ℳ N O} ⟨ i , j ⟩-ℐ𝓃𝓉 h
+  unique-ℳ {M} {N} {O} {h} {i} {j} p₁ p₂ = unique-ℐ𝓃𝓉 {interpretation M} {interpretation N} {interpretation O} {h} {i} {j} (λ A → p₁ A) λ A → p₂ A
+
+  product-ℳ : ∀ {M N} → Product ℳ M N
+  product-ℳ {M} {N} =
+    record
+      { A×B = A×B-ℳ M N
+      ; π₁ = π₁-ℳ {M} {N}
+      ; π₂ = π₂-ℳ {M} {N}
+      ; ⟨_,_⟩ = λ {O} → ⟨_,_⟩-ℳ {O} {M} {N}
+      ; project₁ = λ {O} {h} {i} A → project₁-ℳ {O} {M} {N} {h} {i} A
+      ; project₂ = λ {O} {h} {i} A → project₂-ℳ {O} {M} {N} {h} {i} A
+      ; unique = λ {O} {h} {i} {j} p₁ p₂ A → unique-ℳ {O} {M} {N} {h} {i} {j} p₁ p₂ A
+      }
