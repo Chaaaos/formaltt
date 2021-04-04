@@ -81,7 +81,6 @@ module MultiSorted.ModelCategory
                            }
           ; ∘-resp-≈ = λ p₁ p₂ A → ∘-resp-≈ (p₁ A) (p₂ A)
           }
-  -- The category of models ℳ (T, 𝒞) is (isomorphic to) a full subcategory of ℐ𝓃𝓉 (Σ , 𝒞)
 
   -- The product of "Model proofs"
 
@@ -137,6 +136,9 @@ module MultiSorted.ModelCategory
                                                (A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N))
                                                (Equation.eq-rhs (ax-eq ε)) ∎
 
+
+
+
   -- The product of ℐ𝓃𝓉 carries over the models : the product of two models is a model
   module _ (M N : ⋆Model) where
     open Product.Producted
@@ -149,35 +151,25 @@ module MultiSorted.ModelCategory
               }
 
 
-   -- The cartesian structure of the category of models
-  open InterpretationCategory Σ cartesian-𝒞
+  -- The cartesian structure of the category of models
 
-  π₁-ℳ : ∀ {M N : ⋆Model} → A×B-ℳ M N ⇒M M
-  π₁-ℳ {M} {N} = π₁-ℐ𝓃𝓉 {interpretation M} {interpretation N}
-
-  π₂-ℳ : ∀ {M N : ⋆Model} → A×B-ℳ M N ⇒M N
-  π₂-ℳ {M} {N} = π₂-ℐ𝓃𝓉 {interpretation M} {interpretation N}
-
-  ⟨_,_⟩-ℳ : ∀ {M N O : ⋆Model} → M ⇒M N → M ⇒M O → M ⇒M A×B-ℳ N O
-  ⟨_,_⟩-ℳ {M} {N} {O} ϕ ψ = ⟨ ϕ , ψ ⟩-ℐ𝓃𝓉
-
-  project₁-ℳ : {M N O : ⋆Model} {h : M ⇒M N} {i : M ⇒M O} → _≈M_ {M} {N} (π₁-ℐ𝓃𝓉 {interpretation N} {interpretation O} ∘I ⟨ h , i ⟩-ℐ𝓃𝓉) h
-  project₁-ℳ {M} {N} {O} {h} {i} A = project₁-ℐ𝓃𝓉 {interpretation M} {interpretation N} {interpretation O} {h} {i} A
-
-  project₂-ℳ : {M N O : ⋆Model} {h : M ⇒M N} {i : M ⇒M O} → _≈M_ {M} {O} (π₂-ℐ𝓃𝓉 {interpretation N} {interpretation O} ∘I ⟨ h , i ⟩-ℐ𝓃𝓉) i
-  project₂-ℳ {M} {N} {O} {h} {i} A = project₂-ℐ𝓃𝓉 {interpretation M} {interpretation N} {interpretation O} {h} {i} A
-
-  unique-ℳ : {M N O : ⋆Model} {h : M ⇒M A×B-ℳ N O} {i : M ⇒M N} {j : M ⇒M O} → _≈M_ {M} {N} (π₁-ℐ𝓃𝓉 {interpretation N} {interpretation O} ∘I h) i → _≈M_ {M} {O} (π₂-ℐ𝓃𝓉 {interpretation N} {interpretation O} ∘I h) j → _≈M_ {M} {A×B-ℳ N O} ⟨ i , j ⟩-ℐ𝓃𝓉 h
-  unique-ℳ {M} {N} {O} {h} {i} {j} p₁ p₂ = unique-ℐ𝓃𝓉 {interpretation M} {interpretation N} {interpretation O} {h} {i} {j} (λ A → p₁ A) λ A → p₂ A
-
-  product-ℳ : ∀ {M N} → Product ℳ M N
-  product-ℳ {M} {N} =
-    record
-      { A×B = A×B-ℳ M N
-      ; π₁ = π₁-ℳ {M} {N}
-      ; π₂ = π₂-ℳ {M} {N}
-      ; ⟨_,_⟩ = λ {O} → ⟨_,_⟩-ℳ {O} {M} {N}
-      ; project₁ = λ {O} {h} {i} A → project₁-ℳ {O} {M} {N} {h} {i} A
-      ; project₂ = λ {O} {h} {i} A → project₂-ℳ {O} {M} {N} {h} {i} A
-      ; unique = λ {O} {h} {i} {j} p₁ p₂ A → unique-ℳ {O} {M} {N} {h} {i} {j} p₁ p₂ A
-      }
+  module _ {M N : ⋆Model} where
+    import Categories.Object.Product.Core
+    open Categories.Object.Product.Core.Product
+    open InterpretationCategory Σ cartesian-𝒞
+    private
+      UM UN : Interpretation
+      UM = interpretation M
+      UN = interpretation N
+      UM×UN : Product ℐ𝓃𝓉 UM UN
+      UM×UN = product-ℐ𝓃𝓉
+    product-ℳ : Product ℳ M N
+    -- Structure
+    A×B      product-ℳ = A×B-ℳ M N
+    π₁       product-ℳ = π₁    UM×UN
+    π₂       product-ℳ = π₂    UM×UN
+    ⟨_,_⟩    product-ℳ = ⟨_,_⟩ UM×UN
+    -- Properties
+    project₁ product-ℳ {O} {h} {i}     = project₁ UM×UN {interpretation O} {h} {i}
+    project₂ product-ℳ {O} {h} {i}     = project₂ UM×UN {interpretation O} {h} {i}
+    unique   product-ℳ {O} {h} {i} {j} = unique   UM×UN {interpretation O} {h} {i} {j}
