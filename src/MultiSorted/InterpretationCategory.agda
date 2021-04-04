@@ -91,7 +91,7 @@ module MultiSorted.InterpretationCategory
     -- Operations
     interp-oper A×B-ℐ𝓃𝓉 = λ f → (interp-oper I f) ⁂ (interp-oper J f)
 
-
+  -- Useful propoerties for the definition of projections
   module _ (I J : Interpretation) f where
     open Product.Producted
     open Interpretation
@@ -121,6 +121,8 @@ module MultiSorted.InterpretationCategory
                       (id ∘ π₂) ≈⟨ identityˡ ⟩
                       π₂ ∎)
 
+
+  -- Definition of projections
   π₁-ℐ𝓃𝓉 : ∀ {I J : Interpretation} → A×B-ℐ𝓃𝓉 I J ⇒I I
   π₁-ℐ𝓃𝓉 {I} {J} =
                    let open HomReasoning in
@@ -150,6 +152,8 @@ module MultiSorted.InterpretationCategory
                                                tuple (interp-ctx J) (oper-arity f)
                                                (λ i → π₂ ∘ (π (interp-ctx I) i ⁂ π (interp-ctx J) i))) ∎
                      }
+
+  -- Useful properties for the definition of ⟨_,_⟩-ℐ𝓃𝓉
   module _ (I J K : Interpretation) f (ϕ : I ⇒I J) (ψ : I ⇒I K) where
          open Interpretation
          open HomReasoning
@@ -195,7 +199,7 @@ module MultiSorted.InterpretationCategory
                      (λ x → _⇒I_.hom-morphism ψ ∘ π (interp-ctx I) x)) ≈⟨ ⟺ (_⇒I_.hom-commute ψ f) ⟩
                    (_⇒I_.hom-morphism ψ ∘ interp-oper I f) ∎
 
-
+  -- Definition of pairing
   ⟨_,_⟩-ℐ𝓃𝓉 : ∀ {I J K : Interpretation} → I ⇒I J → I ⇒I K → I ⇒I A×B-ℐ𝓃𝓉 J K
   ⟨_,_⟩-ℐ𝓃𝓉 {I} {J} {K} ϕ ψ =
      let open HomReasoning in
@@ -227,6 +231,7 @@ module MultiSorted.InterpretationCategory
                                      (⟨ _⇒I_.hom-morphism ϕ , _⇒I_.hom-morphism ψ ⟩ ∘ interp-oper I f) ∎)
        }
 
+  -- Properties about projections and unicity
   project₁-ℐ𝓃𝓉 : {I J K : Interpretation} {h : I ⇒I J} {i : I ⇒I K} (A : sort) → π₁ ∘ ⟨ _⇒I_.hom-morphism {I} {J} h {A} , _⇒I_.hom-morphism {I} {K} i ⟩ ≈ _⇒I_.hom-morphism h
   project₁-ℐ𝓃𝓉 A = project₁
 
@@ -242,6 +247,7 @@ module MultiSorted.InterpretationCategory
                    ⟨ _⇒I_.hom-morphism i {A} , _⇒I_.hom-morphism j ⟩ ≈ _⇒I_.hom-morphism h
   unique-ℐ𝓃𝓉 = λ p₁ p₂ A → unique (p₁ A) (p₂ A)
 
+  -- Definition of the structure of the product
   product-ℐ𝓃𝓉 : ∀ {I J} → Product ℐ𝓃𝓉 I J
   product-ℐ𝓃𝓉 {I} {J} =
     record
@@ -254,6 +260,7 @@ module MultiSorted.InterpretationCategory
       ; unique = λ {K} {h} {i} {j} p₁ p₂ A → unique-ℐ𝓃𝓉 {K} {I} {J} {h} {i} {j} p₁ p₂ A
       }
 
+  -- The terminal object
   terminal-ℐ𝓃𝓉 : Terminal ℐ𝓃𝓉
   terminal-ℐ𝓃𝓉 =
     record
@@ -269,12 +276,14 @@ module MultiSorted.InterpretationCategory
           }
       }
 
+  -- The category of interpretations is cartesian
   cartesian-ℐ𝓃𝓉 : Cartesian.Cartesian ℐ𝓃𝓉
   cartesian-ℐ𝓃𝓉 =
     record
       { terminal = terminal-ℐ𝓃𝓉
       ; products = record { product = product-ℐ𝓃𝓉 }
       }
+
 
   -- Each projection is a natural transformation with respect to the interpretation
   open Interpretation

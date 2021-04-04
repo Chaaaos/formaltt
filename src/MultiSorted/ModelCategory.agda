@@ -9,7 +9,7 @@ open import MultiSorted.AlgebraicTheory
 open import MultiSorted.Substitution
 import MultiSorted.Product as Product
 import MultiSorted.Interpretation as Interpretation
-import MultiSorted.Model as Model
+import MultiSorted.Model as Is-Model
 import MultiSorted.InterpretationCategory as InterpretationCategory
 
 module MultiSorted.ModelCategory
@@ -23,7 +23,7 @@ module MultiSorted.ModelCategory
   open Theory T
   open Category.Category 𝒞
   open Interpretation Σ cartesian-𝒞
-  open Model {o = o} {ℓ = ℓ} {e = e} {Σ = Σ} T
+  open Is-Model {o = o} {ℓ = ℓ} {e = e} {Σ = Σ} T
 
   -- Useful shortcuts for levels
   ℓℴ : Level
@@ -35,37 +35,37 @@ module MultiSorted.ModelCategory
   ℓ𝓇 : Level
   ℓ𝓇 = e ⊔ 𝓈
 
-  -- New definition of models
-  record ⋆Model : Set ℓℴ where
+  -- New definition of models (as a set, not only a property of interpretations)
+  record Model : Set ℓℴ where
     field
       interpretation : Interpretation
-      proof-model : Model.Model T interpretation
+      is-model : Is-Model.Is-Model T interpretation
 
-  open ⋆Model
+  open Model
 
   -- Homomorphisms of models
-  _⇒M_ : ∀ (M N : ⋆Model) → Set ℓ𝒽
+  _⇒M_ : ∀ (M N : Model) → Set ℓ𝒽
   _⇒M_ M N = (interpretation M) ⇒I (interpretation N)
 
   -- Equality of homomorphisms of models (the same as for the interpretations)
-  _≈M_ : ∀ {M N : ⋆Model} → M ⇒M N → M ⇒M N → Set ℓ𝓇
+  _≈M_ : ∀ {M N : Model} → M ⇒M N → M ⇒M N → Set ℓ𝓇
   _≈M_ {M} {N} ϕ ψ =
                    let open _⇒I_ in
                    ∀ A → (hom-morphism ϕ {A}) ≈ (hom-morphism ψ)
 
   -- The identity morphism on models
-  id-M : (M : ⋆Model) → M ⇒M M
+  id-M : (M : Model) → M ⇒M M
   id-M = λ M → id-I {interpretation M}
 
   -- Composition of morphisms of Models
-  _∘M_ : ∀ {M N O : ⋆Model} →  N ⇒M O → M ⇒M N → M ⇒M O
+  _∘M_ : ∀ {M N O : Model} →  N ⇒M O → M ⇒M N → M ⇒M O
   _∘M_ ϕ ψ = ϕ ∘I ψ
 
 
   -- The category of Models of Σ in 𝒞
   ℳ : Category.Category ℓℴ ℓ𝒽 ℓ𝓇
   ℳ = record
-          { Obj = ⋆Model
+          { Obj = Model
           ; _⇒_ = _⇒M_
           ; _≈_ = λ {M} {N} ϕ ψ → _≈M_ {M} {N} ϕ ψ
           ; id = λ {M} → id-M M
@@ -84,7 +84,7 @@ module MultiSorted.ModelCategory
 
   -- The product of "Model proofs"
 
-  module _ (M N : ⋆Model) where
+  module _ (M N : Model) where
     open Product.Producted
     open HomReasoning
     open InterpretationCategory
@@ -93,11 +93,12 @@ module MultiSorted.ModelCategory
     open import Categories.Object.Product.Morphisms {o} {ℓ} {e} 𝒞
     open Equation
 
-    proof-model-pairs : ∀ ε → (interp-term (interpretation M) (Equation.eq-lhs (ax-eq ε)) ⁂  interp-term (interpretation N) (Equation.eq-lhs (ax-eq ε)))
+    -- A proof that an axiom holds in a product interpretation amounts to a apir of proofs that the axiom holds in each model
+    is-model-pairs : ∀ ε → (interp-term (interpretation M) (Equation.eq-lhs (ax-eq ε)) ⁂  interp-term (interpretation N) (Equation.eq-lhs (ax-eq ε)))
                                ≈ (interp-term (interpretation M) (Equation.eq-rhs (ax-eq ε)) ⁂  interp-term (interpretation N) (Equation.eq-rhs (ax-eq ε))) →
                                Interpretation.interp-term (A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N)) (Equation.eq-lhs (ax-eq ε))
                                ≈ Interpretation.interp-term (A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N)) (Equation.eq-rhs (ax-eq ε))
-    proof-model-pairs ε p =
+    is-model-pairs ε p =
                             begin
                               Interpretation.interp-term
                                 (A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N))
@@ -111,7 +112,7 @@ module MultiSorted.ModelCategory
                                 ,
                                 Interpretation.interp-term (interpretation N) (eq-lhs (ax-eq ε)) ∘
                                 π₂
-                                ⟩ ≈⟨ ⟨⟩-cong₂ (∘-resp-≈ˡ (Model.model-eq (proof-model M) ε)) (∘-resp-≈ˡ (Model.model-eq (proof-model N) ε)) ⟩
+                                ⟩ ≈⟨ ⟨⟩-cong₂ (∘-resp-≈ˡ (Is-Model.model-eq (is-model M) ε)) (∘-resp-≈ˡ (Is-Model.model-eq (is-model N) ε)) ⟩
                               product.⟨
                                 Interpretation.interp-term (interpretation M) (eq-rhs (ax-eq ε)) ∘
                                 π₁
@@ -125,13 +126,13 @@ module MultiSorted.ModelCategory
                                 (A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N))
                                 (eq-rhs (ax-eq ε)) ∎
 
-
-    proof-model-product : Model (A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N))
-    Model.model-eq proof-model-product ε =
+    -- The proof that the product interpetation of two models is a model
+    is-model-product : Is-Model (A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N))
+    Is-Model.model-eq is-model-product ε =
                                            begin
                                              Interpretation.interp-term
                                                (A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N))
-                                               (Equation.eq-lhs (ax-eq ε)) ≈⟨ proof-model-pairs ε (⁂-cong₂ (Model.model-eq (proof-model M) ε) (Model.model-eq (proof-model N) ε)) ⟩
+                                               (Equation.eq-lhs (ax-eq ε)) ≈⟨ is-model-pairs ε (⁂-cong₂ (Is-Model.model-eq (is-model M) ε) (Is-Model.model-eq (is-model N) ε)) ⟩
                                              Interpretation.interp-term
                                                (A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N))
                                                (Equation.eq-rhs (ax-eq ε)) ∎
@@ -140,20 +141,20 @@ module MultiSorted.ModelCategory
 
 
   -- The product of ℐ𝓃𝓉 carries over the models : the product of two models is a model
-  module _ (M N : ⋆Model) where
+  module _ (M N : Model) where
     open Product.Producted
     open HomReasoning
     open InterpretationCategory
-    A×B-ℳ : ⋆Model
+    A×B-ℳ : Model
     A×B-ℳ = record
               { interpretation = A×B-ℐ𝓃𝓉 Σ cartesian-𝒞 (interpretation M) (interpretation N)
-              ; proof-model = proof-model-product M N
+              ; is-model = is-model-product M N
               }
 
 
   -- The cartesian structure of the category of models
 
-  module _ {M N : ⋆Model} where
+  module _ {M N : Model} where
     import Categories.Object.Product.Core
     open Categories.Object.Product.Core.Product
     open InterpretationCategory Σ cartesian-𝒞
