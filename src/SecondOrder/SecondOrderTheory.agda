@@ -1,7 +1,7 @@
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst)
 
-import MultiSorted.Context as Context
+import SecondOrder.Context as Context
 
 module SecondOrder.SecondOrderTheory where
 
@@ -39,24 +39,15 @@ module SecondOrder.SecondOrderTheory where
     mv-arg-sort Θ M i = sort-of (mv-arity Θ M) i
 
     -- terms in a context of a given sort
-    data Term (Θ : Meta) (Γ : Context) : ∀ (A : sort) → Set (lsuc (ℓa ⊔ ℓo ⊔ ℓs)) where
-      tm-var : ∀ (x : var Γ) → Term Θ Γ (sort-of Γ x)
-      tm-meta : ∀ (M : mv Θ) → (∀ (i : mv-arg Θ M) → Term Θ Γ (mv-arg-sort Θ M i)) → Term Θ Γ (mv-sort Θ M)
-      tm-oper : ∀ (f : oper) →
-                  (∀ (i : oper-arg f) → Term Θ (ctx-concat Γ (arg-bind f i)) (arg-sort f i)) →
+    data Term (Θ : Meta) : ∀ (Γ : Context)  (A : sort) → Set (lsuc (ℓa ⊔ ℓo ⊔ ℓs)) where
+      tm-var : ∀ {Γ} (x : var Γ) → Term Θ Γ (sort-of Γ x)
+      tm-meta : ∀ {Γ} (M : mv Θ) → (∀ (i : mv-arg Θ M) → Term Θ Γ (mv-arg-sort Θ M i)) → Term Θ Γ (mv-sort Θ M)
+      tm-oper : ∀ {Γ} (f : oper) →
+                  (∀ (i : oper-arg f) → Term Θ (Γ ,, arg-bind f i) (arg-sort f i)) →
                   Term Θ Γ (oper-sort f)
 
-    -- Substitutions (definitions - some useful properties are in another file)
+    -- Variable renamings and substitition
     module _ {Θ : Meta} where
-
-      _⇒s_ : ∀ (Γ Δ : Context) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa))
-      Γ ⇒s Δ = ∀ (x : var Δ) → Term Θ Γ (sort-of Δ x)
-
-      infix 4 _⇒s_
-
-      -- identity substitution
-      id-s : ∀ {Γ : Context} → Γ ⇒s Γ
-      id-s = tm-var
 
       -- variable renaming
       record Renaming (Γ Δ : Context) : Set ℓs where
@@ -66,30 +57,38 @@ module SecondOrder.SecondOrderTheory where
 
       open Renaming
 
-      var-coerce : ∀ {Γ Δ} → Renaming Γ Δ → ∀ (x : var Γ) → Term Θ Δ (sort-of Γ x)
-      var-coerce {Γ} {Δ} ρ x = subst (Term Θ Δ) (var-resp ρ x) (tm-var (var-rename ρ x))
-
-      extend : ∀ {Γ Δ} → Renaming Γ Δ → ∀ Ξ → Renaming (ctx-concat Γ Ξ) (ctx-concat Δ Ξ)
+      -- extend a renaming by a context
+      extend : ∀ {Γ Δ} → Renaming Γ Δ → ∀ Ξ → Renaming (Γ ,, Ξ) (Δ ,, Ξ)
       extend {Γ} {Δ} ρ Ξ = σ where
-        σ : Renaming (ctx-concat Γ Ξ) (ctx-concat Δ Ξ)
+        σ : Renaming (Γ ,, Ξ) (Δ ,, Ξ)
         var-rename σ (var-inl x) = var-inl (var-rename ρ x)
         var-rename σ (var-inr y) = var-inr y
         var-resp σ (var-inl x) = var-resp ρ x
         var-resp σ (var-inr y) = refl
 
       tm-rename : ∀ {Γ Δ A} → Renaming Γ Δ → Term Θ Γ A → Term Θ Δ A
-      tm-rename ρ (tm-var x) = var-coerce ρ x
+      tm-rename {Δ = Δ} ρ (tm-var x) = subst (Term Θ Δ) (var-resp ρ x) (tm-var (var-rename ρ x))
       tm-rename ρ (tm-meta M ts) = tm-meta M λ i → tm-rename ρ (ts i)
       tm-rename ρ (tm-oper f es) = tm-oper f (λ i → tm-rename (extend ρ (arg-bind f i)) (es i))
 
-      weakening : ∀ {Γ Δ} → Renaming Γ (ctx-concat Γ Δ)
+      weakening : ∀ {Γ Δ} → Renaming Γ (Γ ,, Δ)
       var-rename weakening x = var-inl x
       var-resp weakening x = refl
 
+      -- substitition
+      _⇒s_ : ∀ (Γ Δ : Context) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa))
+      Γ ⇒s Δ = ∀ (x : var Δ) → Term Θ Γ (sort-of Δ x)
+
+      infix 4 _⇒s_
+
+      -- identity substitution
+      id-s : ∀ {Γ : Context} → Γ ⇒s Γ
+      id-s = tm-var
+
       -- shifting a substitution
-      shift : ∀ {Γ Δ Ξ} → Γ ⇒s Δ → (ctx-concat Γ Ξ) ⇒s (ctx-concat Δ Ξ)
-      shift σ (var-inl x) = tm-rename weakening (σ x)
-      shift σ (var-inr y) = tm-var (var-inr y)
+      shift : ∀ {Γ Δ Ξ} → Γ ⇒s Δ → Γ ,, Ξ ⇒s Δ ,, Ξ
+      shift σ (var-inl x) = tm-rename {!!} (σ x)
+      shift σ (var-inr x) = {!!}
 
       -- the action of a substitution on a term (contravariant)
       _[_]s : ∀ {Γ Δ : Context} {A : sort} → Term Θ Δ A → Γ ⇒s Δ → Term Θ Γ A

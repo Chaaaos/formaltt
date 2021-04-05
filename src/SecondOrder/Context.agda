@@ -5,6 +5,12 @@ data Context : Set s where
   ctx-slot : Sort → Context
   ctx-concat : Context → Context → Context
 
+
+infixl 5 _,,_
+
+_,,_ : Context → Context → Context
+_,,_ = ctx-concat
+
 -- the variables in a context
 data var : Context → Set where
   var-var  : ∀ {A} → var (ctx-slot A)
