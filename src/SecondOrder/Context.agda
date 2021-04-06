@@ -10,17 +10,14 @@ infixl 5 _,,_
 _,,_ : Context → Context → Context
 _,,_ = ctx-concat
 
--- the variables in a context
-data var : Context → Set where
-  var-var  : ∀ {A} → var (ctx-slot A)
-  var-inl  : ∀ {Γ Δ} → var Γ → var (ctx-concat Γ Δ)
-  var-inr  : ∀ {Γ Δ} → var Δ → var (ctx-concat Γ Δ)
+infix 4 _∈_
 
-sort-of : ∀ (Γ : Context) → var Γ → Sort
-sort-of (ctx-slot A) _ = A
-sort-of (ctx-concat Γ Δ) (var-inl x) = sort-of Γ x
-sort-of (ctx-concat Γ Δ) (var-inr x) = sort-of Δ x
+-- the variables of a given type in a context
+data _∈_ (A : Sort) : Context → Set s where
+  var-slot : A ∈ ctx-slot A
+  var-inl : ∀ {Γ Δ} (x : A ∈ Γ) → A ∈ Γ ,, Δ
+  var-inr : ∀ {Γ Δ} (y : A ∈ Δ) → A ∈ Γ ,, Δ
 
 -- It is absurd to have a variable in the empty context
-ctx-empty-absurd : ∀ {ℓ} {P : var ctx-empty → Set ℓ} (x : var ctx-empty) → P x
+ctx-empty-absurd : ∀ {ℓ} {A} {P : A ∈ ctx-empty → Set ℓ} (x : A ∈ ctx-empty) → P x
 ctx-empty-absurd ()
