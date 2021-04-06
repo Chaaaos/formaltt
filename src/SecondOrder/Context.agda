@@ -5,7 +5,6 @@ data Context : Set s where
   ctx-slot : Sort → Context
   ctx-concat : Context → Context → Context
 
-
 infixl 5 _,,_
 
 _,,_ : Context → Context → Context
