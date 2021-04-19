@@ -1,4 +1,6 @@
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
+open import Relation.Unary hiding (_∈_)
+open import Data.Empty.Polymorphic
 open import Data.List
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst)
 
@@ -41,10 +43,18 @@ module SecondOrder.SecondOrderTheory where
 
     open MetaContext public
 
-    infix 4 _∈ᴹ_
+    -- infix 4 _∈ᴹ_
 
     mv-arg : ∀ (Θ : MetaContext) → mv Θ → sort → Set ℓs
     mv-arg Θ M A = A ∈ (mv-arity Θ M)
+
+    ∅M : MetaContext
+    ∅M = record
+           { mv = ⊥
+           ; mv-arity = ⊥-elim
+           ; mv-sort = ⊥-elim
+           }
+
 
     -- terms in a context of a given sort
     data Term (Θ : MetaContext) : ∀ (Γ : Context) (A : sort) → Set (lsuc (ℓa ⊔ ℓo ⊔ ℓs)) where
@@ -59,6 +69,7 @@ module SecondOrder.SecondOrderTheory where
 
       infix 4 _⇒r_
 
+      -- renaming
       _⇒r_ : ∀ (Γ Δ : Context) → Set ℓs
       Γ ⇒r Δ = ∀ {A} → A ∈ Γ → A ∈ Δ
 
@@ -103,8 +114,98 @@ module SecondOrder.SecondOrderTheory where
 
       infixl 7 _∘s_
 
-      -- TODO:
+  module _ {ℓs ℓo ℓa} {𝔸 : Arity}  {Σ : Signature {ℓs} {ℓo} {ℓa} 𝔸} where
+    open Signature Σ
 
-      -- define what an equation is
+    -- metavariable instatiation
+    mv-inst  : MetaContext → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa))
+    mv-inst Θ = ∀ {M : mv Θ} → Term ∅M (mv-arity Θ M) (mv-sort Θ M)
+    -- this definition of metavariable extension is different from the one of the paper : here alla the meta-variable are instatiated at once (I should change this) and replaced by terms without metavariables (so composing instatiations doesn't make sense for the moment)
 
-      -- define what a theory is
+    -- action of a metavariable instatiation on terms
+    _[_]M : ∀ {Γ : Context} {A : sort} {Θ : MetaContext} → Term Θ Γ A → mv-inst Θ → Term ∅M Γ A
+    (tm-var x) [ ι ]M = tm-var x
+    (tm-meta M ts) [ ι ]M = ι [ (λ i → ts i [ ι ]M) ]s
+    (tm-oper f es) [ ι ]M = tm-oper f (λ i → es i [ ι ]M)
+
+    infixr 6 _[_]M
+
+            -- TODO:
+
+    --  equations (based on the jugements in "A general definitipn of dependent type theories")
+    record Equation : Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa)) where
+      constructor make-eq
+      field
+        eq-mv-ctx : MetaContext -- metavariable context of an equation
+        eq-ctx : Context -- variable context of an equation
+        eq-sort : sort -- sort of an equation
+        eq-lhs : Term eq-mv-ctx eq-ctx eq-sort -- left-hand side
+        eq-rhs : Term eq-mv-ctx eq-ctx eq-sort -- right-hand side
+        eq-inst : mv-inst eq-mv-ctx -- instatiation of the metavariable context
+
+    -- Should I consider that an equation is an equation between terms that are already instatiated or not ?
+
+    infix 5 make-eq
+
+    syntax make-eq Θ Γ A s t ι = Θ ⊕ Γ ∥ s ≈ t ⦂ A [ ι ] -- maybe not the best syntax
+
+    -- Theory
+    -- an equational theory is a family of axioms over a given sort
+    record Theory ℓ  : Set (lsuc (ℓ ⊔ ℓs ⊔ ℓo ⊔ ℓa)) where
+      field
+        ax : Set ℓ -- the axioms
+        ax-eq : ax → Equation
+
+      ax-ctx : ax → Context
+      ax-ctx ε = Equation.eq-ctx (ax-eq ε)
+
+      ax-mv-ctx : ax → MetaContext
+      ax-mv-ctx ε = Equation.eq-mv-ctx (ax-eq ε)
+
+      ax-sort : ax → sort
+      ax-sort ε = Equation.eq-sort (ax-eq ε)
+
+      ax-lhs : ∀ (ε : ax) → Term (ax-mv-ctx ε) (ax-ctx ε) (ax-sort ε)
+      ax-lhs ε = Equation.eq-lhs (ax-eq ε)
+
+      ax-rhs : ∀ (ε : ax) → Term (ax-mv-ctx ε) (ax-ctx ε) (ax-sort ε)
+      ax-rhs ε = Equation.eq-rhs (ax-eq ε)
+
+      ax-inst : ∀ (ε : ax) → mv-inst (ax-mv-ctx ε)
+      ax-inst ε = Equation.eq-inst (ax-eq ε)
+
+      -- equality of terms
+      infix 4 ⊢_
+
+      data ⊢_ : Equation → Set (lsuc (ℓ ⊔ ℓs ⊔ ℓo ⊔ ℓa)) where
+        -- general rules
+        eq-refl : ∀ {Θ Γ A} {t : Term Θ Γ A} {ι : mv-inst Θ} → ⊢ Θ ⊕ Γ ∥ t ≈ t ⦂ A [ ι ]
+        eq-symm : ∀ {Θ Γ A} {s t : Term Θ Γ A} {ι : mv-inst Θ} → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A [ ι ] → ⊢ Θ ⊕ Γ ∥ t ≈ s ⦂ A [ ι ]
+        eq-tran : ∀ {Θ Γ A} {s t u : Term Θ Γ A} {ι : mv-inst Θ} → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A [ ι ] → ⊢ Θ ⊕ Γ ∥ t ≈ u ⦂ A [ ι ] → ⊢ Θ ⊕ Γ ∥ s ≈ u ⦂ A [ ι ]
+        -- congruence rule for operations
+        eq-congr : ∀ {Γ Θ} {ι : mv-inst Θ} {f : oper} {xs ys : ∀ (i : oper-arg f) → Term Θ (Γ ,, arg-bind f i) (arg-sort f i)} →
+                 (∀ i → ⊢ Θ ⊕ (Γ ,, arg-bind f i) ∥ (xs i) ≈ (ys i) ⦂ (arg-sort f i) [ ι ]) → ⊢ Θ ⊕ Γ ∥  (tm-oper f xs) ≈ (tm-oper f ys) ⦂ (oper-sort f) [ ι ]
+        -- equational axiom
+        eq-axiom : ∀ (ε : ax) {Γ : Context} (σ : Γ ⇒s ax-ctx ε) →
+                   ⊢ (ax-mv-ctx ε) ⊕ Γ ∥ (ax-lhs ε [ σ ]s) ≈ (ax-rhs ε [ σ ]s) ⦂ (ax-sort ε) [ ax-inst ε ]
+
+      -- the action of the identity substitution is the identity
+      id-action : ∀ {Θ Γ A} {a : Term Θ Γ A} {ι : mv-inst Θ} → (⊢ Θ ⊕ Γ ∥ a ≈ (a [ id-s ]s) ⦂ A [ ι ])
+      id-action {a = tm-var a} = eq-refl
+      id-action {a = tm-oper f x} = eq-congr λ i → {!!} -- eq-congr (λ i → id-action {a = x i})
+
+    --   eq-axiom-id : ∀ (ε : ax) → ⊢ (ax-ctx ε ∥ ax-lhs ε ≈ ax-rhs ε ⦂  (ax-sort ε))
+    --   eq-axiom-id ε = eq-tran id-action (eq-tran (eq-axiom ε id-s) (eq-symm id-action))
+
+    --   eq-setoid : ∀ (Γ : Context) (A : sort) → Setoid (lsuc ℴ) (lsuc (ℓ ⊔ ℴ ⊔ 𝓈))
+    --   eq-setoid Γ A =
+    --     record
+    --       { Carrier = Term Γ A
+    --       ;  _≈_ = λ s t → (⊢ Γ ∥ s ≈ t ⦂ A)
+    --       ; isEquivalence =
+    --                       record
+    --                         { refl = eq-refl
+    --                         ; sym = eq-symm
+    --                         ; trans = eq-tran
+    --         }
+    --       }
