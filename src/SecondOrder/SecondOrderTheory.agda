@@ -2,6 +2,7 @@ open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Unary hiding (_∈_)
 open import Data.Empty.Polymorphic
 open import Data.List
+open import Relation.Binary using (Setoid)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst)
 
 import SecondOrder.Context as Context
@@ -82,8 +83,11 @@ module SecondOrder.SecondOrderTheory where
       tm-rename ρ (tm-meta M ts) = tm-meta M (λ i → tm-rename ρ (ts i))
       tm-rename ρ (tm-oper f es) = tm-oper f (λ i → tm-rename (extend-r ρ) (es i))
 
-      weaken : ∀ {Γ Δ A} → Term Θ Γ A → Term Θ (Γ ,, Δ) A
-      weaken = tm-rename var-inl
+      weakenˡ : ∀ {Γ Δ A} → Term Θ Γ A → Term Θ (Γ ,, Δ) A
+      weakenˡ = tm-rename var-inl
+
+      weakenʳ : ∀ {Γ Δ A} → Term Θ Δ A → Term Θ (Γ ,, Δ) A
+      weakenʳ = tm-rename var-inr
 
       -- substitition
       _⇒s_ : ∀ (Γ Δ : Context) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa))
@@ -92,15 +96,19 @@ module SecondOrder.SecondOrderTheory where
       infix 4 _⇒s_
 
       -- extending a substitution
-      extend-s : ∀ {Γ Δ Ξ} → Γ ⇒s Δ → Γ ,, Ξ ⇒s Δ ,, Ξ
-      extend-s {Ξ = Ξ} σ (var-inl x) = weaken (σ x)
-      extend-s σ (var-inr x) = tm-var (var-inr x)
+      extend-sˡ : ∀ {Γ Δ Ξ} → Γ ⇒s Δ → Γ ,, Ξ ⇒s Δ ,, Ξ
+      extend-sˡ {Ξ = Ξ} σ (var-inl x) = weakenˡ (σ x)
+      extend-sˡ σ (var-inr x) = tm-var (var-inr x)
+
+      extend-sʳ : ∀ {Γ Δ Ξ} → Γ ⇒s Δ → Ξ ,, Γ ⇒s Ξ ,, Δ
+      extend-sʳ {Ξ = Ξ} σ (var-inl x) = tm-var (var-inl x)
+      extend-sʳ σ (var-inr x) = weakenʳ (σ x)
 
       -- the action of a substitution on a term (contravariant)
       _[_]s : ∀ {Γ Δ : Context} {A : sort} → Term Θ Δ A → Γ ⇒s Δ → Term Θ Γ A
       (tm-var x) [ σ ]s = σ x
       (tm-meta M ts) [ σ ]s = tm-meta M (λ i → (ts i) [ σ ]s)
-      (tm-oper f es) [ σ ]s = tm-oper f (λ i → es i [ extend-s σ ]s)
+      (tm-oper f es) [ σ ]s = tm-oper f (λ i → es i [ extend-sˡ σ ]s)
 
       infixr 6 _[_]s
 
@@ -141,13 +149,13 @@ module SecondOrder.SecondOrderTheory where
         eq-sort : sort -- sort of an equation
         eq-lhs : Term eq-mv-ctx eq-ctx eq-sort -- left-hand side
         eq-rhs : Term eq-mv-ctx eq-ctx eq-sort -- right-hand side
-        eq-inst : mv-inst eq-mv-ctx -- instatiation of the metavariable context
+        -- eq-inst : mv-inst eq-mv-ctx -- instatiation of the metavariable context
 
     -- Should I consider that an equation is an equation between terms that are already instatiated or not ?
 
     infix 5 make-eq
 
-    syntax make-eq Θ Γ A s t ι = Θ ⊕ Γ ∥ s ≈ t ⦂ A [ ι ] -- maybe not the best syntax
+    syntax make-eq Θ Γ A s t = Θ ⊕ Γ ∥ s ≈ t ⦂ A -- maybe not the best syntax
 
     -- Theory
     -- an equational theory is a family of axioms over a given sort
@@ -171,41 +179,42 @@ module SecondOrder.SecondOrderTheory where
       ax-rhs : ∀ (ε : ax) → Term (ax-mv-ctx ε) (ax-ctx ε) (ax-sort ε)
       ax-rhs ε = Equation.eq-rhs (ax-eq ε)
 
-      ax-inst : ∀ (ε : ax) → mv-inst (ax-mv-ctx ε)
-      ax-inst ε = Equation.eq-inst (ax-eq ε)
+      -- ax-inst : ∀ (ε : ax) → mv-inst (ax-mv-ctx ε)
+      -- ax-inst ε = Equation.eq-inst (ax-eq ε)
 
       -- equality of terms
       infix 4 ⊢_
 
       data ⊢_ : Equation → Set (lsuc (ℓ ⊔ ℓs ⊔ ℓo ⊔ ℓa)) where
         -- general rules
-        eq-refl : ∀ {Θ Γ A} {t : Term Θ Γ A} {ι : mv-inst Θ} → ⊢ Θ ⊕ Γ ∥ t ≈ t ⦂ A [ ι ]
-        eq-symm : ∀ {Θ Γ A} {s t : Term Θ Γ A} {ι : mv-inst Θ} → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A [ ι ] → ⊢ Θ ⊕ Γ ∥ t ≈ s ⦂ A [ ι ]
-        eq-tran : ∀ {Θ Γ A} {s t u : Term Θ Γ A} {ι : mv-inst Θ} → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A [ ι ] → ⊢ Θ ⊕ Γ ∥ t ≈ u ⦂ A [ ι ] → ⊢ Θ ⊕ Γ ∥ s ≈ u ⦂ A [ ι ]
+        eq-refl : ∀ {Θ Γ A} {t : Term Θ Γ A} → ⊢ Θ ⊕ Γ ∥ t ≈ t ⦂ A
+        eq-symm : ∀ {Θ Γ A} {s t : Term Θ Γ A} → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → ⊢ Θ ⊕ Γ ∥ t ≈ s ⦂ A
+        eq-tran : ∀ {Θ Γ A} {s t u : Term Θ Γ A} → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → ⊢ Θ ⊕ Γ ∥ t ≈ u ⦂ A → ⊢ Θ ⊕ Γ ∥ s ≈ u ⦂ A
         -- congruence rule for operations
-        eq-congr : ∀ {Γ Θ} {ι : mv-inst Θ} {f : oper} {xs ys : ∀ (i : oper-arg f) → Term Θ (Γ ,, arg-bind f i) (arg-sort f i)} →
-                 (∀ i → ⊢ Θ ⊕ (Γ ,, arg-bind f i) ∥ (xs i) ≈ (ys i) ⦂ (arg-sort f i) [ ι ]) → ⊢ Θ ⊕ Γ ∥  (tm-oper f xs) ≈ (tm-oper f ys) ⦂ (oper-sort f) [ ι ]
+        eq-congr : ∀ {Γ Θ} {f : oper} {xs ys : ∀ (i : oper-arg f) → Term Θ (Γ ,, arg-bind f i) (arg-sort f i)} →
+                 (∀ i → ⊢ Θ ⊕ (Γ ,, arg-bind f i) ∥ (xs i) ≈ (ys i) ⦂ (arg-sort f i)) → ⊢ Θ ⊕ Γ ∥  (tm-oper f xs) ≈ (tm-oper f ys) ⦂ (oper-sort f)
         -- equational axiom
         eq-axiom : ∀ (ε : ax) {Γ : Context} (σ : Γ ⇒s ax-ctx ε) →
-                   ⊢ (ax-mv-ctx ε) ⊕ Γ ∥ (ax-lhs ε [ σ ]s) ≈ (ax-rhs ε [ σ ]s) ⦂ (ax-sort ε) [ ax-inst ε ]
+                   ⊢ (ax-mv-ctx ε) ⊕ Γ ∥ (ax-lhs ε [ σ ]s) ≈ (ax-rhs ε [ σ ]s) ⦂ (ax-sort ε)
 
       -- the action of the identity substitution is the identity
-      id-action : ∀ {Θ Γ A} {a : Term Θ Γ A} {ι : mv-inst Θ} → (⊢ Θ ⊕ Γ ∥ a ≈ (a [ id-s ]s) ⦂ A [ ι ])
+
+      id-action : ∀ {Θ Γ A} {a : Term Θ Γ A} → (⊢ Θ ⊕ Γ ∥ a ≈ (a [ id-s ]s) ⦂ A)
       id-action {a = tm-var a} = eq-refl
-      id-action {a = tm-oper f x} = eq-congr λ i → {!!} -- eq-congr (λ i → id-action {a = x i})
+      id-action {Γ = Γ} {a = Signature.tm-oper f x} = {!!}
 
-    --   eq-axiom-id : ∀ (ε : ax) → ⊢ (ax-ctx ε ∥ ax-lhs ε ≈ ax-rhs ε ⦂  (ax-sort ε))
-    --   eq-axiom-id ε = eq-tran id-action (eq-tran (eq-axiom ε id-s) (eq-symm id-action))
+      eq-axiom-id : ∀ (ε : ax) → ⊢ ((ax-mv-ctx ε) ⊕ ax-ctx ε ∥ ax-lhs ε ≈ ax-rhs ε ⦂  (ax-sort ε))
+      eq-axiom-id ε = eq-tran id-action (eq-tran (eq-axiom ε id-s) (eq-symm id-action))
 
-    --   eq-setoid : ∀ (Γ : Context) (A : sort) → Setoid (lsuc ℴ) (lsuc (ℓ ⊔ ℴ ⊔ 𝓈))
-    --   eq-setoid Γ A =
-    --     record
-    --       { Carrier = Term Γ A
-    --       ;  _≈_ = λ s t → (⊢ Γ ∥ s ≈ t ⦂ A)
-    --       ; isEquivalence =
-    --                       record
-    --                         { refl = eq-refl
-    --                         ; sym = eq-symm
-    --                         ; trans = eq-tran
-    --         }
-    --       }
+      eq-setoid : ∀ (Γ : Context) (Θ : MetaContext) (A : sort) → Setoid (lsuc (ℓo ⊔ ℓs ⊔ ℓa )) (lsuc (ℓ ⊔ ℓo ⊔ ℓs ⊔ ℓa))
+      eq-setoid Γ Θ A =
+        record
+          { Carrier = Term Θ Γ A
+          ;  _≈_ = λ s t → (⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A)
+          ; isEquivalence =
+                          record
+                            { refl = eq-refl
+                            ; sym = eq-symm
+                            ; trans = eq-tran
+            }
+          }
