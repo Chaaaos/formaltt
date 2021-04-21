@@ -243,6 +243,15 @@ module SecondOrder.SecondOrderTheory where
       id-s-extendˡ {a = Context.var-inl a} = eq-refl
       id-s-extendˡ {a = Context.var-inr a} = eq-refl
 
+      -- enables to use a renaming as a substitution
+      r-to-subst : ∀ {Θ Γ Δ A} (ρ : _⇒r_ {Θ} Γ Δ) → _⇒s_ {Θ} Δ Γ
+      r-to-subst ρ x = tm-var (ρ x)
+
+      r-to-subst-≈ :  ∀ {Θ Γ Δ A} {t : Term Θ Γ A} {ρ : _⇒r_ {Θ} Γ Δ} → ⊢ Θ ⊕ Δ ∥ (tm-rename ρ t) ≈ t [ (r-to-subst {A = A} ρ) ]s ⦂ A
+      r-to-subst-≈ {t = Signature.tm-var x} = eq-refl
+      r-to-subst-≈ {t = Signature.tm-meta M ts} = eq-congr-mv λ i → r-to-subst-≈
+      r-to-subst-≈ {t = Signature.tm-oper f es} = eq-congr λ i → {!!}
+
       -- renaming preserves equality of terms
       ≈tm-rename : ∀ {Θ Γ Δ A} {s t : Term Θ Γ A} {ρ : _⇒r_ {Θ} Γ Δ} → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → ⊢ Θ ⊕ Δ ∥ tm-rename ρ s ≈ tm-rename ρ t ⦂ A
       ≈tm-rename eq-refl = eq-refl
