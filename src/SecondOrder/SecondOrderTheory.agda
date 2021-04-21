@@ -1,3 +1,5 @@
+-- {-# OPTIONS --allow-unsolved-metas #-}
+
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Unary hiding (_∈_)
 open import Data.Empty.Polymorphic
@@ -8,6 +10,10 @@ open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst)
 import SecondOrder.Context as Context
 
 module SecondOrder.SecondOrderTheory where
+
+  -- Function extensionality
+  postulate
+    funext : ∀ {X : Set} {Y : X → Set} {f g : ∀ (x : X) → (Y x)} → (∀ (x : X) → ((f x) ≡ (g x))) → (f ≡ g)
 
   -- We work over a given notion of arity
   record Arity : Set₁ where
@@ -74,10 +80,20 @@ module SecondOrder.SecondOrderTheory where
       _⇒r_ : ∀ (Γ Δ : Context) → Set ℓs
       Γ ⇒r Δ = ∀ {A} → A ∈ Γ → A ∈ Δ
 
+      -- extending a renaming
       extend-r : ∀ {Γ Δ} → Γ ⇒r Δ → ∀ {Ξ} → Γ ,, Ξ ⇒r Δ ,, Ξ
       extend-r ρ (var-inl x) = var-inl (ρ x)
       extend-r ρ (var-inr x) = var-inr x
 
+      -- the identity renaming
+      id-r : ∀ {Γ : Context} → Γ ⇒r Γ
+      id-r x = x
+
+      -- composition of renamings
+      _∘r_ : ∀ {Γ Δ Θ : Context} → Δ ⇒r Θ → Γ ⇒r Δ → Γ ⇒r Θ
+      (σ ∘r ρ) x = σ (ρ x)
+
+      -- action of a renaming on terms
       tm-rename : ∀ {Γ Δ A} → Γ ⇒r Δ → Term Θ Γ A → Term Θ Δ A
       tm-rename ρ (tm-var x) = tm-var (ρ x)
       tm-rename ρ (tm-meta M ts) = tm-meta M (λ i → tm-rename ρ (ts i))
@@ -125,10 +141,10 @@ module SecondOrder.SecondOrderTheory where
   module _ {ℓs ℓo ℓa} {𝔸 : Arity}  {Σ : Signature {ℓs} {ℓo} {ℓa} 𝔸} where
     open Signature Σ
 
-    -- metavariable instatiation
+    -- metavariable instantiation
     mv-inst  : MetaContext → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa))
     mv-inst Θ = ∀ {M : mv Θ} → Term ∅M (mv-arity Θ M) (mv-sort Θ M)
-    -- this definition of metavariable extension is different from the one of the paper : here alla the meta-variable are instatiated at once (I should change this) and replaced by terms without metavariables (so composing instatiations doesn't make sense for the moment)
+    -- this definition of metavariable extension is different from the one of the paper : here all the meta-variable are instatiated at once (I should change this) and replaced by terms without metavariables (so composing instatiations doesn't make sense for the moment)
 
     -- action of a metavariable instatiation on terms
     _[_]M : ∀ {Γ : Context} {A : sort} {Θ : MetaContext} → Term Θ Γ A → mv-inst Θ → Term ∅M Γ A
@@ -149,13 +165,10 @@ module SecondOrder.SecondOrderTheory where
         eq-sort : sort -- sort of an equation
         eq-lhs : Term eq-mv-ctx eq-ctx eq-sort -- left-hand side
         eq-rhs : Term eq-mv-ctx eq-ctx eq-sort -- right-hand side
-        -- eq-inst : mv-inst eq-mv-ctx -- instatiation of the metavariable context
-
-    -- Should I consider that an equation is an equation between terms that are already instatiated or not ?
 
     infix 5 make-eq
 
-    syntax make-eq Θ Γ A s t = Θ ⊕ Γ ∥ s ≈ t ⦂ A -- maybe not the best syntax
+    syntax make-eq Θ Γ A s t = Θ ⊕ Γ ∥ s ≈ t ⦂ A
 
     -- Theory
     -- an equational theory is a family of axioms over a given sort
@@ -179,9 +192,6 @@ module SecondOrder.SecondOrderTheory where
       ax-rhs : ∀ (ε : ax) → Term (ax-mv-ctx ε) (ax-ctx ε) (ax-sort ε)
       ax-rhs ε = Equation.eq-rhs (ax-eq ε)
 
-      -- ax-inst : ∀ (ε : ax) → mv-inst (ax-mv-ctx ε)
-      -- ax-inst ε = Equation.eq-inst (ax-eq ε)
-
       -- equality of terms
       infix 4 ⊢_
 
@@ -193,19 +203,14 @@ module SecondOrder.SecondOrderTheory where
         -- congruence rule for operations
         eq-congr : ∀ {Γ Θ} {f : oper} {xs ys : ∀ (i : oper-arg f) → Term Θ (Γ ,, arg-bind f i) (arg-sort f i)} →
                  (∀ i → ⊢ Θ ⊕ (Γ ,, arg-bind f i) ∥ (xs i) ≈ (ys i) ⦂ (arg-sort f i)) → ⊢ Θ ⊕ Γ ∥  (tm-oper f xs) ≈ (tm-oper f ys) ⦂ (oper-sort f)
+        -- congruence rule for metavariables
+        eq-congr-mv : ∀ {Γ Θ} {M : mv Θ} {xs ys : ∀ {B : sort} (i : mv-arg Θ M B) → Term Θ Γ B} →
+                 (∀ {B : sort} (i : mv-arg Θ M B) → ⊢ Θ ⊕ Γ ∥ (xs i) ≈ (ys i) ⦂ B) → ⊢ Θ ⊕ Γ ∥  (tm-meta M xs) ≈ (tm-meta M ys) ⦂ (mv-sort Θ M)
         -- equational axiom
         eq-axiom : ∀ (ε : ax) {Γ : Context} (σ : Γ ⇒s ax-ctx ε) →
                    ⊢ (ax-mv-ctx ε) ⊕ Γ ∥ (ax-lhs ε [ σ ]s) ≈ (ax-rhs ε [ σ ]s) ⦂ (ax-sort ε)
 
-      -- the action of the identity substitution is the identity
-
-      id-action : ∀ {Θ Γ A} {a : Term Θ Γ A} → (⊢ Θ ⊕ Γ ∥ a ≈ (a [ id-s ]s) ⦂ A)
-      id-action {a = tm-var a} = eq-refl
-      id-action {Γ = Γ} {a = Signature.tm-oper f x} = {!!}
-
-      eq-axiom-id : ∀ (ε : ax) → ⊢ ((ax-mv-ctx ε) ⊕ ax-ctx ε ∥ ax-lhs ε ≈ ax-rhs ε ⦂  (ax-sort ε))
-      eq-axiom-id ε = eq-tran id-action (eq-tran (eq-axiom ε id-s) (eq-symm id-action))
-
+      -- terms and judgemental equality form a setoid
       eq-setoid : ∀ (Γ : Context) (Θ : MetaContext) (A : sort) → Setoid (lsuc (ℓo ⊔ ℓs ⊔ ℓa )) (lsuc (ℓ ⊔ ℓo ⊔ ℓs ⊔ ℓa))
       eq-setoid Γ Θ A =
         record
@@ -218,3 +223,18 @@ module SecondOrder.SecondOrderTheory where
                             ; trans = eq-tran
             }
           }
+
+      extend-id-s : ∀ {Θ Γ Ξ A} {a : A ∈ (Γ ,, Ξ)} → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ extend-sˡ {Θ} {Γ} {Γ} {Ξ} (id-s {Γ = Γ}) {A} a ≈  id-s {Γ = Γ ,, Ξ} a ⦂ A
+      extend-id-s = {!!}
+
+
+      -- the action of the identity substitution is the identity
+
+      id-action : ∀ {Θ Γ A} {a : Term Θ Γ A} → (⊢ Θ ⊕ Γ ∥ a ≈ (a [ id-s ]s) ⦂ A)
+      id-action {a = Signature.tm-var x} = eq-refl
+      id-action {a = Signature.tm-meta M ts} = eq-congr-mv λ i → id-action
+      id-action {a = Signature.tm-oper f es} = eq-congr λ i → {!!}
+
+      eq-axiom-id : ∀ (ε : ax) → ⊢ ((ax-mv-ctx ε) ⊕ ax-ctx ε ∥ ax-lhs ε ≈ ax-rhs ε ⦂  (ax-sort ε))
+      eq-axiom-id ε = eq-tran id-action (eq-tran (eq-axiom ε id-s) (eq-symm id-action))
+
