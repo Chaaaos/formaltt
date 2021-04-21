@@ -4,6 +4,7 @@ open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Unary hiding (_∈_)
 open import Data.Empty.Polymorphic
 open import Data.List
+open import Function.Base
 open import Relation.Binary using (Setoid)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst)
 
@@ -13,7 +14,7 @@ module SecondOrder.SecondOrderTheory where
 
   -- Function extensionality
   postulate
-    funext : ∀ {X : Set} {Y : X → Set} {f g : ∀ (x : X) → (Y x)} → (∀ (x : X) → ((f x) ≡ (g x))) → (f ≡ g)
+    funext : ∀ {l l'} {X : Set l} {Y : X → Set l'} {f g : ∀ (x : X) → (Y x)} → (∀ (x : X) → ((f x) ≡ (g x))) → (f ≡ g)
 
   -- We work over a given notion of arity
   record Arity : Set₁ where
@@ -71,7 +72,7 @@ module SecondOrder.SecondOrderTheory where
                   (es : ∀ (i : oper-arg f) → Term Θ (Γ ,, arg-bind f i) (arg-sort f i)) →
                   Term Θ Γ (oper-sort f)
 
-    -- Substititions
+    -- Substitutions
     module _ {Θ : MetaContext} where
 
       infix 4 _⇒r_
@@ -98,6 +99,17 @@ module SecondOrder.SecondOrderTheory where
       tm-rename ρ (tm-var x) = tm-var (ρ x)
       tm-rename ρ (tm-meta M ts) = tm-meta M (λ i → tm-rename ρ (ts i))
       tm-rename ρ (tm-oper f es) = tm-oper f (λ i → tm-rename (extend-r ρ) (es i))
+
+
+      -- ∘r-tm-rename : ∀ {Γ Δ Ξ : Context} {A} (g :  Δ ⇒r Ξ) (f : Γ ⇒r Δ) (a : Term Θ Γ A) → tm-rename {A = A} (g ∘r f) a ≡ ((tm-rename g) ∘ (tm-rename f)) a
+      -- ∘r-tm-rename g f (tm-var x) = refl
+      -- ∘r-tm-rename g f (tm-meta M ts) = {!!}
+      -- ∘r-tm-rename g f (tm-oper f₁ es) = {!!}
+
+      -- id-r-tm-rename : ∀ {Γ A} (a : Term Θ Γ A) → (tm-rename {A = A} id-r) a ≡ a
+      -- id-r-tm-rename (tm-var x) = refl
+      -- id-r-tm-rename (tm-meta M ts) = Relation.Binary.PropositionalEquality.cong (tm-meta M) {!!}
+      -- id-r-tm-rename (tm-oper f es) = Relation.Binary.PropositionalEquality.cong (tm-oper f) {!!}
 
       weakenˡ : ∀ {Γ Δ A} → Term Θ Γ A → Term Θ (Γ ,, Δ) A
       weakenˡ = tm-rename var-inl
@@ -154,8 +166,6 @@ module SecondOrder.SecondOrderTheory where
 
     infixr 6 _[_]M
 
-            -- TODO:
-
     --  equations (based on the jugements in "A general definitipn of dependent type theories")
     record Equation : Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa)) where
       constructor make-eq
@@ -210,6 +220,9 @@ module SecondOrder.SecondOrderTheory where
         eq-axiom : ∀ (ε : ax) {Γ : Context} (σ : Γ ⇒s ax-ctx ε) →
                    ⊢ (ax-mv-ctx ε) ⊕ Γ ∥ (ax-lhs ε [ σ ]s) ≈ (ax-rhs ε [ σ ]s) ⦂ (ax-sort ε)
 
+      _≈s_ : ∀ {Γ Δ : Context} {Θ} (σ τ : Δ ⇒s Γ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
+      _≈s_ {Γ} {Δ} {Θ} σ τ = ∀ {A} (x : A ∈ Γ) → ⊢ Θ ⊕ Δ ∥ σ x ≈ τ x ⦂ A
+
       -- terms and judgemental equality form a setoid
       eq-setoid : ∀ (Γ : Context) (Θ : MetaContext) (A : sort) → Setoid (lsuc (ℓo ⊔ ℓs ⊔ ℓa )) (lsuc (ℓ ⊔ ℓo ⊔ ℓs ⊔ ℓa))
       eq-setoid Γ Θ A =
@@ -224,16 +237,48 @@ module SecondOrder.SecondOrderTheory where
             }
           }
 
-      extend-id-s : ∀ {Θ Γ Ξ A} {a : A ∈ (Γ ,, Ξ)} → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ extend-sˡ {Θ} {Γ} {Γ} {Ξ} (id-s {Γ = Γ}) {A} a ≈  id-s {Γ = Γ ,, Ξ} a ⦂ A
-      extend-id-s = {!!}
+
+      -- extension of substitutions preserve equality
+      id-s-extendˡ : ∀ {Θ Γ Ξ A} {a : A ∈ (Γ ,, Ξ)} → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ extend-sˡ {Θ} {Γ} {Γ} {Ξ} (id-s {Γ = Γ}) {A} a ≈  id-s {Γ = Γ ,, Ξ} a ⦂ A
+      id-s-extendˡ {a = Context.var-inl a} = eq-refl
+      id-s-extendˡ {a = Context.var-inr a} = eq-refl
+
+      -- renaming preserves equality of terms
+      ≈tm-rename : ∀ {Θ Γ Δ A} {s t : Term Θ Γ A} {ρ : _⇒r_ {Θ} Γ Δ} → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → ⊢ Θ ⊕ Δ ∥ tm-rename ρ s ≈ tm-rename ρ t ⦂ A
+      ≈tm-rename eq-refl = eq-refl
+      ≈tm-rename (eq-symm p) = eq-symm (≈tm-rename p)
+      ≈tm-rename (eq-tran p₁ p₂) = eq-tran (≈tm-rename p₁) (≈tm-rename p₂)
+      ≈tm-rename (eq-congr p) = eq-congr λ i → ≈tm-rename (p i)
+      ≈tm-rename (eq-congr-mv p) = eq-congr-mv λ i → ≈tm-rename (p i)
+      ≈tm-rename (eq-axiom ε σ) = {!!}
+
+      -- weakening preserves equality of substitutions
+      ≈s-weakenˡ : ∀ {Θ Γ Δ Ξ A} {σ τ : Δ ⇒s Γ} {x : A ∈ Γ} → σ ≈s τ → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ weakenˡ (σ x) ≈ weakenˡ (τ x) ⦂ A
+      ≈s-weakenˡ {x = x} p = ≈tm-rename (p x)
+
+      -- extension of substitutions preserves equality of substitutions
+      ≈s-extend-sˡ : ∀ {Θ Γ Δ Ξ} {σ τ : Γ ⇒s Δ} → σ ≈s τ → extend-sˡ {Θ} {Γ} {Δ} {Ξ} σ ≈s extend-sˡ {Θ} {Γ} {Δ} {Ξ} τ
+      ≈s-extend-sˡ p (Context.var-inl x) = ≈s-weakenˡ p
+      ≈s-extend-sˡ p (Context.var-inr x) = eq-refl
+
+      -- actions of equal substitutions are pointwise equal
+      subst-congr : ∀ {Θ Γ Δ A} {t : Term Θ Γ A} {σ τ : Δ ⇒s Γ} → σ ≈s τ → ⊢ Θ ⊕ Δ ∥ t [ σ ]s ≈  t [ τ ]s ⦂ A
+      subst-congr {t = Signature.tm-var x} p = p x
+      subst-congr {t = Signature.tm-meta M ts} p = eq-congr-mv λ i → subst-congr {t = ts i} p
+      subst-congr {t = Signature.tm-oper f es} p = eq-congr λ i → subst-congr-aux {t = es i} p
+        where
+          subst-congr-aux : ∀ {Θ Γ Δ Ξ A} {t : Term Θ (Γ ,, Ξ) A} {σ τ : Δ ⇒s Γ} → σ ≈s τ → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ t [ extend-sˡ σ ]s ≈  t [ extend-sˡ τ ]s ⦂ A
+          subst-congr-aux {Γ = Γ} {Ξ = Ξ} {t = t} p = subst-congr {Γ = Γ ,, Ξ} {t = t} λ x → ≈s-extend-sˡ p x
 
 
       -- the action of the identity substitution is the identity
-
       id-action : ∀ {Θ Γ A} {a : Term Θ Γ A} → (⊢ Θ ⊕ Γ ∥ a ≈ (a [ id-s ]s) ⦂ A)
       id-action {a = Signature.tm-var x} = eq-refl
       id-action {a = Signature.tm-meta M ts} = eq-congr-mv λ i → id-action
-      id-action {a = Signature.tm-oper f es} = eq-congr λ i → {!!}
+      id-action {a = Signature.tm-oper f es} = eq-congr λ i → eq-tran id-action-aux (eq-symm (subst-congr {t = es i} λ x → id-s-extendˡ))
+        where
+          id-action-aux : ∀ {Θ Γ Ξ A} {t : Term Θ (Γ ,, Ξ) A} → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ t ≈  (t [ id-s ]s) ⦂ A
+          id-action-aux = id-action
 
       eq-axiom-id : ∀ (ε : ax) → ⊢ ((ax-mv-ctx ε) ⊕ ax-ctx ε ∥ ax-lhs ε ≈ ax-rhs ε ⦂  (ax-sort ε))
       eq-axiom-id ε = eq-tran id-action (eq-tran (eq-axiom ε id-s) (eq-symm id-action))
