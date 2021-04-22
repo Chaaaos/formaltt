@@ -12,10 +12,6 @@ import SecondOrder.Context as Context
 
 module SecondOrder.SecondOrderTheory where
 
-  -- Function extensionality
-  postulate
-    funext : ∀ {l l'} {X : Set l} {Y : X → Set l'} {f g : ∀ (x : X) → (Y x)} → (∀ (x : X) → ((f x) ≡ (g x))) → (f ≡ g)
-
   -- We work over a given notion of arity
   record Arity : Set₁ where
     field
@@ -100,17 +96,7 @@ module SecondOrder.SecondOrderTheory where
       tm-rename ρ (tm-meta M ts) = tm-meta M (λ i → tm-rename ρ (ts i))
       tm-rename ρ (tm-oper f es) = tm-oper f (λ i → tm-rename (extend-r ρ) (es i))
 
-
-      -- ∘r-tm-rename : ∀ {Γ Δ Ξ : Context} {A} (g :  Δ ⇒r Ξ) (f : Γ ⇒r Δ) (a : Term Θ Γ A) → tm-rename {A = A} (g ∘r f) a ≡ ((tm-rename g) ∘ (tm-rename f)) a
-      -- ∘r-tm-rename g f (tm-var x) = refl
-      -- ∘r-tm-rename g f (tm-meta M ts) = {!!}
-      -- ∘r-tm-rename g f (tm-oper f₁ es) = {!!}
-
-      -- id-r-tm-rename : ∀ {Γ A} (a : Term Θ Γ A) → (tm-rename {A = A} id-r) a ≡ a
-      -- id-r-tm-rename (tm-var x) = refl
-      -- id-r-tm-rename (tm-meta M ts) = Relation.Binary.PropositionalEquality.cong (tm-meta M) {!!}
-      -- id-r-tm-rename (tm-oper f es) = Relation.Binary.PropositionalEquality.cong (tm-oper f) {!!}
-
+      -- weakening
       weakenˡ : ∀ {Γ Δ A} → Term Θ Γ A → Term Θ (Γ ,, Δ) A
       weakenˡ = tm-rename var-inl
 
@@ -209,7 +195,7 @@ module SecondOrder.SecondOrderTheory where
         -- general rules
         eq-refl : ∀ {Θ Γ A} {t : Term Θ Γ A} → ⊢ Θ ⊕ Γ ∥ t ≈ t ⦂ A
         eq-symm : ∀ {Θ Γ A} {s t : Term Θ Γ A} → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → ⊢ Θ ⊕ Γ ∥ t ≈ s ⦂ A
-        eq-tran : ∀ {Θ Γ A} {s t u : Term Θ Γ A} → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → ⊢ Θ ⊕ Γ ∥ t ≈ u ⦂ A → ⊢ Θ ⊕ Γ ∥ s ≈ u ⦂ A
+        eq-trans : ∀ {Θ Γ A} {s t u : Term Θ Γ A} → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → ⊢ Θ ⊕ Γ ∥ t ≈ u ⦂ A → ⊢ Θ ⊕ Γ ∥ s ≈ u ⦂ A
         -- congruence rule for operations
         eq-congr : ∀ {Γ Θ} {f : oper} {xs ys : ∀ (i : oper-arg f) → Term Θ (Γ ,, arg-bind f i) (arg-sort f i)} →
                  (∀ i → ⊢ Θ ⊕ (Γ ,, arg-bind f i) ∥ (xs i) ≈ (ys i) ⦂ (arg-sort f i)) → ⊢ Θ ⊕ Γ ∥  (tm-oper f xs) ≈ (tm-oper f ys) ⦂ (oper-sort f)
@@ -233,7 +219,7 @@ module SecondOrder.SecondOrderTheory where
                           record
                             { refl = eq-refl
                             ; sym = eq-symm
-                            ; trans = eq-tran
+                            ; trans = eq-trans
             }
           }
 
@@ -242,6 +228,11 @@ module SecondOrder.SecondOrderTheory where
       id-s-extendˡ : ∀ {Θ Γ Ξ A} {a : A ∈ (Γ ,, Ξ)} → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ extend-sˡ {Θ} {Γ} {Γ} {Ξ} (id-s {Γ = Γ}) {A} a ≈  id-s {Γ = Γ ,, Ξ} a ⦂ A
       id-s-extendˡ {a = Context.var-inl a} = eq-refl
       id-s-extendˡ {a = Context.var-inr a} = eq-refl
+
+      -- extension of substitutions preserve composition
+      ∘s-extendˡ : ∀ {Θ Γ Δ Ξ Λ} {σ : _⇒s_ {Θ} Δ Ξ} {τ : _⇒s_ {Θ} Γ Δ} → extend-sˡ {Γ = Γ} {Δ = Ξ} {Ξ = Λ} (σ ∘s τ) ≈s ((extend-sˡ {Γ = Δ} {Δ = Ξ} {Ξ = Λ} σ) ∘s (extend-sˡ τ))
+      ∘s-extendˡ (Context.var-inl x) = {!eq-refl!}
+      ∘s-extendˡ (Context.var-inr x) = eq-refl
 
       -- enables to use a renaming as a substitution
       r-to-subst : ∀ {Θ Γ Δ A} (ρ : _⇒r_ {Θ} Γ Δ) → _⇒s_ {Θ} Δ Γ
@@ -252,14 +243,25 @@ module SecondOrder.SecondOrderTheory where
       r-to-subst-≈ {t = Signature.tm-meta M ts} = eq-congr-mv λ i → r-to-subst-≈
       r-to-subst-≈ {t = Signature.tm-oper f es} = eq-congr λ i → {!!}
 
+
+      ∘s-≈ :  ∀ {Θ Γ Δ Ξ A} {t : Term Θ Γ A} {σ : _⇒s_ {Θ} Δ Γ} {τ : _⇒s_ {Θ} Ξ Δ} → ⊢ Θ ⊕ Ξ ∥ (t [ σ ]s) [ τ ]s ≈ (t [ σ ∘s τ ]s) ⦂ A
+      ∘s-≈ {t = Signature.tm-var x} = eq-refl
+      ∘s-≈ {t = Signature.tm-meta M ts} = eq-congr-mv λ i → ∘s-≈ {t = ts i}
+      ∘s-≈ {t = Signature.tm-oper f es} {σ = σ} {τ = τ} = eq-congr λ i → {!!} -- ∘s-≈aux {t = es i} {σ = σ} {τ = τ}
+        where
+          ∘s-≈aux :  ∀ {Θ Γ Δ Ξ Λ A} {t : Term Θ (Γ ,, Λ) A} {σ : _⇒s_ {Θ} Δ Γ} {τ : _⇒s_ {Θ} Ξ Δ} → ⊢ Θ ⊕ (Ξ ,, Λ) ∥ (t [ extend-sˡ σ ]s) [ extend-sˡ τ ]s ≈ (t [ (extend-sˡ σ) ∘s (extend-sˡ τ) ]s) ⦂ A
+          ∘s-≈aux {Γ = Γ} {Λ = Λ} {t = Signature.tm-var x}  {σ = σ} = ∘s-≈ {Γ = (Γ ,, Λ)} {t = tm-var x} {σ = extend-sˡ σ}
+          ∘s-≈aux {t = Signature.tm-meta M ts} = eq-congr-mv λ i → ∘s-≈aux {t = ts i}
+          ∘s-≈aux {t = Signature.tm-oper f es} = eq-congr λ i → eq-trans (∘s-≈aux {t = es i}) {!∘s-extendˡ!} -- ∘s-≈aux {t = {!!}}
+
       -- renaming preserves equality of terms
       ≈tm-rename : ∀ {Θ Γ Δ A} {s t : Term Θ Γ A} {ρ : _⇒r_ {Θ} Γ Δ} → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → ⊢ Θ ⊕ Δ ∥ tm-rename ρ s ≈ tm-rename ρ t ⦂ A
       ≈tm-rename eq-refl = eq-refl
       ≈tm-rename (eq-symm p) = eq-symm (≈tm-rename p)
-      ≈tm-rename (eq-tran p₁ p₂) = eq-tran (≈tm-rename p₁) (≈tm-rename p₂)
+      ≈tm-rename (eq-trans p₁ p₂) = eq-trans (≈tm-rename p₁) (≈tm-rename p₂)
       ≈tm-rename (eq-congr p) = eq-congr λ i → ≈tm-rename (p i)
       ≈tm-rename (eq-congr-mv p) = eq-congr-mv λ i → ≈tm-rename (p i)
-      ≈tm-rename (eq-axiom ε σ) = {!!}
+      ≈tm-rename {ρ = ρ} (eq-axiom ε σ) = eq-trans r-to-subst-≈ (eq-symm (eq-trans r-to-subst-≈ (eq-trans (∘s-≈ {t = Equation.eq-rhs (ax-eq ε)}) (eq-trans (eq-symm (eq-axiom ε (σ ∘s r-to-subst ρ))) (eq-symm (∘s-≈ {t = Equation.eq-lhs (ax-eq ε)}))))))
 
       -- weakening preserves equality of substitutions
       ≈s-weakenˡ : ∀ {Θ Γ Δ Ξ A} {σ τ : Δ ⇒s Γ} {x : A ∈ Γ} → σ ≈s τ → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ weakenˡ (σ x) ≈ weakenˡ (τ x) ⦂ A
@@ -284,11 +286,11 @@ module SecondOrder.SecondOrderTheory where
       id-action : ∀ {Θ Γ A} {a : Term Θ Γ A} → (⊢ Θ ⊕ Γ ∥ a ≈ (a [ id-s ]s) ⦂ A)
       id-action {a = Signature.tm-var x} = eq-refl
       id-action {a = Signature.tm-meta M ts} = eq-congr-mv λ i → id-action
-      id-action {a = Signature.tm-oper f es} = eq-congr λ i → eq-tran id-action-aux (eq-symm (subst-congr {t = es i} λ x → id-s-extendˡ))
+      id-action {a = Signature.tm-oper f es} = eq-congr λ i → eq-trans id-action-aux (eq-symm (subst-congr {t = es i} λ x → id-s-extendˡ))
         where
           id-action-aux : ∀ {Θ Γ Ξ A} {t : Term Θ (Γ ,, Ξ) A} → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ t ≈  (t [ id-s ]s) ⦂ A
           id-action-aux = id-action
 
       eq-axiom-id : ∀ (ε : ax) → ⊢ ((ax-mv-ctx ε) ⊕ ax-ctx ε ∥ ax-lhs ε ≈ ax-rhs ε ⦂  (ax-sort ε))
-      eq-axiom-id ε = eq-tran id-action (eq-tran (eq-axiom ε id-s) (eq-symm id-action))
+      eq-axiom-id ε = eq-trans id-action (eq-trans (eq-axiom ε id-s) (eq-symm id-action))
 
