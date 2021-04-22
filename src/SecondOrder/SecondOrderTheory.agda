@@ -52,14 +52,6 @@ module SecondOrder.SecondOrderTheory where
     mv-arg : ∀ (Θ : MetaContext) → mv Θ → sort → Set ℓs
     mv-arg Θ M A = A ∈ (mv-arity Θ M)
 
-    ∅M : MetaContext
-    ∅M = record
-           { mv = ⊥
-           ; mv-arity = ⊥-elim
-           ; mv-sort = ⊥-elim
-           }
-
-
     -- terms in a context of a given sort
     data Term (Θ : MetaContext) : ∀ (Γ : Context) (A : sort) → Set (lsuc (ℓa ⊔ ℓo ⊔ ℓs)) where
       tm-var : ∀ {Γ} {A} (x : A ∈ Γ) → Term Θ Γ A
@@ -95,6 +87,21 @@ module SecondOrder.SecondOrderTheory where
       tm-rename ρ (tm-var x) = tm-var (ρ x)
       tm-rename ρ (tm-meta M ts) = tm-meta M (λ i → tm-rename ρ (ts i))
       tm-rename ρ (tm-oper f es) = tm-oper f (λ i → tm-rename (extend-r ρ) (es i))
+
+      -- the reassociation renaming
+      rename-assoc-r : ∀ {Γ Δ Ξ} → (Γ ,, Δ) ,, Ξ ⇒r Γ ,, (Δ ,, Ξ)
+      rename-assoc-r (var-inl (var-inl x)) = var-inl x
+      rename-assoc-r (var-inl (var-inr y)) = var-inr (var-inl y)
+      rename-assoc-r (var-inr z) = var-inr (var-inr z)
+
+      rename-assoc-l : ∀ {Γ Δ Ξ} → Γ ,, (Δ ,, Ξ) ⇒r (Γ ,, Δ) ,, Ξ
+      rename-assoc-l (var-inl x) = var-inl (var-inl x)
+      rename-assoc-l (var-inr (var-inl y)) = var-inl (var-inr y)
+      rename-assoc-l (var-inr (var-inr z)) = var-inr z
+
+      -- the empty context is the unit
+      rename-ctx-empty-r : ∀ {Γ} → Γ ,, ctx-empty ⇒r Γ
+      rename-ctx-empty-r (var-inl x) = x
 
       -- weakening
       weakenˡ : ∀ {Γ Δ A} → Term Θ Γ A → Term Θ (Γ ,, Δ) A
@@ -140,19 +147,30 @@ module SecondOrder.SecondOrderTheory where
     open Signature Σ
 
     -- metavariable instantiation
-    mv-inst  : MetaContext → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa))
-    mv-inst Θ = ∀ {M : mv Θ} → Term ∅M (mv-arity Θ M) (mv-sort Θ M)
+    mv-inst  : MetaContext → MetaContext → Context → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa))
+    mv-inst Θ Ψ Γ = ∀ (M : mv Θ) → Term Ψ (Γ ,, mv-arity Θ M) (mv-sort Θ M)
     -- this definition of metavariable extension is different from the one of the paper : here all the meta-variable are instatiated at once (I should change this) and replaced by terms without metavariables (so composing instatiations doesn't make sense for the moment)
 
     -- action of a metavariable instatiation on terms
-    _[_]M : ∀ {Γ : Context} {A : sort} {Θ : MetaContext} → Term Θ Γ A → mv-inst Θ → Term ∅M Γ A
-    (tm-var x) [ ι ]M = tm-var x
-    (tm-meta M ts) [ ι ]M = ι [ (λ i → ts i [ ι ]M) ]s
-    (tm-oper f es) [ ι ]M = tm-oper f (λ i → es i [ ι ]M)
+    _[_]M : ∀ {Γ : Context} {A : sort} {Θ Ψ : MetaContext} {Δ} → Term Θ Γ A → ∀ (ι : mv-inst Θ Ψ Δ) → Term Ψ (Δ ,, Γ) A
+    (tm-var x) [ ι ]M = tm-var (var-inr x)
+    _[_]M {Γ = Γ} {Θ = Θ} {Δ = Δ} (tm-meta M ts) ι = (ι M) [ σ ]s
+       where σ : Δ ,, Γ ⇒s Δ ,, mv-arity Θ M
+             σ (var-inl x) = tm-var (var-inl x)
+             σ (var-inr x) =  (ts x) [ ι ]M
+    _[_]M {Ψ = Ψ} (tm-oper f es) ι = tm-oper f (λ i → tm-rename (rename-assoc-l {Θ = Ψ}) (es i [ ι ]M) )
 
     infixr 6 _[_]M
 
     --  equations (based on the jugements in "A general definitipn of dependent type theories")
+    record Axiom : Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa)) where
+      constructor make-ax
+      field
+        ax-mv-ctx : MetaContext -- metavariable context of an equation
+        ax-sort : sort -- sort of an equation
+        ax-lhs : Term ax-mv-ctx ctx-empty ax-sort -- left-hand side
+        ax-rhs : Term ax-mv-ctx ctx-empty ax-sort -- right-hand side
+
     record Equation : Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa)) where
       constructor make-eq
       field
@@ -168,25 +186,22 @@ module SecondOrder.SecondOrderTheory where
 
     -- Theory
     -- an equational theory is a family of axioms over a given sort
-    record Theory ℓ  : Set (lsuc (ℓ ⊔ ℓs ⊔ ℓo ⊔ ℓa)) where
+    record Theory ℓ : Set (lsuc (ℓ ⊔ ℓs ⊔ ℓo ⊔ ℓa)) where
       field
         ax : Set ℓ -- the axioms
-        ax-eq : ax → Equation
-
-      ax-ctx : ax → Context
-      ax-ctx ε = Equation.eq-ctx (ax-eq ε)
+        ax-eq : ax → Axiom
 
       ax-mv-ctx : ax → MetaContext
-      ax-mv-ctx ε = Equation.eq-mv-ctx (ax-eq ε)
+      ax-mv-ctx ε = Axiom.ax-mv-ctx (ax-eq ε)
 
       ax-sort : ax → sort
-      ax-sort ε = Equation.eq-sort (ax-eq ε)
+      ax-sort ε = Axiom.ax-sort (ax-eq ε)
 
-      ax-lhs : ∀ (ε : ax) → Term (ax-mv-ctx ε) (ax-ctx ε) (ax-sort ε)
-      ax-lhs ε = Equation.eq-lhs (ax-eq ε)
+      ax-lhs : ∀ (ε : ax) → Term (ax-mv-ctx ε) ctx-empty (ax-sort ε)
+      ax-lhs ε = Axiom.ax-lhs (ax-eq ε)
 
-      ax-rhs : ∀ (ε : ax) → Term (ax-mv-ctx ε) (ax-ctx ε) (ax-sort ε)
-      ax-rhs ε = Equation.eq-rhs (ax-eq ε)
+      ax-rhs : ∀ (ε : ax) → Term (ax-mv-ctx ε) ctx-empty (ax-sort ε)
+      ax-rhs ε = Axiom.ax-rhs (ax-eq ε)
 
       -- equality of terms
       infix 4 ⊢_
@@ -203,8 +218,9 @@ module SecondOrder.SecondOrderTheory where
         eq-congr-mv : ∀ {Γ Θ} {M : mv Θ} {xs ys : ∀ {B : sort} (i : mv-arg Θ M B) → Term Θ Γ B} →
                  (∀ {B : sort} (i : mv-arg Θ M B) → ⊢ Θ ⊕ Γ ∥ (xs i) ≈ (ys i) ⦂ B) → ⊢ Θ ⊕ Γ ∥  (tm-meta M xs) ≈ (tm-meta M ys) ⦂ (mv-sort Θ M)
         -- equational axiom
-        eq-axiom : ∀ (ε : ax) {Γ : Context} (σ : Γ ⇒s ax-ctx ε) →
-                   ⊢ (ax-mv-ctx ε) ⊕ Γ ∥ (ax-lhs ε [ σ ]s) ≈ (ax-rhs ε [ σ ]s) ⦂ (ax-sort ε)
+        eq-axiom : ∀ (ε : ax) {Θ : MetaContext} {Γ : Context} (ι : mv-inst (ax-mv-ctx ε) Θ Γ) →
+                   ⊢ Θ ⊕ Γ ∥ (tm-rename (rename-ctx-empty-r {Θ = Θ}) (ax-lhs ε [ ι ]M)) ≈
+                             (tm-rename (rename-ctx-empty-r {Θ = Θ}) (ax-rhs ε [ ι ]M)) ⦂ (ax-sort ε)
 
       _≈s_ : ∀ {Γ Δ : Context} {Θ} (σ τ : Δ ⇒s Γ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
       _≈s_ {Γ} {Δ} {Θ} σ τ = ∀ {A} (x : A ∈ Γ) → ⊢ Θ ⊕ Δ ∥ σ x ≈ τ x ⦂ A
@@ -225,8 +241,10 @@ module SecondOrder.SecondOrderTheory where
 
 
       -- extension of substitutions preserve equality
+
+
       id-s-extendˡ : ∀ {Θ Γ Ξ A} {a : A ∈ (Γ ,, Ξ)} → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ extend-sˡ {Θ} {Γ} {Γ} {Ξ} (id-s {Γ = Γ}) {A} a ≈  id-s {Γ = Γ ,, Ξ} a ⦂ A
-      id-s-extendˡ {a = Context.var-inl a} = eq-refl
+      id-s-extendˡ {a = var-inl a} = eq-refl
       id-s-extendˡ {a = Context.var-inr a} = eq-refl
 
       -- extension of substitutions preserve composition
@@ -291,6 +309,5 @@ module SecondOrder.SecondOrderTheory where
           id-action-aux : ∀ {Θ Γ Ξ A} {t : Term Θ (Γ ,, Ξ) A} → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ t ≈  (t [ id-s ]s) ⦂ A
           id-action-aux = id-action
 
-      eq-axiom-id : ∀ (ε : ax) → ⊢ ((ax-mv-ctx ε) ⊕ ax-ctx ε ∥ ax-lhs ε ≈ ax-rhs ε ⦂  (ax-sort ε))
+      eq-axiom-id : ∀ (ε : ax) → ⊢ ((ax-mv-ctx ε) ⊕ ctx-empty ∥ ax-lhs ε ≈ ax-rhs ε ⦂  (ax-sort ε))
       eq-axiom-id ε = eq-trans id-action (eq-trans (eq-axiom ε id-s) (eq-symm id-action))
-
