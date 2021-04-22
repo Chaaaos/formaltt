@@ -58,10 +58,6 @@ singleSortedToMultiSortedVar (SS.var-inl x) = MS.var-inl (singleSortedToMultiSor
 singleSortedToMultiSortedVar (SS.var-inr x) = MS.var-inr (singleSortedToMultiSortedVar x)
 
 
--- single-sort-of : ∀ {Γ : SS.Context} {x}
---   → MS.sort-of (singleSortedToMultiSortedContext A Γ) x ≡ A
--- single-sort-of {Γ} {x} = single-sort (MSC.sort-of 𝒜 (singleSortedToMultiSortedContext A Γ) x)
-
 coerce : ∀ {Γ : MS.Context} {X} {Y} → MS.Term Γ X → MS.Term Γ Y
 coerce {Γ} {A} {A} t = subst (MS.Term Γ) refl t
 
