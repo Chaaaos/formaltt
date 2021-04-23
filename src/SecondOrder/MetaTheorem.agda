@@ -58,17 +58,16 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
   r-to-subst-≈ :  ∀ {Θ Γ Δ A} {t : Term Θ Γ A} {ρ : _⇒r_ {Θ = Θ} Γ Δ} → ⊢ Θ ⊕ Δ ∥ (tm-rename ρ t) ≈ t [ r-to-subst ρ ]s ⦂ A
   r-to-subst-≈aux : ∀ {Θ Γ Δ Ξ A} {t : Term Θ (Γ ,, Ξ) A} {ρ : _⇒r_ {Θ} Γ Δ} → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ (tm-rename (extend-r {Θ = Θ} ρ) t) ≈ t [ extend-sˡ (r-to-subst ρ) ]s ⦂ A
 
-
   -- Substitutions
 
-  -- extension of substitutions preserve equality
+  -- extension of the identity substitution is the identity substitution
   id-s-extendˡ : ∀ {Θ Γ Ξ A} {a : A ∈ (Γ ,, Ξ)} → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ extend-sˡ {Θ} {Γ} {Γ} {Ξ} (id-s {Γ = Γ}) {A} a ≈  id-s {Γ = Γ ,, Ξ} a ⦂ A
   -- actions of equal substitutions are pointwise equal
   subst-congr : ∀ {Θ Γ Δ A} {t : Term Θ Γ A} {σ τ : Δ ⇒s Γ} → σ ≈s τ → ⊢ Θ ⊕ Δ ∥ t [ σ ]s ≈  t [ τ ]s ⦂ A
   subst-congr-aux : ∀ {Θ Γ Δ Ξ A} {t : Term Θ (Γ ,, Ξ) A} {σ τ : Δ ⇒s Γ} → σ ≈s τ → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ t [ extend-sˡ σ ]s ≈  t [ extend-sˡ τ ]s ⦂ A
   -- extension of substitutions preserve composition
   ∘s-extendˡ : ∀ {Θ Γ Δ Ξ Λ} {σ : _⇒s_ {Θ} Δ Ξ} {τ : _⇒s_ {Θ} Γ Δ} → ((extend-sˡ {Γ = Δ} {Δ = Ξ} {Ξ = Λ} σ) ∘s (extend-sˡ τ)) ≈s extend-sˡ {Γ = Γ} {Δ = Ξ} {Ξ = Λ} (σ ∘s τ)
-  ∘s-extendˡ-aux : ∀ {Θ Γ Δ Ξ Λ A} {σ : _⇒s_ {Θ} Δ Γ} {τ : _⇒s_ {Θ} Ξ Δ} {x : A ∈ Γ} → ⊢ Θ ⊕ (Ξ ,, Λ) ∥ tm-rename var-inl (σ x) [ extend-sˡ τ ]s ≈ tm-rename var-inl (σ x [ τ ]s) ⦂ A
+  ∘s-extendˡ-aux : ∀ {Θ Γ Δ Ξ A} {τ : _⇒s_ {Θ} Δ Γ} {t : Term Θ Γ A} → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ tm-rename var-inl t [ extend-sˡ τ ]s ≈ tm-rename var-inl (t [ τ ]s) ⦂ A
   ∘s-≈ :  ∀ {Θ Γ Δ Ξ A} {t : Term Θ Γ A} {σ : _⇒s_ {Θ} Δ Γ} {τ : _⇒s_ {Θ} Ξ Δ} → ⊢ Θ ⊕ Ξ ∥ (t [ σ ]s) [ τ ]s ≈ (t [ σ ∘s τ ]s) ⦂ A
   ∘s-≈aux :  ∀ {Θ Γ Δ Ξ Λ A} {t : Term Θ (Γ ,, Λ) A} {σ : _⇒s_ {Θ} Δ Γ} {τ : _⇒s_ {Θ} Ξ Δ} → ⊢ Θ ⊕ (Ξ ,, Λ) ∥ (t [ extend-sˡ σ ]s) [ extend-sˡ τ ]s ≈ (t [ (extend-sˡ σ) ∘s (extend-sˡ τ) ]s) ⦂ A
   -- extension of substitutions preserves equality of substitutions
@@ -90,10 +89,11 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
   subst-congr {t = Signature.tm-oper f es} p = eq-congr λ i → subst-congr-aux {t = es i} p
 
   ∘s-extendˡ (var-inr x) = eq-refl
-  ∘s-extendˡ {Γ = Γ} {Δ = Δ} {Ξ = Ξ} {σ = σ} (var-inl x) = ∘s-extendˡ-aux {Γ = Ξ} {Δ = Δ} {σ = σ} {x = x}
+  ∘s-extendˡ {Γ = Γ} {Δ = Δ} {Ξ = Ξ} {σ = σ} (var-inl x)  = ∘s-extendˡ-aux {Γ = Δ} {Δ = Γ} {t = σ x}
 
-  ∘s-extendˡ-aux = {!!}
-
+  ∘s-extendˡ-aux {t = tm-var x} = eq-refl
+  ∘s-extendˡ-aux {t = tm-meta M ts} = eq-congr-mv λ i → ∘s-extendˡ-aux {t = ts i}
+  ∘s-extendˡ-aux {t = tm-oper f es} = eq-congr λ i → {!!}
 
   r-to-subst ρ x = tm-var (ρ x)
 
@@ -122,7 +122,7 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
   ≈tm-rename (eq-trans p₁ p₂) = eq-trans (≈tm-rename p₁) (≈tm-rename p₂)
   ≈tm-rename (eq-congr p) = eq-congr λ i → ≈tm-rename (p i)
   ≈tm-rename (eq-congr-mv p) = eq-congr-mv λ i → ≈tm-rename (p i)
-  ≈tm-rename {ρ = ρ} (eq-axiom ε σ) = {!≈tm-rename!}
+  ≈tm-rename {ρ = ρ} (eq-axiom ε ι) = {!≈tm-rename!} -- I have no idea how one could solve this for the moment
 
   ≈s-weakenˡ {x = x} p = ≈tm-rename (p x)
 
@@ -140,7 +140,17 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
       id-action-aux : ∀ {Θ Γ Ξ A} {t : Term Θ (Γ ,, Ξ) A} → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ t ≈  (t [ id-s ]s) ⦂ A
       id-action-aux = id-action
 
+  -- the action of the identity metavariable instantiation is the identity
+  id-action-mv : ∀ {Θ Γ A} {a : Term Θ Γ A} → (⊢ Θ ⊕ (ctx-empty ,, Γ) ∥ weakenʳ a ≈ (a [ id-M ]M) ⦂ A)
+  id-action-mv {a = tm-var x} = eq-refl
+  id-action-mv {a = tm-meta M ts} = eq-congr-mv λ i → id-action-mv
+  id-action-mv {a = tm-oper f es} = eq-congr λ i → {!!} -- needs an auxiliary function
+    -- where
+    --   id-action-mv-aux :
 
-      -- -- for this, we'll have to define the identity metavariable instantiation and prove all the things that we proved on metavariable instatiations
-      -- eq-axiom-id : ∀ (ε : ax) → ⊢ ((ax-mv-ctx ε) ⊕ ctx-empty ∥ ax-lhs ε ≈ ax-rhs ε ⦂  (ax-sort ε))
-      -- eq-axiom-id ε = {!!}
+
+  eq-axiom-id-aux : ∀ {Θ Γ A} {s t : Term Θ Γ A} → ⊢ Θ ⊕ (ctx-empty ,, Γ) ∥ weakenʳ s ≈ weakenʳ t ⦂ A → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A
+  eq-axiom-id-aux p = {!!}
+
+  eq-axiom-id : ∀ (ε : ax) → ⊢ ((ax-mv-ctx ε) ⊕ ctx-empty ∥ ax-lhs ε ≈ ax-rhs ε ⦂  (ax-sort ε))
+  eq-axiom-id ε = eq-axiom-id-aux (eq-trans id-action-mv (eq-symm (eq-trans id-action-mv (eq-symm {!!})))) -- doesn't work, problem with contexts (I am not even sure that it akes sense to try to prove this - maybe some definitions are wrong ?)

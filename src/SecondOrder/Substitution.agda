@@ -104,7 +104,7 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
 
   --Metavariable instantiation
 
-    -- metavariable instantiation
+  -- metavariable instantiation
   mv-inst  : MetaContext → MetaContext → Context → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa))
   mv-inst Θ Ψ Γ = ∀ (M : mv Θ) → Term Ψ (Γ ,, mv-arity Θ M) (mv-sort Θ M)
 
@@ -119,3 +119,6 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
 
   infixr 6 _[_]M
 
+  -- the identity metavariable instantiation
+  id-M : ∀ {Θ} → mv-inst Θ Θ ctx-empty
+  id-M t = tm-meta t (λ i → weakenʳ (tm-var i))
