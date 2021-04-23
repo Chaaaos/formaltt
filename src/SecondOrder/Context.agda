@@ -21,3 +21,4 @@ data _∈_ (A : Sort) : Context → Set s where
 -- It is absurd to have a variable in the empty context
 ctx-empty-absurd : ∀ {ℓ} {A} {P : A ∈ ctx-empty → Set ℓ} (x : A ∈ ctx-empty) → P x
 ctx-empty-absurd ()
+
