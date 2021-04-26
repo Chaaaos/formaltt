@@ -44,13 +44,24 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
 
   -- ** Theorems **
 
-  -- Renamings
+  -- I. Renamings
+
+  -- A. Main theorems
+  -- renamings preserve equality of substitutions
+
   -- renaming preserves equality of terms
   ≈tm-rename : ∀ {Θ Γ Δ A} {s t : Term Θ Γ A} {ρ : _⇒r_ {Θ} Γ Δ} → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → ⊢ Θ ⊕ Δ ∥ tm-rename ρ s ≈ tm-rename ρ t ⦂ A
+  -- action of renaming commutes with composition
+
+  -- action of the identity renaming is the identity
+
+  -- B. Lemmas and corollaries
   -- weakening preserves equality of substitutions
   ≈s-weakenˡ : ∀ {Θ Γ Δ Ξ A} {σ τ : Δ ⇒s Γ} {x : A ∈ Γ} → σ ≈s τ → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ weakenˡ (σ x) ≈ weakenˡ (τ x) ⦂ A
+  -- interactions between extensions
+  extend-var-inl : ∀ {Γ Δ Ξ Λ Θ A} (t : Term Θ (Λ ,, Ξ) A) (τ : Γ ⇒s Λ) → ⊢ Θ ⊕ ((Γ ,, Δ) ,, Ξ) ∥ ((tm-rename (extend-r {Θ = Θ} var-inl) t) [ extend-sˡ (extend-sˡ τ) ]s) ≈ (tm-rename (extend-r {Θ = Θ} var-inl) (t [ extend-sˡ τ ]s)) ⦂ A
 
-  -- Renamings to substitutions
+  -- II. Renamings to substitutions
 
   -- enables to use a renaming as a substitution
   r-to-subst : ∀ {Θ Γ Δ} (ρ : _⇒r_ {Θ} Γ Δ) → _⇒s_ {Θ} Δ Γ
@@ -58,27 +69,58 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
   r-to-subst-≈ :  ∀ {Θ Γ Δ A} {t : Term Θ Γ A} {ρ : _⇒r_ {Θ = Θ} Γ Δ} → ⊢ Θ ⊕ Δ ∥ (tm-rename ρ t) ≈ t [ r-to-subst ρ ]s ⦂ A
   r-to-subst-≈aux : ∀ {Θ Γ Δ Ξ A} {t : Term Θ (Γ ,, Ξ) A} {ρ : _⇒r_ {Θ} Γ Δ} → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ (tm-rename (extend-r {Θ = Θ} ρ) t) ≈ t [ extend-sˡ (r-to-subst ρ) ]s ⦂ A
 
-  -- Substitutions
+  -- III. Substitutions
 
-  -- extension of the identity substitution is the identity substitution
-  id-s-extendˡ : ∀ {Θ Γ Ξ A} {a : A ∈ (Γ ,, Ξ)} → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ extend-sˡ {Θ} {Γ} {Γ} {Ξ} (id-s {Γ = Γ}) {A} a ≈  id-s {Γ = Γ ,, Ξ} a ⦂ A
+  -- A. Main theorems
   -- actions of equal substitutions are pointwise equal
   subst-congr : ∀ {Θ Γ Δ A} {t : Term Θ Γ A} {σ τ : Δ ⇒s Γ} → σ ≈s τ → ⊢ Θ ⊕ Δ ∥ t [ σ ]s ≈  t [ τ ]s ⦂ A
+  -- action of the identity substitution is the identity
+  id-action : ∀ {Θ Γ A} {a : Term Θ Γ A} → (⊢ Θ ⊕ Γ ∥ a ≈ (a [ id-s ]s) ⦂ A)
+  -- substitution preserves equality of terms
+  ≈tm-subst : ∀ {Θ Γ Δ A} {s t : Term Θ Γ A} {σ : Δ ⇒s Γ} → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → ⊢ Θ ⊕ Δ ∥ s [ σ ]s ≈  t [ σ ]s ⦂ A
+  -- action of substitutions "commutes" with composition
+  ∘s-≈ :  ∀ {Θ Γ Δ Ξ A} {t : Term Θ Γ A} {σ : _⇒s_ {Θ} Δ Γ} {τ : _⇒s_ {Θ} Ξ Δ} → ⊢ Θ ⊕ Ξ ∥ (t [ σ ]s) [ τ ]s ≈ (t [ σ ∘s τ ]s) ⦂ A
+
+  -- B. Lemmas
+  -- extension of the identity substitution is the identity substitution
+  id-s-extendˡ : ∀ {Θ Γ Ξ A} {a : A ∈ (Γ ,, Ξ)} → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ extend-sˡ {Θ} {Γ} {Γ} {Ξ} (id-s {Γ = Γ}) {A} a ≈  id-s {Γ = Γ ,, Ξ} a ⦂ A
   subst-congr-aux : ∀ {Θ Γ Δ Ξ A} {t : Term Θ (Γ ,, Ξ) A} {σ τ : Δ ⇒s Γ} → σ ≈s τ → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ t [ extend-sˡ σ ]s ≈  t [ extend-sˡ τ ]s ⦂ A
   -- extension of substitutions preserve composition
   ∘s-extendˡ : ∀ {Θ Γ Δ Ξ Λ} {σ : _⇒s_ {Θ} Δ Ξ} {τ : _⇒s_ {Θ} Γ Δ} → ((extend-sˡ {Γ = Δ} {Δ = Ξ} {Ξ = Λ} σ) ∘s (extend-sˡ τ)) ≈s extend-sˡ {Γ = Γ} {Δ = Ξ} {Ξ = Λ} (σ ∘s τ)
   ∘s-extendˡ-aux : ∀ {Θ Γ Δ Ξ A} {τ : _⇒s_ {Θ} Δ Γ} {t : Term Θ Γ A} → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ tm-rename var-inl t [ extend-sˡ τ ]s ≈ tm-rename var-inl (t [ τ ]s) ⦂ A
-  ∘s-≈ :  ∀ {Θ Γ Δ Ξ A} {t : Term Θ Γ A} {σ : _⇒s_ {Θ} Δ Γ} {τ : _⇒s_ {Θ} Ξ Δ} → ⊢ Θ ⊕ Ξ ∥ (t [ σ ]s) [ τ ]s ≈ (t [ σ ∘s τ ]s) ⦂ A
   ∘s-≈aux :  ∀ {Θ Γ Δ Ξ Λ A} {t : Term Θ (Γ ,, Λ) A} {σ : _⇒s_ {Θ} Δ Γ} {τ : _⇒s_ {Θ} Ξ Δ} → ⊢ Θ ⊕ (Ξ ,, Λ) ∥ (t [ extend-sˡ σ ]s) [ extend-sˡ τ ]s ≈ (t [ (extend-sˡ σ) ∘s (extend-sˡ τ) ]s) ⦂ A
   -- extension of substitutions preserves equality of substitutions
   ≈s-extend-sˡ : ∀ {Θ Γ Δ Ξ} {σ τ : Γ ⇒s Δ} → σ ≈s τ → extend-sˡ {Θ} {Γ} {Δ} {Ξ} σ ≈s extend-sˡ {Θ} {Γ} {Δ} {Ξ} τ
 
-  -- Metavariable extensions
 
+  -- IV. Metavariable extensions
+
+  -- Main Theorems
+  -- actions of equal metavariable instantiations are pointwise equal
+  mv-inst-congr : ∀ {Θ ψ Γ Δ A} {t : Term Θ Δ A} {ι μ : ψ ⇒M Θ ⊕ Γ} → ι ≈M μ → ⊢ ψ ⊕ (Γ ,, Δ) ∥ t [ ι ]M ≈ t [ μ ]M ⦂ A
+  -- action of a metavariable instantiation preserves equality of terms
+  ≈tm-mv-inst : ∀ {Θ ψ Γ Δ A} {s t : Term Θ Δ A} {ι : ψ ⇒M Θ ⊕ Γ} → ⊢ Θ ⊕ Δ ∥ s ≈ t ⦂ A → ⊢ ψ ⊕ (Γ ,, Δ) ∥ s [ ι ]M ≈ t [ ι ]M ⦂ A
+  -- action of metavariable instantiations "commutes" with composition
+
+  -- action of the identity metavariable is the identity
+  id-action-mv : ∀ {Θ Γ A} {a : Term Θ Γ A} → (⊢ Θ ⊕ (ctx-empty ,, Γ) ∥ weakenʳ a ≈ (a [ id-M ]M) ⦂ A)
 
 
 
   -- ** Proofs **
+
+  -- I.
+  -- A.
+  -- B.
+
+  -- II.
+
+  -- III.
+  -- A.
+  -- B.
+
+  -- IV.
+  -- A.
 
   id-s-extendˡ {a = var-inl a} = eq-refl
   id-s-extendˡ {a = var-inr a} = eq-refl
@@ -88,12 +130,23 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
   subst-congr {t = Signature.tm-meta M ts} p = eq-congr-mv λ i → subst-congr {t = ts i} p
   subst-congr {t = Signature.tm-oper f es} p = eq-congr λ i → subst-congr-aux {t = es i} p
 
+  ≈tm-subst eq-refl = eq-refl
+  ≈tm-subst (eq-symm p) = eq-symm (≈tm-subst p)
+  ≈tm-subst (eq-trans p₁ p₂) = eq-trans (≈tm-subst p₁) (≈tm-subst p₂)
+  ≈tm-subst (eq-congr x) = eq-congr {!!} -- needs an auxiliary function
+  ≈tm-subst (eq-congr-mv ps) = eq-congr-mv λ i → ≈tm-subst (ps i)
+  ≈tm-subst (eq-axiom ε ι) = {!!} -- Should we find a way to "compose" substitution and instantiation so as to get an instatiation ?
+
   ∘s-extendˡ (var-inr x) = eq-refl
   ∘s-extendˡ {Γ = Γ} {Δ = Δ} {Ξ = Ξ} {σ = σ} (var-inl x)  = ∘s-extendˡ-aux {Γ = Δ} {Δ = Γ} {t = σ x}
 
   ∘s-extendˡ-aux {t = tm-var x} = eq-refl
   ∘s-extendˡ-aux {t = tm-meta M ts} = eq-congr-mv λ i → ∘s-extendˡ-aux {t = ts i}
-  ∘s-extendˡ-aux {t = tm-oper f es} = eq-congr λ i → {!!}
+  ∘s-extendˡ-aux {τ = τ} {t = tm-oper f es} = eq-congr λ i → extend-var-inl (es i) τ
+
+  extend-var-inl (tm-var x) τ = {!!}
+  extend-var-inl (tm-meta M ts) τ = {!!}
+  extend-var-inl (tm-oper f es) τ = {!!}
 
   r-to-subst ρ x = tm-var (ρ x)
 
@@ -131,8 +184,19 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
 
   subst-congr-aux {Γ = Γ} {Ξ = Ξ} {t = t} p = subst-congr {Γ = Γ ,, Ξ} {t = t} λ x → ≈s-extend-sˡ p x
 
-  -- the action of the identity substitution is the identity
-  id-action : ∀ {Θ Γ A} {a : Term Θ Γ A} → (⊢ Θ ⊕ Γ ∥ a ≈ (a [ id-s ]s) ⦂ A)
+
+  mv-inst-congr {t = tm-var x} p = eq-refl
+  mv-inst-congr {t = tm-meta M ts} p = subst-congr λ x → {!!}
+  mv-inst-congr {t = tm-oper f es} p = eq-congr λ i → {!!}
+
+  ≈tm-mv-inst eq-refl = eq-refl
+  ≈tm-mv-inst (eq-symm p) = eq-symm (≈tm-mv-inst p)
+  ≈tm-mv-inst (eq-trans p₁ p₂) = eq-trans (≈tm-mv-inst p₁) (≈tm-mv-inst p₂)
+  ≈tm-mv-inst (eq-congr x) = eq-congr λ i → {!!}
+  ≈tm-mv-inst (eq-congr-mv x) = subst-congr λ x₁ → {!!}
+  ≈tm-mv-inst (eq-axiom ε ι) = {!!} -- define the composition of mv instantiations
+
+
   id-action {a = tm-var x} = eq-refl
   id-action {a = tm-meta M ts} = eq-congr-mv λ i → id-action
   id-action {a = tm-oper f es} = eq-congr λ i → eq-trans id-action-aux (eq-symm (subst-congr {t = es i} λ x → id-s-extendˡ))
@@ -140,13 +204,14 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
       id-action-aux : ∀ {Θ Γ Ξ A} {t : Term Θ (Γ ,, Ξ) A} → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ t ≈  (t [ id-s ]s) ⦂ A
       id-action-aux = id-action
 
-  -- the action of the identity metavariable instantiation is the identity
-  id-action-mv : ∀ {Θ Γ A} {a : Term Θ Γ A} → (⊢ Θ ⊕ (ctx-empty ,, Γ) ∥ weakenʳ a ≈ (a [ id-M ]M) ⦂ A)
+
   id-action-mv {a = tm-var x} = eq-refl
   id-action-mv {a = tm-meta M ts} = eq-congr-mv λ i → id-action-mv
   id-action-mv {a = tm-oper f es} = eq-congr λ i → {!!} -- needs an auxiliary function
     -- where
     --   id-action-mv-aux :
+
+
 
 
   eq-axiom-id-aux : ∀ {Θ Γ A} {s t : Term Θ Γ A} → ⊢ Θ ⊕ (ctx-empty ,, Γ) ∥ weakenʳ s ≈ weakenʳ t ⦂ A → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A

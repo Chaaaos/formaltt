@@ -17,7 +17,7 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
   module _ {Θ : MetaContext}  where
       infix 4 _⇒r_
 
-    -- Renamings
+    -- ** Renamings **
 
       -- renaming
       _⇒r_ : ∀ (Γ Δ : Context) → Set ℓs
@@ -36,11 +36,17 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
       _∘r_ : ∀ {Γ Δ Θ : Context} → Δ ⇒r Θ → Γ ⇒r Δ → Γ ⇒r Θ
       (σ ∘r ρ) x = σ (ρ x)
 
+      infix 7 _∘_
+
       -- action of a renaming on terms
       tm-rename : ∀ {Γ Δ A} → Γ ⇒r Δ → Term Θ Γ A → Term Θ Δ A
       tm-rename ρ (tm-var x) = tm-var (ρ x)
       tm-rename ρ (tm-meta M ts) = tm-meta M (λ i → tm-rename ρ (ts i))
       tm-rename ρ (tm-oper f es) = tm-oper f (λ i → tm-rename (extend-r ρ) (es i))
+
+      syntax tm-rename ρ t = t [ ρ ]r
+
+      infix 6 _[_]r
 
       -- the reassociation renaming
       rename-assoc-r : ∀ {Γ Δ Ξ} → (Γ ,, Δ) ,, Ξ ⇒r Γ ,, (Δ ,, Ξ)
@@ -65,7 +71,7 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
       weakenʳ = tm-rename var-inr
 
 
-    -- Substitutions
+    -- ** Substitutions **
 
       -- substitition
       _⇒s_ : ∀ (Γ Δ : Context) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa))
@@ -102,11 +108,13 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
 
 
 
-  --Metavariable instantiation
+  -- ** Metavariable instantiations **
 
   -- metavariable instantiation
   mv-inst  : MetaContext → MetaContext → Context → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa))
   mv-inst Θ Ψ Γ = ∀ (M : mv Θ) → Term Ψ (Γ ,, mv-arity Θ M) (mv-sort Θ M)
+
+  syntax mv-inst Θ ψ Γ = ψ ⇒M Θ ⊕ Γ
 
   -- action of a metavariable instantiation on terms
   _[_]M : ∀ {Γ : Context} {A : sort} {Θ Ψ : MetaContext} {Δ} → Term Θ Γ A → ∀ (ι : mv-inst Θ Ψ Δ) → Term Ψ (Δ ,, Γ) A
@@ -122,3 +130,7 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
   -- the identity metavariable instantiation
   id-M : ∀ {Θ} → mv-inst Θ Θ ctx-empty
   id-M t = tm-meta t (λ i → weakenʳ (tm-var i))
+
+  -- composition of metavariable instantiations
+  _∘M_ : ∀ {Θ ψ Ω Γ Δ Ξ} → Ω ⇒M ψ ⊕ Δ → ψ ⇒M Θ ⊕ Γ → (Ω ⇒M Θ ⊕ (Δ ,, (Γ ,, Ξ)))
+  _∘M_ {Θ = Θ} {ψ = ψ} {Γ = Γ} {Δ = Δ} {Ξ = Ξ} μ ι = λ M → {!!}
