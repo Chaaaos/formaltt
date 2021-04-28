@@ -1,3 +1,5 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+
 open import Agda.Primitive using (lzero; lsuc; _⊔_; Level)
 open import Relation.Unary hiding (_∈_)
 open import Data.Empty.Polymorphic
@@ -36,7 +38,7 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
       _∘r_ : ∀ {Γ Δ Θ : Context} → Δ ⇒r Θ → Γ ⇒r Δ → Γ ⇒r Θ
       (σ ∘r ρ) x = σ (ρ x)
 
-      infix 7 _∘_
+      infix 7 _∘r_
 
       -- action of a renaming on terms
       tm-rename : ∀ {Γ Δ A} → Γ ⇒r Δ → Term Θ Γ A → Term Θ Δ A
@@ -46,7 +48,7 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
 
       syntax tm-rename ρ t = t [ ρ ]r
 
-      infix 6 _[_]r
+      infix 6 tm-rename
 
       -- the reassociation renaming
       rename-assoc-r : ∀ {Γ Δ Ξ} → (Γ ,, Δ) ,, Ξ ⇒r Γ ,, (Δ ,, Ξ)
@@ -131,6 +133,10 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
   id-M : ∀ {Θ} → mv-inst Θ Θ ctx-empty
   id-M t = tm-meta t (λ i → weakenʳ (tm-var i))
 
+  term-reasoc : ∀ {Ω Δ Γ Ξ A} → Term Ω (ctx-concat Δ (ctx-concat Γ Ξ)) A →  Term Ω (ctx-concat (ctx-concat Δ Γ) Ξ) A
+  term-reasoc {Ω = Ω} = tm-rename (rename-assoc-l {Θ = Ω})
+
+
   -- composition of metavariable instantiations
-  _∘M_ : ∀ {Θ ψ Ω Γ Δ Ξ} → Ω ⇒M ψ ⊕ Δ → ψ ⇒M Θ ⊕ Γ → (Ω ⇒M Θ ⊕ (Δ ,, (Γ ,, Ξ)))
-  _∘M_ {Θ = Θ} {ψ = ψ} {Γ = Γ} {Δ = Δ} {Ξ = Ξ} μ ι = λ M → {!!}
+  _∘M_ : ∀ {Θ ψ Ω Γ Δ} → Ω ⇒M ψ ⊕ Δ → ψ ⇒M Θ ⊕ Γ → (Ω ⇒M Θ ⊕ (Δ ,, Γ))
+  _∘M_ {Θ = Θ} {ψ = ψ} {Γ = Γ} {Δ = Δ} μ ι = λ M → term-reasoc (ι M [ μ ]M)

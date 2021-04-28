@@ -82,6 +82,10 @@ module SecondOrder.SecondOrderTheory {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ
                              (tm-rename (rename-ctx-empty-r {Θ = Θ}) (ax-rhs ε [ ι ]M)) ⦂ (ax-sort ε)
 
 
+      -- equality of renamings
+      _≈r_ : ∀ {Γ Δ : Context} {Θ} (σ τ : _⇒r_ {Θ = Θ} Γ Δ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
+      _≈r_ {Γ} {Δ} {Θ} σ τ = ∀ {A} (x : A ∈ Γ) → ⊢ Θ ⊕ Δ ∥ tm-var (σ x) ≈ tm-var (τ x) ⦂ A
+
       -- equality of substitutions
       _≈s_ : ∀ {Γ Δ : Context} {Θ} (σ τ : Δ ⇒s Γ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
       _≈s_ {Γ} {Δ} {Θ} σ τ = ∀ {A} (x : A ∈ Γ) → ⊢ Θ ⊕ Δ ∥ σ x ≈ τ x ⦂ A
