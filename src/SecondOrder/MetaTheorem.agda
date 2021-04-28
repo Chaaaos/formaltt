@@ -120,55 +120,34 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
   r-congr {t = tm-meta M ts} p = eq-congr-mv λ i → r-congr p
   r-congr {t = tm-oper f es} p = eq-congr λ i → {!!}
 
-  id-action-r {a = tm-var x} = eq-refl
-  id-action-r {a = tm-meta M ts} = eq-congr-mv λ i → id-action-r
-  id-action-r {a = tm-oper f es} = eq-congr λ i → eq-trans id-action-r-aux (eq-symm (r-congr λ x → id-r-extend))
+  ≈tm-rename eq-refl = eq-refl
+  ≈tm-rename (eq-symm p) = eq-symm (≈tm-rename p)
+  ≈tm-rename (eq-trans p₁ p₂) = eq-trans (≈tm-rename p₁) (≈tm-rename p₂)
+  ≈tm-rename (eq-congr p) = eq-congr λ i → ≈tm-rename (p i)
+  ≈tm-rename (eq-congr-mv p) = eq-congr-mv λ i → ≈tm-rename (p i)
+  ≈tm-rename {ρ = ρ} (eq-axiom ε ι) = {!≈tm-rename!} -- I have no idea how one could solve this for the moment
 
   ∘r-≈ {t = tm-var x} = eq-refl
   ∘r-≈ {t = tm-meta M ts} = eq-congr-mv λ i → ∘r-≈
   ∘r-≈ {t = tm-oper f es} = eq-congr λ i → {!!} -- needs an auxialiary function
 
+  id-action-r {a = tm-var x} = eq-refl
+  id-action-r {a = tm-meta M ts} = eq-congr-mv λ i → id-action-r
+  id-action-r {a = tm-oper f es} = eq-congr λ i → eq-trans id-action-r-aux (eq-symm (r-congr λ x → id-r-extend))
+
   -- B.
+  ≈s-weakenˡ {x = x} p = ≈tm-rename (p x)
+
+  extend-var-inl (tm-var x) τ = {!!}
+  extend-var-inl (tm-meta M ts) τ = {!!}
+  extend-var-inl (tm-oper f es) τ = {!!}
+
   id-action-r-aux = id-action-r
 
   id-r-extend {a = var-inl a} = eq-refl
   id-r-extend {a = var-inr a} = eq-refl
 
   -- II.
-
-  -- III.
-  -- A.
-  -- B.
-
-  -- IV.
-  -- A.
-
-  id-s-extendˡ {a = var-inl a} = eq-refl
-  id-s-extendˡ {a = var-inr a} = eq-refl
-
-
-  subst-congr {t = Signature.tm-var x} p = p x
-  subst-congr {t = Signature.tm-meta M ts} p = eq-congr-mv λ i → subst-congr {t = ts i} p
-  subst-congr {t = Signature.tm-oper f es} p = eq-congr λ i → subst-congr-aux {t = es i} p
-
-  ≈tm-subst eq-refl = eq-refl
-  ≈tm-subst (eq-symm p) = eq-symm (≈tm-subst p)
-  ≈tm-subst (eq-trans p₁ p₂) = eq-trans (≈tm-subst p₁) (≈tm-subst p₂)
-  ≈tm-subst (eq-congr x) = eq-congr {!!} -- needs an auxiliary function
-  ≈tm-subst (eq-congr-mv ps) = eq-congr-mv λ i → ≈tm-subst (ps i)
-  ≈tm-subst (eq-axiom ε ι) = {!!} -- Should we find a way to "compose" substitution and instantiation so as to get an instatiation ?
-
-  ∘s-extendˡ (var-inr x) = eq-refl
-  ∘s-extendˡ {Γ = Γ} {Δ = Δ} {Ξ = Ξ} {σ = σ} (var-inl x)  = ∘s-extendˡ-aux {Γ = Δ} {Δ = Γ} {t = σ x}
-
-  ∘s-extendˡ-aux {t = tm-var x} = eq-refl
-  ∘s-extendˡ-aux {t = tm-meta M ts} = eq-congr-mv λ i → ∘s-extendˡ-aux {t = ts i}
-  ∘s-extendˡ-aux {τ = τ} {t = tm-oper f es} = eq-congr λ i → extend-var-inl (es i) τ
-
-  extend-var-inl (tm-var x) τ = {!!}
-  extend-var-inl (tm-meta M ts) τ = {!!}
-  extend-var-inl (tm-oper f es) τ = {!!}
-
   r-to-subst ρ x = tm-var (ρ x)
 
 
@@ -183,28 +162,56 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
   r-to-subst-≈aux {Θ = Θ} {Γ = Γ} {Δ = Δ} {t = t} {ρ = ρ} = eq-trans r-to-subst-≈ (subst-congr {t = t} (r-to-subst-extend-sˡ {ρ = ρ}))
 
 
+
+  -- III.
+  -- A.
+  subst-congr {t = Signature.tm-var x} p = p x
+  subst-congr {t = Signature.tm-meta M ts} p = eq-congr-mv λ i → subst-congr {t = ts i} p
+  subst-congr {t = Signature.tm-oper f es} p = eq-congr λ i → subst-congr-aux {t = es i} p
+
+  id-action {a = tm-var x} = eq-refl
+  id-action {a = tm-meta M ts} = eq-congr-mv λ i → id-action
+  id-action {a = tm-oper f es} = eq-congr λ i → eq-trans id-action-aux (eq-symm (subst-congr {t = es i} λ x → id-s-extendˡ))
+    where
+      id-action-aux : ∀ {Θ Γ Ξ A} {t : Term Θ (Γ ,, Ξ) A} → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ t ≈  (t [ id-s ]s) ⦂ A
+      id-action-aux = id-action
+
+  ≈tm-subst eq-refl = eq-refl
+  ≈tm-subst (eq-symm p) = eq-symm (≈tm-subst p)
+  ≈tm-subst (eq-trans p₁ p₂) = eq-trans (≈tm-subst p₁) (≈tm-subst p₂)
+  ≈tm-subst (eq-congr x) = eq-congr {!!} -- needs an auxiliary function
+  ≈tm-subst (eq-congr-mv ps) = eq-congr-mv λ i → ≈tm-subst (ps i)
+  ≈tm-subst (eq-axiom ε ι) = {!!} -- Should we find a way to "compose" substitution and instantiation so as to get an instatiation ?
+
   ∘s-≈ {t = tm-var x} = eq-refl
   ∘s-≈ {t = tm-meta M ts} = eq-congr-mv λ i → ∘s-≈ {t = ts i}
   ∘s-≈ {t = tm-oper f es} {σ = σ} {τ = τ} = eq-congr λ i → eq-trans (∘s-≈aux {t = es i} {σ = σ} {τ = τ}) (subst-congr {t = es i} {σ =  extend-sˡ σ ∘s extend-sˡ τ} {τ = extend-sˡ (σ ∘s τ)} ∘s-extendˡ)
+
+
+
+  -- B.
+  id-s-extendˡ {a = var-inl a} = eq-refl
+  id-s-extendˡ {a = var-inr a} = eq-refl
+
+  ∘s-extendˡ (var-inr x) = eq-refl
+  ∘s-extendˡ {Γ = Γ} {Δ = Δ} {Ξ = Ξ} {σ = σ} (var-inl x)  = ∘s-extendˡ-aux {Γ = Δ} {Δ = Γ} {t = σ x}
+
+  ∘s-extendˡ-aux {t = tm-var x} = eq-refl
+  ∘s-extendˡ-aux {t = tm-meta M ts} = eq-congr-mv λ i → ∘s-extendˡ-aux {t = ts i}
+  ∘s-extendˡ-aux {τ = τ} {t = tm-oper f es} = eq-congr λ i → extend-var-inl (es i) τ
 
   ∘s-≈aux {Γ = Γ} {Λ = Λ} {t = tm-var x}  {σ = σ} = ∘s-≈ {Γ = (Γ ,, Λ)} {t = tm-var x} {σ = extend-sˡ σ}
   ∘s-≈aux {t = tm-meta M ts} = eq-congr-mv λ i → ∘s-≈aux {t = ts i}
   ∘s-≈aux {t = tm-oper f es} {σ = σ} {τ = τ} = eq-congr λ i → eq-trans (∘s-≈aux {t = es i}) (subst-congr {t = es i} {σ = extend-sˡ (extend-sˡ σ) ∘s extend-sˡ (extend-sˡ τ)} {τ = extend-sˡ (extend-sˡ σ ∘s extend-sˡ τ)} ∘s-extendˡ)
 
-  ≈tm-rename eq-refl = eq-refl
-  ≈tm-rename (eq-symm p) = eq-symm (≈tm-rename p)
-  ≈tm-rename (eq-trans p₁ p₂) = eq-trans (≈tm-rename p₁) (≈tm-rename p₂)
-  ≈tm-rename (eq-congr p) = eq-congr λ i → ≈tm-rename (p i)
-  ≈tm-rename (eq-congr-mv p) = eq-congr-mv λ i → ≈tm-rename (p i)
-  ≈tm-rename {ρ = ρ} (eq-axiom ε ι) = {!≈tm-rename!} -- I have no idea how one could solve this for the moment
-
-  ≈s-weakenˡ {x = x} p = ≈tm-rename (p x)
 
   ≈s-extend-sˡ p (var-inl x) = ≈s-weakenˡ p
   ≈s-extend-sˡ p (var-inr x) = eq-refl
 
   subst-congr-aux {Γ = Γ} {Ξ = Ξ} {t = t} p = subst-congr {Γ = Γ ,, Ξ} {t = t} λ x → ≈s-extend-sˡ p x
 
+  -- IV.
+  -- A.
 
   mv-inst-congr {t = tm-var x} p = eq-refl
   mv-inst-congr {t = tm-meta M ts} p = subst-congr λ x → {!!}
@@ -216,14 +223,6 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
   ≈tm-mv-inst (eq-congr x) = eq-congr λ i → {!!}
   ≈tm-mv-inst (eq-congr-mv x) = subst-congr λ x₁ → {!!}
   ≈tm-mv-inst (eq-axiom ε ι) = {!!} -- define the composition of mv instantiations
-
-
-  id-action {a = tm-var x} = eq-refl
-  id-action {a = tm-meta M ts} = eq-congr-mv λ i → id-action
-  id-action {a = tm-oper f es} = eq-congr λ i → eq-trans id-action-aux (eq-symm (subst-congr {t = es i} λ x → id-s-extendˡ))
-    where
-      id-action-aux : ∀ {Θ Γ Ξ A} {t : Term Θ (Γ ,, Ξ) A} → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ t ≈  (t [ id-s ]s) ⦂ A
-      id-action-aux = id-action
 
 
   id-action-mv {a = tm-var x} = eq-refl
