@@ -1,5 +1,6 @@
 module SecondOrder.Context {s} (Sort : Set s)  where
 
+-- Contexts are binary trees which are either empty or have Sorts as leaves
 data Context : Set s where
   ctx-empty : Context
   ctx-slot : Sort → Context
