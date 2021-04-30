@@ -386,7 +386,7 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
   ≈tm-mv-inst (eq-trans p₁ p₂) = eq-trans (≈tm-mv-inst p₁) (≈tm-mv-inst p₂)
   ≈tm-mv-inst (eq-congr x) = eq-congr λ i → {!!}
   ≈tm-mv-inst {ι = ι} (eq-congr-mv {M = M} {xs = xs} {ys = ys} ps) = subst-congr {t = ι M} ([]M-mv-≈ M xs ys ι ps)
-  ≈tm-mv-inst {ι = μ} (eq-axiom ε ι) =  eq-trans (≈tm-r∘M {t =  ?} {ι = {!!}} {μ = {!!}}) (eq-trans {!!} (eq-symm ≈tm-r∘M)) -- define the composition of mv instantiations
+  ≈tm-mv-inst {ι = μ} (eq-axiom ε ι) =  eq-trans (≈tm-r∘M {t =  {!!}} {ι = {!!}} {μ = {!!}}) (eq-trans {!!} (eq-symm ≈tm-r∘M)) -- define the composition of mv instantiations
 
 
   id-action-mv {a = tm-var x} = eq-refl
