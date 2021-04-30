@@ -228,11 +228,13 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
     → ⊢ ψ ⊕ (Γ ,, Δ) ∥ s [ ι ]M ≈ t [ ι ]M ⦂ A
     
   -- action of metavariable instantiations "commutes" with composition
+  ∘M-≈aux : ∀ {Θ ψ Ω Γ Δ Ξ A} {t : Term Θ Γ A} {ι : Ω ⇒M ψ ⊕ Ξ } {μ : ψ ⇒M Θ ⊕ Δ} → ⊢ Ω ⊕ ((Ξ ,, Δ) ,, Γ) ∥ term-reassoc ((t [ μ ]M) [ ι ]M) ≈ (t [ ι ∘M μ ]M) ⦂ A
 
   -- action of the identity metavariable is the identity
   id-action-mv : ∀ {Θ Γ A} {a : Term Θ Γ A}
     → (⊢ Θ ⊕ (ctx-empty ,, Γ) ∥ weakenʳ a ≈ (a [ id-M ]M) ⦂ A)
 
+<<<<<<< HEAD
 
   -- action of substitution on an instantiation
   -- temp : ∀ {Θ ψ Γ Δ A} {s t : Term Θ Δ A} {ι : ψ ⇒M Θ ⊕ Δ} {σ : Δ ⇒s Γ}
@@ -243,6 +245,12 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
   --∥                                    ∥   ** Proofs **   ∥                                        ∥
   --∥                                    ====================                                        ∥
   --==================================================================================================
+=======
+  -- B. Lemmas
+  tm-rename-empty-≈ : ∀ {Θ Γ A} {s t : Term Θ (Γ ,, ctx-empty) A} → ⊢ Θ ⊕ (Γ ,, ctx-empty) ∥ s ≈ t ⦂ A → ⊢ Θ ⊕ Γ ∥ tm-rename (rename-ctx-empty-r {Θ = Θ}) s ≈ tm-rename (rename-ctx-empty-r {Θ = Θ}) t ⦂ A
+  term-reassoc-≈ : ∀ {Θ Δ Γ Ξ A} {s t : Term Θ (Γ ,, (Δ ,, Ξ)) A} → ⊢ Θ ⊕ ((Γ ,, Δ) ,, Ξ) ∥ term-reassoc s ≈ term-reassoc t ⦂ A → ⊢ Θ ⊕ (Γ ,, (Δ ,, Ξ)) ∥ s ≈ t ⦂ A
+  -- ** Proofs **
+>>>>>>> second-order
 
   -------------------------------------------------------------------------------------------
   -- I.
@@ -356,17 +364,33 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
   ≈tm-mv-inst (eq-trans p₁ p₂) = eq-trans (≈tm-mv-inst p₁) (≈tm-mv-inst p₂)
   ≈tm-mv-inst (eq-congr x) = eq-congr λ i → {!!}
   ≈tm-mv-inst (eq-congr-mv x) = subst-congr λ x₁ → {!!}
-  ≈tm-mv-inst (eq-axiom ε ι) = {!!} -- define the composition of mv instantiations
+  ≈tm-mv-inst (eq-axiom ε ι) =  mv-inst-congr {!!} -- define the composition of mv instantiations
 
 
   id-action-mv {a = tm-var x} = eq-refl
   id-action-mv {a = tm-meta M ts} = eq-congr-mv λ i → id-action-mv
-  id-action-mv {a = tm-oper f es} = eq-congr λ i → {!!} -- needs an auxiliary function
-    -- where
-    --   id-action-mv-aux :
+  id-action-mv {a = tm-oper f es} = eq-congr λ i → id-action-mv-aux -- needs an auxiliary function
+    where
+      id-action-mv-aux : ∀ {Θ Γ Δ A} {t : Term Θ (Γ ,, Δ) A} → ⊢ Θ ⊕ ((ctx-empty ,, Γ) ,, Δ) ∥ tm-rename (extend-r {Θ = Θ} var-inr) t ≈ tm-rename (rename-assoc-l {Θ = Θ}) (t [ id-M ]M) ⦂ A
+      id-action-mv-aux {t = tm-var (var-inl x)} = eq-refl
+      id-action-mv-aux {t = tm-var (var-inr x)} = eq-refl
+      id-action-mv-aux {t = tm-meta M ts} = eq-congr-mv λ i → id-action-mv-aux
+      id-action-mv-aux {t = tm-oper f es} = eq-congr λ i → {!id-action-mv-aux!}
+
+
+  ∘M-≈aux {t = tm-var x} = eq-refl
+  ∘M-≈aux {t = tm-meta M ts} = {!!}
+  ∘M-≈aux {t = tm-oper f es} = eq-congr λ i → {!!} -- needs an auxiliary function
+
+
+  -- B.
+  term-reassoc-≈ p = {!p!}
+
+  tm-rename-empty-≈ = {!!}
 
 
 
+ -- the lhs and rhs of an equation are equal
 
   eq-axiom-id-aux : ∀ {Θ Γ A} {s t : Term Θ Γ A} → ⊢ Θ ⊕ (ctx-empty ,, Γ) ∥ weakenʳ s ≈ weakenʳ t ⦂ A → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A
   eq-axiom-id-aux p = {!!}
