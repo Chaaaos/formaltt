@@ -184,28 +184,39 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
     → σ ≈s τ
     → extend-sˡ {Θ} {Γ} {Δ} {Ξ} σ ≈s extend-sˡ {Θ} {Γ} {Δ} {Ξ} τ
 
-  --
-  temp : ∀ {Θ Γ Δ Ξ Ψ A} (ρ : _⇒r_ {Θ} Γ Δ)  (σ : _⇒s_ {Θ} Ξ Δ) (t : Term Θ (Γ ,, Ψ) A)
-    → ⊢ Θ ⊕ (Ξ ,, Ψ) ∥ t [ (λ x → (extend-sˡ σ) ((extend-r {Θ} {Γ} {Δ} ρ {Ψ}) x)) ]s ≈ t [ extend-sˡ (λ x → σ (ρ x)) ]s ⦂ A
-  temp ρ σ (tm-var (var-inl x)) = eq-refl
-  temp ρ σ (tm-var (var-inr x)) = eq-refl
-  temp ρ σ (tm-meta M ts) = eq-congr-mv λ i → temp ρ σ (ts i)
-  temp ρ σ (tm-oper f es) = eq-congr (λ i → temp ρ (λ x → weakenˡ (σ x)) {!es i!})
-    
+
+  -- temp2 : ∀ {Θ Γ Δ Ξ Ψ} {ρ : _⇒r_ {Θ} Γ Δ} {σ : _⇒s_ {Θ} Ξ Δ}
+  --   → ((extend-sˡ {Θ} {Ξ} {Δ} {Ψ} σ) s∘r (extend-r {Θ} {Γ} {Δ} ρ {Ψ})) ≈s extend-sˡ (σ s∘r ρ)
+  -- temp2 (var-inl x) = eq-refl
+  -- temp2 (var-inr y) = eq-refl
+
+  -- temp : ∀ {Θ Γ Δ Ξ Ψ A} (ρ : _⇒r_ {Θ} Γ Δ)  (σ : _⇒s_ {Θ} Ξ Δ) (t : Term Θ (Γ ,, Ψ) A)
+  --   → ⊢ Θ ⊕ (Ξ ,, Ψ) ∥ t [ (λ x → (extend-sˡ σ) ((extend-r {Θ} {Γ} {Δ} ρ {Ψ}) x)) ]s ≈ t [ extend-sˡ (λ x → σ (ρ x)) ]s ⦂ A
+  -- temp {Θ} {Γ} {Δ} {Ξ} {Ψ} {A} ρ σ t = subst-congr temp2
+
+
+  temp3 : ∀ {Θ Γ Δ Ξ} (ρ : _⇒r_ {Θ} Δ Ξ) (σ : _⇒s_ {Θ} Δ Γ)
+    → (σ s∘r ρ) ≈s (σ ∘s (r-to-subst ρ))
+  temp3 ρ σ x = r-to-subst-≈
 
   -- substitution commutes with renamings
-  s-comm-r : ∀ {Θ Γ Δ Ξ A} (ρ : _⇒r_ {Θ} Γ Δ)  (σ : _⇒s_ {Θ} Ξ Δ)  (t : Term Θ Γ A)
-    → ⊢ Θ ⊕ Ξ ∥ (t [ ρ ]r) [ σ ]s ≈ t [ (λ x → σ (ρ x)) ]s ⦂ A
-  s-comm-r ρ σ (tm-var x) = eq-refl
-  s-comm-r ρ σ (tm-meta M ts) = eq-congr-mv (λ i → s-comm-r ρ σ (ts i))
-  s-comm-r ρ σ (tm-oper f es) = eq-congr λ i
-    → s-comm-r (extend-r ρ) (extend-sˡ σ) {!es i!}
+  s-comm-r : ∀ {Θ Γ Δ Ξ A} {ρ : _⇒r_ {Θ} Γ Δ} {σ : _⇒s_ {Θ} Ξ Δ} (t : Term Θ Γ A)
+    → ⊢ Θ ⊕ Ξ ∥ (t [ ρ ]r) [ σ ]s ≈ t [ ρ r∘s σ ]s ⦂ A
+  s-comm-r {Θ} {Γ} {Δ} {Ξ} {A} {ρ = ρ} {σ = σ} t = {!!}
 
-  r-comm-s : ∀ {Θ Γ Δ Ξ A} (σ : _⇒s_ {Θ} Δ Γ) (ρ : _⇒r_ {Θ} Δ Ξ) (t : Term Θ Γ A)
-    → ⊢ Θ ⊕ Ξ ∥ (t [ σ ]s) [ ρ ]r ≈ t [ (λ x → (σ x) [ ρ ]r) ]s ⦂ A
-  r-comm-s σ ρ (tm-var x) = eq-refl
-  r-comm-s σ ρ (tm-meta M ts) = eq-congr-mv (λ i → r-comm-s σ ρ (ts i))
-  r-comm-s σ ρ (tm-oper f es) = eq-congr (λ i → r-comm-s (extend-sˡ σ) (extend-r ρ) {!es i!})
+  -- s-comm-r (tm-var x) = eq-refl
+  -- s-comm-r (tm-meta M ts) = eq-congr-mv (λ i → s-comm-r (ts i))
+  -- s-comm-r {Θ} {Γ} {Δ} {Ξ} {A} {ρ = ρ} {σ = σ} (tm-oper f es) = eq-congr λ i → {!tm-oper f es!}
+
+  -- s-comm-r {Θ} {Γ} {Δ} {Ξ} {A} {ρ = ρ} {σ = σ} (tm-oper f es) =
+  --   eq-congr λ i → temp {Θ} {Γ} {Δ} {Ξ} {(arg-bind f i)} {(arg-sort f i)} ρ σ {!es i!}
+
+  -- renaming commutes with substitution
+  -- r-comm-s : ∀ {Θ Γ Δ Ξ A} (σ : _⇒s_ {Θ} Ξ Δ) (ρ : _⇒r_ {Θ} Γ Δ) (t : Term Θ Γ A)
+  --   → ⊢ Θ ⊕ Ξ ∥ (t [ σ ]s) [ ρ ]r ≈ t [ σ s∘r ρ ]s ⦂ A
+  -- r-comm-s σ ρ (tm-var x) = eq-refl
+  -- r-comm-s σ ρ (tm-meta M ts) = eq-congr-mv (λ i → r-comm-s σ ρ (ts i))
+  -- r-comm-s σ ρ (tm-oper f es) = eq-congr (λ i → r-comm-s (extend-sˡ σ) (extend-r ρ) {!es i!})
 
   -----------------------------------------------------------------------------------------------------
 
@@ -239,11 +250,7 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
   term-reassoc-≈ : ∀ {Θ Δ Γ Ξ A} {s t : Term Θ (Γ ,, (Δ ,, Ξ)) A} → ⊢ Θ ⊕ ((Γ ,, Δ) ,, Ξ) ∥ term-reassoc s ≈ term-reassoc t ⦂ A → ⊢ Θ ⊕ (Γ ,, (Δ ,, Ξ)) ∥ s ≈ t ⦂ A
   -- ** Proofs **
 
-  -- B. Lemmas
-  tm-rename-empty-≈ : ∀ {Θ Γ A} {s t : Term Θ (Γ ,, ctx-empty) A} → ⊢ Θ ⊕ (Γ ,, ctx-empty) ∥ s ≈ t ⦂ A → ⊢ Θ ⊕ Γ ∥ tm-rename (rename-ctx-empty-r {Θ = Θ}) s ≈ tm-rename (rename-ctx-empty-r {Θ = Θ}) t ⦂ A
-  term-reassoc-≈ : ∀ {Θ Δ Γ Ξ A} {s t : Term Θ (Γ ,, (Δ ,, Ξ)) A} → ⊢ Θ ⊕ ((Γ ,, Δ) ,, Ξ) ∥ term-reassoc s ≈ term-reassoc t ⦂ A → ⊢ Θ ⊕ (Γ ,, (Δ ,, Ξ)) ∥ s ≈ t ⦂ A
-
-  --==================================================================================================
+    --==================================================================================================
   --∥                                    ====================                                        ∥
   --∥                                    ∥   ** Proofs **   ∥                                        ∥
   --∥                                    ====================                                        ∥
@@ -386,19 +393,6 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
   term-reassoc-≈ p = {!p!}
 
   tm-rename-empty-≈ = {!!}
-
-
-  ∘M-≈aux {t = tm-var x} = eq-refl
-  ∘M-≈aux {t = tm-meta M ts} = {!!}
-  ∘M-≈aux {t = tm-oper f es} = eq-congr λ i → {!!} -- needs an auxiliary function
-
- -- the lhs and rhs of an equation are equal
-
-  -- B.
-  term-reassoc-≈ p = {!p!}
-
-  tm-rename-empty-≈ = {!!}
-
 
   -- the lhs and rhs of an equation are equal
   eq-axiom-id-aux : ∀ {Θ Γ A} {s t : Term Θ Γ A} → ⊢ Θ ⊕ (ctx-empty ,, Γ) ∥ weakenʳ s ≈ weakenʳ t ⦂ A → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A
