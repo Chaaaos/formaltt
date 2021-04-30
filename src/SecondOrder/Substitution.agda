@@ -1,4 +1,4 @@
-{-# OPTIONS --allow-unsolved-metas #-}
+-- {-# OPTIONS --allow-unsolved-metas #-}
 
 open import Agda.Primitive using (lzero; lsuc; _⊔_; Level)
 open import Relation.Unary hiding (_∈_)
@@ -133,10 +133,21 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
   id-M : ∀ {Θ} → mv-inst Θ Θ ctx-empty
   id-M t = tm-meta t (λ i → weakenʳ (tm-var i))
 
-  term-reasoc : ∀ {Ω Δ Γ Ξ A} → Term Ω (ctx-concat Δ (ctx-concat Γ Ξ)) A →  Term Ω (ctx-concat (ctx-concat Δ Γ) Ξ) A
-  term-reasoc {Ω = Ω} = tm-rename (rename-assoc-l {Θ = Ω})
+  term-reassoc : ∀ {Ω Δ Γ Ξ A} → Term Ω (ctx-concat Δ (ctx-concat Γ Ξ)) A →  Term Ω (ctx-concat (ctx-concat Δ Γ) Ξ) A
+  term-reassoc {Ω = Ω} = tm-rename (rename-assoc-l {Θ = Ω})
 
 
   -- composition of metavariable instantiations
   _∘M_ : ∀ {Θ ψ Ω Γ Δ} → Ω ⇒M ψ ⊕ Δ → ψ ⇒M Θ ⊕ Γ → (Ω ⇒M Θ ⊕ (Δ ,, Γ))
-  _∘M_ {Θ = Θ} {ψ = ψ} {Γ = Γ} {Δ = Δ} μ ι = λ M → term-reasoc (ι M [ μ ]M)
+  _∘M_ {Θ = Θ} {ψ = ψ} {Γ = Γ} {Δ = Δ} μ ι = λ M → term-reassoc (ι M [ μ ]M)
+
+-- ** Interactions **
+
+  -- action of a metavariable instantiation on a substitution
+  _M∘s_ : ∀ {Θ ψ Γ Δ Ξ} → ψ ⇒M Θ ⊕ Ξ → _⇒s_ {Θ = Θ} Δ Γ → _⇒s_ {Θ = ψ} (Ξ ,, Δ) (Ξ ,, Γ)
+  (ι M∘s σ) (var-inl x) = tm-var (var-inl x)
+  (ι M∘s σ) (var-inr x) = σ x [ ι ]M
+
+  -- action of a substitution on a metavariable instantiation
+  _s∘M_ : ∀ {Θ ψ Γ Δ} → _⇒s_ {Θ = ψ} Δ Γ → ψ ⇒M Θ ⊕ Γ → ψ ⇒M Θ ⊕ Δ
+  _s∘M_ σ ι M = ι M [ extend-sˡ σ ]s
