@@ -134,13 +134,17 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
 
   syntax mv-inst Θ ψ Γ = ψ ⇒M Θ ⊕ Γ
 
+
   -- action of a metavariable instantiation on terms
   _[_]M : ∀ {Γ : Context} {A : sort} {Θ Ψ : MetaContext} {Δ} → Term Θ Γ A → ∀ (ι : mv-inst Θ Ψ Δ) → Term Ψ (Δ ,, Γ) A
+
+  []M-mv : ∀ {Γ : Context} {Θ Ψ : MetaContext} {Δ} (M : mv Θ) (ts : ∀ {B} (i : mv-arg Θ M B) → Term Θ Γ B) (ι : mv-inst Θ Ψ Δ) → Δ ,, Γ ⇒s Δ ,, mv-arity Θ M
+
+  []M-mv M ts ι (var-inl x) = tm-var (var-inl x)
+  []M-mv M ts ι (var-inr x) =  (ts x) [ ι ]M
+
   (tm-var x) [ ι ]M = tm-var (var-inr x)
-  _[_]M {Γ = Γ} {Θ = Θ} {Δ = Δ} (tm-meta M ts) ι = (ι M) [ σ ]s
-    where σ : Δ ,, Γ ⇒s Δ ,, mv-arity Θ M
-          σ (var-inl x) = tm-var (var-inl x)
-          σ (var-inr x) =  (ts x) [ ι ]M
+  _[_]M {Γ = Γ} {Θ = Θ} {Δ = Δ} (tm-meta M ts) ι = (ι M) [ []M-mv M ts ι ]s
   _[_]M {Ψ = Ψ} (tm-oper f es) ι = tm-oper f (λ i → tm-rename (rename-assoc-l {Θ = Ψ}) (es i [ ι ]M) )
 
   infixr 6 _[_]M
@@ -148,10 +152,6 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
   -- the identity metavariable instantiation
   id-M : ∀ {Θ} → mv-inst Θ Θ ctx-empty
   id-M t = tm-meta t (λ i → weakenʳ (tm-var i))
-
-  term-reassoc : ∀ {Ω Δ Γ Ξ A} → Term Ω (ctx-concat Δ (ctx-concat Γ Ξ)) A →  Term Ω (ctx-concat (ctx-concat Δ Γ) Ξ) A
-  term-reassoc {Ω = Ω} = tm-rename (rename-assoc-l {Θ = Ω})
-
 
   -- composition of metavariable instantiations
   _∘M_ : ∀ {Θ ψ Ω Γ Δ} → Ω ⇒M ψ ⊕ Δ → ψ ⇒M Θ ⊕ Γ → (Ω ⇒M Θ ⊕ (Δ ,, Γ))
@@ -167,3 +167,9 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
   -- action of a substitution on a metavariable instantiation
   _s∘M_ : ∀ {Θ ψ Γ Δ} → _⇒s_ {Θ = ψ} Δ Γ → ψ ⇒M Θ ⊕ Γ → ψ ⇒M Θ ⊕ Δ
   _s∘M_ σ ι M = ι M [ extend-sˡ σ ]s
+
+  -- action of a renaming on a metavariable instantiation
+  _r∘M_ : ∀ {Θ ψ Δ Ξ} → ψ ⇒M Θ ⊕ Ξ → _⇒r_ {Θ = Θ} Ξ Δ → ψ ⇒M Θ ⊕ Δ
+  _r∘M_ {Θ = Θ} ι ρ M = tm-rename (extend-r {Θ = Θ} ρ) (ι M)
+
+
