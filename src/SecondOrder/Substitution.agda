@@ -21,6 +21,7 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
 
     -- ** Renamings **
 
+      -- a renaming is a morphism between scopes
       -- renaming
       _⇒r_ : ∀ (Γ Δ : Context) → Set ℓs
       Γ ⇒r Δ = ∀ {A} → A ∈ Γ → A ∈ Δ
@@ -28,7 +29,7 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
       -- extending a renaming
       extend-r : ∀ {Γ Δ} → Γ ⇒r Δ → ∀ {Ξ} → Γ ,, Ξ ⇒r Δ ,, Ξ
       extend-r ρ (var-inl x) = var-inl (ρ x)
-      extend-r ρ (var-inr x) = var-inr x
+      extend-r ρ (var-inr y) = var-inr y
 
       -- the identity renaming
       id-r : ∀ {Γ : Context} → Γ ⇒r Γ
@@ -61,6 +62,12 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
       rename-assoc-l (var-inr (var-inl y)) = var-inl (var-inr y)
       rename-assoc-l (var-inr (var-inr z)) = var-inr z
 
+      -- apply the reassociation renaming on terms
+      term-reassoc : ∀ {Δ Γ Ξ A}
+        → Term Θ (ctx-concat Δ (ctx-concat Γ Ξ)) A
+        → Term Θ (ctx-concat (ctx-concat Δ Γ) Ξ) A
+      term-reassoc = tm-rename rename-assoc-l
+
       -- the empty context is the unit
       rename-ctx-empty-r : ∀ {Γ} → Γ ,, ctx-empty ⇒r Γ
       rename-ctx-empty-r (var-inl x) = x
@@ -72,6 +79,10 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
       weakenʳ : ∀ {Γ Δ A} → Term Θ Δ A → Term Θ (Γ ,, Δ) A
       weakenʳ = tm-rename var-inr
 
+      -- this is probably useless to have a name for
+      -- but it allows us to use the extended renaming as a fuction from terms to terms
+      app-extend-r : ∀ {Γ Δ Ξ A} → Γ ⇒r Δ → Term Θ (Γ ,, Ξ) A → Term Θ (Δ ,, Ξ) A
+      app-extend-r ρ t = t [ extend-r ρ ]r
 
     -- ** Substitutions **
 
@@ -102,12 +113,17 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
       id-s : ∀ {Γ : Context} → Γ ⇒s Γ
       id-s = tm-var
 
+      -- application of extension
+      -- this is probably useless to have a name for, but it does give a way to make a
+      -- function to go from Terms to Terms
+      app-extend-sˡ : ∀ {Γ Δ Ξ A} → Γ ⇒s Δ → Term Θ (Δ ,, Ξ) A → Term Θ (Γ ,, Ξ) A
+      app-extend-sˡ σ t = t [ extend-sˡ σ ]s
+
       -- composition of substitutions
       _∘s_ : ∀ {Γ Δ Θ : Context} → Δ ⇒s Θ → Γ ⇒s Δ → Γ ⇒s Θ
       (σ ∘s ρ) x = σ x [ ρ ]s
 
       infixl 7 _∘s_
-
 
 
   -- ** Metavariable instantiations **
