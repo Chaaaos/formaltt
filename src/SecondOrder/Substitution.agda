@@ -125,6 +125,13 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
 
       infixl 7 _∘s_
 
+      -- action of a renaming on a substitution
+      _r∘s_ : ∀ {Γ Δ Ξ} → Γ ⇒r Δ → Ξ ⇒s Δ → Ξ ⇒s Γ
+      (ρ r∘s σ) x = σ (ρ x)
+    
+      -- action of a substitution on a renaming
+      _s∘r_ : ∀ {Γ Δ Ξ} → Δ ⇒s Γ → Δ ⇒r Ξ → Ξ ⇒s Γ
+      (σ s∘r ρ) x = (σ x) [ ρ ]r
 
   -- ** Metavariable instantiations **
 
