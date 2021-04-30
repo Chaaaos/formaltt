@@ -190,7 +190,8 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
   temp ρ σ (tm-var (var-inl x)) = eq-refl
   temp ρ σ (tm-var (var-inr x)) = eq-refl
   temp ρ σ (tm-meta M ts) = eq-congr-mv λ i → temp ρ σ (ts i)
-  temp ρ σ (tm-oper f es) = eq-congr (λ i → temp ρ (λ x → weakenˡ (σ x)) {!es i!})
+  temp {Θ} {Γ} {Δ} {Ξ} {Ψ} ρ σ (tm-oper f es) =
+    eq-congr (λ i → temp (extend-r {Θ} {Γ} {Δ} ρ {Ψ}) (extend-sˡ σ) {!es i!})
     
 
   -- substitution commutes with renamings
