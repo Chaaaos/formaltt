@@ -1,9 +1,5 @@
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
-open import Agda.Builtin.Nat
-open import Relation.Binary.PropositionalEquality using (_≡_; refl)
-open import Data.Fin
-
-open import Relation.Binary
+open import Relation.Binary using (Setoid)
 
 import MultiSorted.Context as Context
 
@@ -105,8 +101,6 @@ module MultiSorted.AlgebraicTheory where
       -- equational axiom
       eq-axiom : ∀ (ε : ax) {Γ : Context} (σ : Γ ⇒s ax-ctx ε) →
                  ⊢ Γ ∥ (ax-lhs ε [ σ ]s) ≈ (ax-rhs ε [ σ ]s) ⦂ (ax-sort ε)
-    ≡-⊢-≈ : ∀ {Γ : Context} {A} {s t : Term Γ A} → s ≡ t → ⊢ Γ ∥ s ≈ t ⦂ A
-    ≡-⊢-≈ refl = eq-refl
 
     -- the action of the identity substitution is the identity
     id-action : ∀ {Γ : Context} {A} {a : Term Γ A} → (⊢ Γ ∥ a ≈ (a [ id-s ]s) ⦂ A)

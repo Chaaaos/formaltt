@@ -19,7 +19,7 @@ module MultiSorted.UniversalModel
   open Interpretation.Interpretation ℐ
   open SyntacticCategory T
 
-  𝒰 : Model.Model T ℐ
+  𝒰 : Model.Is-Model T ℐ
   𝒰 =
      record
         { model-eq = λ ε var-var →

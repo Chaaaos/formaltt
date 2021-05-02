@@ -17,7 +17,7 @@ module MultiSorted.Model {o ℓ e ℓt}
 
   -- Model of a theory
 
-  record Model (I : Interpretation.Interpretation Σ cartesian-𝒞) : Set (ℓt ⊔ o ⊔ ℓ ⊔ e) where
+  record Is-Model (I : Interpretation.Interpretation Σ cartesian-𝒞) : Set (ℓt ⊔ o ⊔ ℓ ⊔ e) where
 
     open Theory T
     open Category.Category 𝒞
@@ -50,7 +50,7 @@ module MultiSorted.Model {o ℓ e ℓt}
       ⊢-⊨ (eq-axiom ε σ) = model-resp-[]s {u = ax-lhs ε} {v = ax-rhs ε} (model-eq ε)
 
   -- Every theory has the trivial model, whose carrier is the terminal object
-  Trivial : Model (Interpretation.Trivial Σ cartesian-𝒞)
+  Trivial : Is-Model (Interpretation.Trivial Σ cartesian-𝒞)
   Trivial =
     let open Cartesian.Cartesian cartesian-𝒞 in
     record { model-eq = λ ε → !-unique₂ }
