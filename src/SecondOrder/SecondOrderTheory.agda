@@ -103,6 +103,19 @@ module SecondOrder.SecondOrderTheory {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ
                    ⊢ Θ ⊕ Γ ∥ (tm-rename (rename-ctx-empty-r {Θ = Θ}) (ax-lhs ε [ ι ]M)) ≈
                              (tm-rename (rename-ctx-empty-r {Θ = Θ}) (ax-rhs ε [ ι ]M)) ⦂ (ax-sort ε)
 
+    -- terms and judgemental equality form a setoid
+      eq-setoid : ∀ (Γ : Context) (Θ : MetaContext) (A : sort) → Setoid (lsuc (ℓo ⊔ ℓs ⊔ ℓa )) (lsuc (ℓ ⊔ ℓo ⊔ ℓs ⊔ ℓa))
+      eq-setoid Γ Θ A =
+        record
+          { Carrier = Term Θ Γ A
+          ;  _≈_ = λ s t → (⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A)
+          ; isEquivalence =
+                          record
+                            { refl = eq-refl
+                            ; sym = eq-symm
+                            ; trans = eq-trans
+                            }
+            }
 
       -- equality of renamings
       _≈r_ : ∀ {Γ Δ : Context} {Θ} (σ τ : _⇒r_ {Θ = Θ} Γ Δ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
