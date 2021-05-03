@@ -99,9 +99,9 @@ module SecondOrder.SecondOrderTheory {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ
                     → ⊢ Θ ⊕ Γ ∥ (xs i) ≈ (ys i) ⦂ B)
                     → ⊢ Θ ⊕ Γ ∥  (tm-meta M xs) ≈ (tm-meta M ys) ⦂ (mv-sort Θ M)
         -- equational axiom
-        eq-axiom : ∀ (ε : ax) {Θ : MetaContext} {Γ : Context} (ι : mv-inst (ax-mv-ctx ε) Θ Γ) →
-                   ⊢ Θ ⊕ Γ ∥ (tm-rename (rename-ctx-empty-r {Θ = Θ}) (ax-lhs ε [ ι ]M)) ≈
-                             (tm-rename (rename-ctx-empty-r {Θ = Θ}) (ax-rhs ε [ ι ]M)) ⦂ (ax-sort ε)
+        eq-axiom : ∀ (ε : ax) {Θ : MetaContext} {Γ : Context} (ι : Θ ⇒M (ax-mv-ctx ε) ⊕ Γ) →
+                   ⊢ Θ ⊕ Γ ∥ ( [ (rename-ctx-empty-r {Θ = Θ}) ]r (ax-lhs ε [ ι ]M)) ≈
+                             ([ (rename-ctx-empty-r {Θ = Θ}) ]r (ax-rhs ε [ ι ]M)) ⦂ (ax-sort ε)
 
     -- terms and judgemental equality form a setoid
       eq-setoid : ∀ (Γ : Context) (Θ : MetaContext) (A : sort) → Setoid (lsuc (ℓo ⊔ ℓs ⊔ ℓa )) (lsuc (ℓ ⊔ ℓo ⊔ ℓs ⊔ ℓa))
@@ -118,13 +118,13 @@ module SecondOrder.SecondOrderTheory {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ
             }
 
       -- equality of renamings
-      _≈r_ : ∀ {Γ Δ : Context} {Θ} (σ τ : _⇒r_ {Θ = Θ} Γ Δ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
+      _≈r_ : ∀ {Γ Δ : Context} {Θ} (σ τ : Θ ⊕ Γ ⇒r Δ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
       _≈r_ {Γ} {Δ} {Θ} σ τ = ∀ {A} (x : A ∈ Γ) → ⊢ Θ ⊕ Δ ∥ tm-var (σ x) ≈ tm-var (τ x) ⦂ A
 
       -- equality of substitutions
-      _≈s_ : ∀ {Γ Δ : Context} {Θ} (σ τ : Δ ⇒s Γ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
+      _≈s_ : ∀ {Γ Δ : Context} {Θ} (σ τ : Θ ⊕ Δ ⇒s Γ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
       _≈s_ {Γ} {Δ} {Θ} σ τ = ∀ {A} (x : A ∈ Γ) → ⊢ Θ ⊕ Δ ∥ σ x ≈ τ x ⦂ A
 
       -- equality of metavariable instatiations
-      _≈M_ : ∀ {Γ Θ ψ} (ι μ : mv-inst {Σ = Σ} Θ ψ Γ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
+      _≈M_ : ∀ {Γ Θ ψ} (ι μ : _⇒M_⊕_ {Σ = Σ} ψ Θ Γ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
       _≈M_ {Γ} {Θ} {ψ} ι μ = ∀ (M : mv Θ) → ⊢ ψ ⊕ (Γ ,, mv-arity Θ M) ∥ ι M ≈ μ M ⦂ (mv-sort Θ M)
