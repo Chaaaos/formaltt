@@ -49,7 +49,7 @@ module SingleSorted.Substitution {ℓ} {Σ : Signature} (T : Theory ℓ Σ) wher
   eq-subst (eq-symm ξ) = eq-symm (eq-subst ξ)
   eq-subst (eq-tran ζ ξ) = eq-tran (eq-subst ζ) (eq-subst ξ)
   eq-subst (eq-congr ξ) = eq-congr (λ i → eq-subst (ξ i))
-  eq-subst {σ = σ} (eq-axiom ε ρ) = eq-tran (subst-∘s (eq-lhs ε)) (eq-tran (eq-axiom ε (ρ ∘s σ)) (eq-symm (subst-∘s (eq-rhs ε))))
+  eq-subst {σ = σ} (eq-axiom ε ρ) = eq-tran (subst-∘s (ax-lhs ε)) (eq-tran (eq-axiom ε (ρ ∘s σ)) (eq-symm (subst-∘s (ax-rhs ε))))
 
  -- equivalent substitutions act the same on terms
   equiv-subst : ∀ {Γ Δ : Context} {σ τ : Γ ⇒s Δ} u → σ ≈s τ → Γ ⊢ u [ σ ]s ≈ u [ τ ]s
@@ -62,7 +62,7 @@ module SingleSorted.Substitution {ℓ} {Σ : Signature} (T : Theory ℓ Σ) wher
   equiv-eq-subst p (eq-symm q) = eq-symm  (equiv-eq-subst (symm-subst p) q)
   equiv-eq-subst p (eq-tran q r) = eq-tran (eq-subst q) (equiv-eq-subst p r)
   equiv-eq-subst p (eq-congr ξ) = eq-congr λ i → equiv-eq-subst p (ξ i)
-  equiv-eq-subst {σ = σ} {τ = τ} p (eq-axiom ε θ) = eq-tran (eq-subst (eq-axiom ε θ)) (equiv-subst (eq-rhs ε [ θ ]s) p)
+  equiv-eq-subst {σ = σ} {τ = τ} p (eq-axiom ε θ) = eq-tran (eq-subst (eq-axiom ε θ)) (equiv-subst (ax-rhs ε [ θ ]s) p)
 
   -- the pairing of two substitutions
   ⟨_,_⟩s : ∀ {Γ Δ Θ} (σ : Γ ⇒s Δ) (ρ : Γ ⇒s Θ) → Γ ⇒s (ctx-concat Δ Θ)

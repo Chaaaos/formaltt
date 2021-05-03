@@ -25,20 +25,6 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
   open Theory {ℓ} T
 
 
-  -- terms and judgemental equality form a setoid
-  eq-setoid : ∀ (Γ : Context) (Θ : MetaContext) (A : sort) → Setoid (lsuc (ℓo ⊔ ℓs ⊔ ℓa )) (lsuc (ℓ ⊔ ℓo ⊔ ℓs ⊔ ℓa))
-  eq-setoid Γ Θ A =
-    record
-      { Carrier = Term Θ Γ A
-      ;  _≈_ = λ s t → (⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A)
-      ; isEquivalence =
-                      record
-                        { refl = eq-refl
-                        ; sym = eq-symm
-                        ; trans = eq-trans
-                        }
-        }
-
 
 -- The following theorems are mostly interdependant, so the way we declare them is a bit different
 
@@ -83,7 +69,7 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
   ≈r-extend-r : ∀ {Θ : MetaContext} {Γ Δ Ξ} {σ τ : _⇒r_ {Θ = Θ} Γ Δ}
     → _≈r_ {Γ} {Δ} {Θ} σ τ
     → _≈r_ {Γ ,, Ξ} {Δ ,, Ξ} {Θ} (extend-r {Θ} {Γ} {Δ} σ) (extend-r {Θ} {Γ} {Δ} τ)
-  ≈r-extend-r {σ = σ} {τ = τ} p (var-inl x) = ≈tm-rename (p x)
+  ≈r-extend-r {Θ} {Γ} {Δ} {Ξ} {σ = σ} {τ = τ} p (var-inl x) = ≈tm-rename (p x)
   ≈r-extend-r p (var-inr x) = eq-refl
 
   -- interactions between extensions

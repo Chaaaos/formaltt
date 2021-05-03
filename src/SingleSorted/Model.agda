@@ -24,7 +24,7 @@ module SingleSorted.Model {o ℓ e ℓt}
     open HomReasoning
 
     field
-      model-eq : ∀ (ε : eq) → interp-term (eq-lhs ε) ≈ interp-term (eq-rhs ε)
+      model-eq : ∀ (ε : ax) → interp-term (ax-lhs ε) ≈ interp-term (ax-rhs ε)
 
     -- Soundness of semantics
     module _ where
@@ -46,7 +46,7 @@ module SingleSorted.Model {o ℓ e ℓt}
       model-⊢-≈ (eq-symm ξ) = ⟺ (model-⊢-≈ ξ)
       model-⊢-≈ (eq-tran ξ θ) = (model-⊢-≈ ξ) ○ (model-⊢-≈ θ)
       model-⊢-≈ (eq-congr ξ) = ∘-resp-≈ʳ (unique (λ i → project ○ model-⊢-≈ (eq-symm (ξ i))))
-      model-⊢-≈ (eq-axiom ε σ) = model-resp-[]s {u = eq-lhs ε} {v = eq-rhs ε} (model-eq ε)
+      model-⊢-≈ (eq-axiom ε σ) = model-resp-[]s {u = ax-lhs ε} {v = ax-rhs ε} (model-eq ε)
 
   -- Every theory has the trivial model, whose carrier is the terminal object
   Trivial : Model (Interpretation.Trivial Σ cartesian-𝒞)
