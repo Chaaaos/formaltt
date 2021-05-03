@@ -4,12 +4,14 @@ module SecondOrder.Context {s} (Sort : Set s)  where
 data Context : Set s where
   ctx-empty : Context
   ctx-slot : Sort → Context
-  ctx-concat : Context → Context → Context
+  _,,_ : Context → Context → Context
+-- I don't know it it is a good idea, but I replaced the last constructor "ctx-concat" by "_,,_"
+-- so as to make the rest of the code easier to read
 
 infixl 5 _,,_
 
-_,,_ : Context → Context → Context
-_,,_ = ctx-concat
+-- _,,_ : Context → Context → Context
+-- _,,_ = ctx-concat
 
 infix 4 _∈_
 

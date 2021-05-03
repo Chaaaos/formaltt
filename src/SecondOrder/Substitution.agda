@@ -66,8 +66,8 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
 
       -- apply the reassociation renaming on terms
       term-reassoc : ∀ {Δ Γ Ξ A}
-        → Term Θ (ctx-concat Δ (ctx-concat Γ Ξ)) A
-        → Term Θ (ctx-concat (ctx-concat Δ Γ) Ξ) A
+        → Term Θ (Δ ,, (Γ ,, Ξ)) A
+        → Term Θ ((Δ ,, Γ) ,, Ξ) A
       term-reassoc = [ rename-assoc-l ]r_
 
       -- the empty context is the unit
