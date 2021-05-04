@@ -74,6 +74,9 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
       rename-ctx-empty-r : ∀ {Γ} → Θ ⊕ Γ ,, ctx-empty ⇒r Γ
       rename-ctx-empty-r (var-inl x) = x
 
+      rename-ctx-empty-inv : ∀ {Γ} → Θ ⊕ Γ ⇒r Γ ,, ctx-empty
+      rename-ctx-empty-inv x = var-inl x
+
       -- weakening
       weakenˡ : ∀ {Γ Δ A} → Term Θ Γ A → Term Θ (Γ ,, Δ) A
       weakenˡ = [ var-inl ]r_
@@ -165,10 +168,12 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
   id-M : ∀ {Θ} → Θ ⇒M Θ ⊕ ctx-empty
   id-M t = tm-meta t (λ i → weakenʳ (tm-var i))
 
+  id-M-inv : ∀ {Θ Γ} → Θ ⊕ (ctx-empty ,, Γ) ⇒r Γ
+  id-M-inv (var-inr x) = x
+
   -- composition of metavariable instantiations
   _∘M_ : ∀ {Θ ψ Ω Γ Δ} → Ω ⇒M ψ ⊕ Δ → ψ ⇒M Θ ⊕ Γ → (Ω ⇒M Θ ⊕ (Δ ,, Γ))
   _∘M_ {Θ = Θ} {ψ = ψ} {Γ = Γ} {Δ = Δ} μ ι = λ M → term-reassoc (ι M [ μ ]M)
-
 
 
 
