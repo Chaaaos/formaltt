@@ -12,7 +12,8 @@ open import SecondOrder.Arity
 import SecondOrder.Substitution
 import SecondOrder.SecondOrderSignature as SecondOrderSignature
 import SecondOrder.SecondOrderTheory as SecondOrderTheory
-import SecondOrder.MetaTheoremRS as MetaTheoremRS
+import SecondOrder.MetaTheoremS as MetaTheoremS
+import SecondOrder.MetaTheoremR as MetaTheoremR
 
 module SecondOrder.MetaTheoremMI {ℓ ℓs ℓo ℓa : Level}
                                {𝔸 : Arity}
@@ -24,7 +25,8 @@ module SecondOrder.MetaTheoremMI {ℓ ℓs ℓo ℓa : Level}
   open SecondOrder.Substitution {ℓs} {ℓo} {ℓa} {𝔸} {Σ}
   open SecondOrderTheory {ℓs} {ℓo} {ℓa} {𝔸} {Σ}
   open Theory {ℓ} T
-  open MetaTheoremRS
+  open MetaTheoremS
+  open MetaTheoremR
 
 
   --===================================================================================================
