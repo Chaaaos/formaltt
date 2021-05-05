@@ -3,11 +3,15 @@ open import Agda.Primitive using (lzero; lsuc; _⊔_)
 import SecondOrder.Arity
 import SecondOrder.Context
 
-module SecondOrder.Signature {ℓs ℓo ℓa} (𝔸 : SecondOrder.Arity.Arity) where
+module SecondOrder.Signature
+  ℓs ℓo
+  (𝔸 : SecondOrder.Arity.Arity)
+  where
+
   open SecondOrder.Arity.Arity 𝔸
 
   -- a second-order algebraic signature
-  record Signature : Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa)) where
+  record Signature : Set (lsuc (ℓs ⊔ ℓo)) where
 
     -- a signature consists of a set of sorts and a set of operations
     -- e.g. sorts A, B, C, ... and operations f, g, h

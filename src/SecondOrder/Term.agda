@@ -5,13 +5,13 @@ import SecondOrder.Signature
 import SecondOrder.Metavariable
 
 module SecondOrder.Term
-  ℓs ℓo
-  (𝔸 : SecondOrder.Arity.Arity)
+  {ℓs ℓo}
+  {𝔸 : SecondOrder.Arity.Arity}
   (Σ : SecondOrder.Signature.Signature ℓs ℓo 𝔸)
   where
 
-  open SecondOrder.Metavariable ℓs ℓo 𝔸 Σ
   open SecondOrder.Signature.Signature Σ
+  open SecondOrder.Metavariable Σ
 
   -- The term judgement
   data Term (Θ : MetaContext) : ∀ (Γ : Context) (A : sort) → Set (lsuc (ℓs ⊔ ℓo)) where
