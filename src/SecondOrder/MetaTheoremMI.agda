@@ -84,23 +84,42 @@ module SecondOrder.MetaTheoremMI {ℓ ℓs ℓo ℓa : Level}
                           → ⊢ Θ ⊕ Γ ∥ t ≈ s ⦂ A
                           → ⊢ Θ ⊕ (Γ ,, ctx-empty) ∥ [ rename-ctx-empty-inv {Θ = Θ} ]r t ≈ [ rename-ctx-empty-inv {Θ = Θ} ]r s ⦂ A
   ≈empty-ctx-rename-inv = ≈tm-rename
-  empty-ctx-rename-inv-l : ∀ {Θ Γ A} {t : Term Θ (Γ ,, ctx-empty) A}
-                           → ⊢ Θ ⊕ (Γ ,, ctx-empty) ∥ [ rename-ctx-empty-inv {Θ = Θ} ]r ([ rename-ctx-empty-r {Θ = Θ} ]r t) ≈ t ⦂ A
-  empty-ctx-rename-inv-l {t = tm-var (var-inl x)} = eq-refl
-  empty-ctx-rename-inv-l {t = tm-meta M ts} = eq-congr-mv λ i → empty-ctx-rename-inv-l
-  empty-ctx-rename-inv-l {t = tm-oper f es} = eq-congr λ i → {!!}
 
-  empty-ctx-rename-inv-r : ∀ {Θ Γ A} {t : Term Θ Γ A}
+
+  extend-empty-ctx-renameˡ : ∀ {Θ Γ Δ A} {t : Term Θ ((Γ ,, ctx-empty) ,, Δ) A}
+                           → ⊢ Θ ⊕ ((Γ ,, ctx-empty) ,, Δ) ∥ ([ extend-r {Θ = Θ} (rename-ctx-empty-inv {Θ = Θ}) ]r ([ extend-r {Θ = Θ} (rename-ctx-empty-r {Θ = Θ})]r t)) ≈ t ⦂ A
+  extend-empty-ctx-renameˡ {t = tm-var (var-inl x)} = {!!}
+  extend-empty-ctx-renameˡ {t = tm-var (var-inr x)} = eq-refl
+  extend-empty-ctx-renameˡ {t = tm-meta M ts} = eq-congr-mv λ i → extend-empty-ctx-renameˡ
+  extend-empty-ctx-renameˡ {t = tm-oper f es} = eq-congr λ i → eq-trans {!!} {!!}
+
+
+  empty-ctx-rename-invˡ : ∀ {Θ Γ A} {t : Term Θ (Γ ,, ctx-empty) A}
+                           → ⊢ Θ ⊕ (Γ ,, ctx-empty) ∥ [ rename-ctx-empty-inv {Θ = Θ} ]r ([ rename-ctx-empty-r {Θ = Θ} ]r t) ≈ t ⦂ A
+  empty-ctx-rename-invˡ {t = tm-var (var-inl x)} = eq-refl
+  empty-ctx-rename-invˡ {t = tm-meta M ts} = eq-congr-mv λ i → empty-ctx-rename-invˡ
+  empty-ctx-rename-invˡ {t = tm-oper f es} = eq-congr λ i → extend-empty-ctx-renameˡ
+
+
+  extend-empty-ctx-renameʳ : ∀ {Θ Γ Δ A} {t : Term Θ (Γ ,, Δ) A}
+                           → ⊢ Θ ⊕ (Γ ,, Δ) ∥ ([ extend-r {Θ = Θ} (rename-ctx-empty-r {Θ = Θ})]r ([ extend-r {Θ = Θ} (rename-ctx-empty-inv {Θ = Θ}) ]r t)) ≈ t ⦂ A
+  extend-empty-ctx-renameʳ {t = tm-var (var-inl x)} = {!!}
+  extend-empty-ctx-renameʳ {t = tm-var (var-inr x)} = eq-refl
+  extend-empty-ctx-renameʳ {t = tm-meta M ts} = eq-congr-mv λ i → extend-empty-ctx-renameʳ
+  extend-empty-ctx-renameʳ {t = tm-oper f es} = eq-congr λ i → {!!}
+
+
+  empty-ctx-rename-invʳ : ∀ {Θ Γ A} {t : Term Θ Γ A}
                            → ⊢ Θ ⊕ Γ ∥ [ rename-ctx-empty-r {Θ = Θ} ]r ([ rename-ctx-empty-inv {Θ = Θ} ]r t) ≈ t ⦂ A
-  empty-ctx-rename-inv-r {t = tm-var x} = eq-refl
-  empty-ctx-rename-inv-r {t = tm-meta M ts} = eq-congr-mv λ i → empty-ctx-rename-inv-r
-  empty-ctx-rename-inv-r {t = tm-oper f es} = eq-congr λ i → {!!}
+  empty-ctx-rename-invʳ {t = tm-var x} = eq-refl
+  empty-ctx-rename-invʳ {t = tm-meta M ts} = eq-congr-mv λ i → empty-ctx-rename-invʳ
+  empty-ctx-rename-invʳ {t = tm-oper f es} = eq-congr λ i → extend-empty-ctx-renameʳ
 
   ≈tm-r∘M-aux : ∀ {ψ Ω Γ Δ A} {μ : Ω ⇒M ψ ⊕ Γ} (t : Term ψ (Δ ,, ctx-empty) A)
                 → ⊢ Ω ⊕ (Γ ,, Δ) ∥ (([ rename-ctx-empty-r {Θ = ψ} ]r (t)) [ μ ]M) ≈ ([ rename-ctx-empty-r {Θ = Ω} ]r term-reassoc (t [ μ ]M)) ⦂ A
   ≈tm-r∘M-aux (tm-var (var-inl x)) = eq-refl
-  ≈tm-r∘M-aux {μ = μ} (SecondOrderSignature.Signature.tm-meta M ts) = {!!}
-  ≈tm-r∘M-aux (SecondOrderSignature.Signature.tm-oper f es) = eq-congr λ i → {!!}
+  ≈tm-r∘M-aux {μ = μ} (tm-meta M ts) = {!!}
+  ≈tm-r∘M-aux (tm-oper f es) = eq-congr λ i → {!!}
 
   ≈tm-r∘M : ∀ {Θ ψ Ω Γ Δ A} {t : Term Θ ctx-empty A} {ι : ψ ⇒M Θ ⊕ Δ} {μ : Ω ⇒M ψ ⊕ Γ}
             → ⊢ Ω ⊕ (Γ ,, Δ)∥ (([ (rename-ctx-empty-r {Θ = ψ}) ]r (t [ ι ]M)) [ μ ]M) ≈ [ (rename-ctx-empty-r {Θ = Ω}) ]r (t [ μ ∘M ι ]M) ⦂ A
@@ -132,10 +151,10 @@ module SecondOrder.MetaTheoremMI {ℓ ℓs ℓo ℓa : Level}
                       ⊢ Θ ⊕ Γ ∥ [ rename-ctx-empty-r {Θ = Θ} ]r t ≈ [ rename-ctx-empty-r {Θ = Θ} ]r s ⦂ A
                       → ⊢ Θ ⊕ (Γ ,, ctx-empty) ∥ t ≈ s ⦂ A
   ≈empty-ctx-rename p = eq-trans
-                          (eq-symm empty-ctx-rename-inv-l)
+                          (eq-symm empty-ctx-rename-invˡ)
                           (eq-trans
                             (≈empty-ctx-rename-inv p)
-                            empty-ctx-rename-inv-l)
+                            empty-ctx-rename-invˡ)
 
 
 
@@ -163,9 +182,6 @@ module SecondOrder.MetaTheoremMI {ℓ ℓs ℓo ℓa : Level}
       id-action-mv-aux {t = tm-oper f es} = eq-congr λ i → {!id-action-mv-aux!}
 
 
-  -- tm-reassoc-[]M :  ∀ {Θ ψ Ω Γ Δ Ξ A} {t : Term Θ Ξ A} (ι : ψ ⇒M Θ ⊕ (Δ ,, Γ)) → Ω ⇒M ψ ⊕ Δ → ψ ⇒M Θ ⊕ Γ → (Ω ⇒M Θ ⊕ (Δ ,, Γ)) → ⊢ ψ ⊕ ((Δ ,, Γ) ,, Ξ) ∥ t [ (λ M → term-reassoc (ι M))]M ≈ term-reassoc (t [ ι ]M) ⦂ A
-  -- tm-reassoc-[]M = ?
-
   ∘M-≈ {t = tm-var x} = eq-refl
   ∘M-≈ {t = tm-meta M ts} = {!!} -- subst-congr {!!}
   ∘M-≈ {t = tm-oper f es} = eq-congr λ i → {!!} -- needs an auxiliary function
@@ -187,8 +203,8 @@ module SecondOrder.MetaTheoremMI {ℓ ℓs ℓo ℓa : Level}
   -- the lhs and rhs of an equation are equal
   ind-M-invˡ : ∀ {Θ Γ A} {t : Term Θ Γ A} → ⊢ Θ ⊕ Γ ∥ [ id-M-inv {Θ = Θ} ]r (t [ id-M ]M) ≈ t ⦂ A
   ind-M-invˡ {t = tm-var x} = eq-refl
-  ind-M-invˡ {t = SecondOrderSignature.Signature.tm-meta M ts} = eq-congr-mv λ i → ind-M-invˡ
-  ind-M-invˡ {t = SecondOrderSignature.Signature.tm-oper f es} = eq-congr {!!}
+  ind-M-invˡ {t = Signature.tm-meta M ts} = eq-congr-mv λ i → ind-M-invˡ
+  ind-M-invˡ {t = tm-oper f es} = eq-congr {!!}
 
   eq-axiom-id-aux : ∀ {Θ Γ A} {s t : Term Θ Γ A} → ⊢ Θ ⊕ (ctx-empty ,, Γ) ∥ s [ id-M ]M ≈ t [ id-M ]M ⦂ A → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A
   eq-axiom-id-aux p = eq-trans (eq-symm ind-M-invˡ) (eq-trans (≈tm-rename p) ind-M-invˡ)

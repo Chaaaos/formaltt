@@ -1,4 +1,4 @@
-{-# OPTIONS --allow-unsolved-metas #-}
+-- {-# OPTIONS --allow-unsolved-metas #-}
 
 open import Agda.Primitive using (lzero; lsuc; _⊔_; Level)
 open import Relation.Unary hiding (_∈_)
@@ -131,10 +131,27 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
     → (σ s∘r ρ) ≈s (σ ∘s (r-to-subst ρ))
   temp3 ρ σ x = r-to-subst-≈
 
+  -- interactions between extensions
+  extend-var-inl : ∀ {Γ Δ Ξ Λ Θ A} (t : Term Θ (Λ ,, Ξ) A) (τ : Θ ⊕ Γ ⇒s Λ)
+    → ⊢ Θ ⊕ ((Γ ,, Δ) ,, Ξ) ∥
+        (([ (extend-r {Θ = Θ} var-inl) ]r t) [ extend-sˡ (extend-sˡ τ) ]s)
+      ≈ ([ (extend-r {Θ = Θ} var-inl) ]r (t [ extend-sˡ τ ]s)) ⦂ A
+
   -- substitution commutes with renamings
   s-comm-r : ∀ {Θ Γ Δ Ξ A} {ρ : Θ ⊕ Γ ⇒r Δ} {σ : Θ ⊕ Ξ ⇒s Δ} (t : Term Θ Γ A)
-    → ⊢ Θ ⊕ Ξ ∥ ([ ρ ]r t) [ σ ]s ≈ t [ ρ r∘s σ ]s ⦂ A
-  s-comm-r {Θ} {Γ} {Δ} {Ξ} {A} {ρ = ρ} {σ = σ} t = {!!}
+             → ⊢ Θ ⊕ Ξ ∥ ([ ρ ]r t) [ σ ]s ≈ t [ ρ r∘s σ ]s ⦂ A
+  s-comm-r {Θ} {Γ} {Δ} {Ξ} {A} {ρ = ρ} {σ = σ} (tm-var x) = eq-refl
+  s-comm-r {Θ} {Γ} {Δ} {Ξ} {ρ = ρ} {σ = σ} (tm-meta M ts) = eq-congr-mv λ i → s-comm-r (ts i)
+  s-comm-r {Θ} {Γ} {Δ} {Ξ} {ρ = ρ} {σ = σ} (tm-oper f es) = eq-congr λ i → s-comm-r-aux (es i)
+    where
+      s-comm-r-aux : ∀ {Θ Γ Δ Ξ Λ A} {ρ : Θ ⊕ Γ ⇒r Δ} {σ : Θ ⊕ Ξ ⇒s Δ} (t : Term Θ (Γ ,, Λ) A)
+                     → ⊢ Θ ⊕ (Ξ ,, Λ) ∥ ([ extend-r {Θ = Θ} ρ ]r t) [ extend-sˡ σ ]s ≈ t [ extend-sˡ (ρ r∘s σ) ]s ⦂ A
+      s-comm-r-aux (tm-var (var-inl x)) = eq-refl
+      s-comm-r-aux (tm-var (var-inr x)) = eq-refl
+      s-comm-r-aux (tm-meta M ts) = eq-congr-mv λ i → s-comm-r-aux (ts i)
+      s-comm-r-aux {Θ = Θ} (tm-oper f es) = eq-congr λ i → eq-trans (extend-var-inl {!!} {!σ!}) {!!}
+
+
 
   -- s-comm-r (tm-var x) = eq-refl
   -- s-comm-r (tm-meta M ts) = eq-congr-mv (λ i → s-comm-r (ts i))
@@ -191,12 +208,22 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
       id-action-aux : ∀ {Θ Γ Ξ A} {t : Term Θ (Γ ,, Ξ) A} → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ t ≈  (t [ id-s ]s) ⦂ A
       id-action-aux = id-action
 
+  s∘M-≈ : ∀ {Θ ψ Γ Δ A} {t : Term Θ ctx-empty A} {σ : ψ ⊕ Δ ⇒s Γ} {ι : ψ ⇒M Θ ⊕ Γ}
+          → ⊢ ψ ⊕ Δ ∥ (([ rename-ctx-empty-r {Θ = ψ} ]r (t [ ι ]M)) [ σ ]s) ≈ ([ rename-ctx-empty-r {Θ = ψ} ]r (t [ σ s∘M ι ]M)) ⦂ A
+  s∘M-≈ {t = tm-meta M ts} = {!!}
+  s∘M-≈ {t = tm-oper f es} = {!!}
+
   ≈tm-subst eq-refl = eq-refl
   ≈tm-subst (eq-symm p) = eq-symm (≈tm-subst p)
   ≈tm-subst (eq-trans p₁ p₂) = eq-trans (≈tm-subst p₁) (≈tm-subst p₂)
   ≈tm-subst (eq-congr x) = eq-congr λ i → ≈tm-subst (x i) -- needs an auxiliary function
   ≈tm-subst (eq-congr-mv ps) = eq-congr-mv λ i → ≈tm-subst (ps i)
-  ≈tm-subst (eq-axiom ε ι) = {!!} -- Should we find a way to "compose" substitution and instantiation so as to get an instatiation ? We also have to take care of the renaming with empty context
+  ≈tm-subst {σ = σ} (eq-axiom ε ι) = eq-trans
+                                       (s∘M-≈ {t = ax-lhs ε})
+                                       (eq-trans
+                                         (eq-axiom ε (σ s∘M ι))
+                                         (eq-symm (s∘M-≈ {t = ax-rhs ε})))
+
 
   ∘s-≈ {t = tm-var x} = eq-refl
   ∘s-≈ {t = tm-meta M ts} = eq-congr-mv λ i → ∘s-≈ {t = ts i}
@@ -217,6 +244,13 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
   ∘s-≈aux {Γ = Γ} {Λ = Λ} {t = tm-var x}  {σ = σ} = ∘s-≈ {Γ = (Γ ,, Λ)} {t = tm-var x} {σ = extend-sˡ σ}
   ∘s-≈aux {t = tm-meta M ts} = eq-congr-mv λ i → ∘s-≈aux {t = ts i}
   ∘s-≈aux {t = tm-oper f es} {σ = σ} {τ = τ} = eq-congr λ i → eq-trans (∘s-≈aux {t = es i}) (subst-congr {t = es i} {σ = extend-sˡ (extend-sˡ σ) ∘s extend-sˡ (extend-sˡ τ)} {τ = extend-sˡ (extend-sˡ σ ∘s extend-sˡ τ)} ∘s-extendˡ)
+
+
+
+  extend-var-inl (tm-var (var-inl x)) τ = ?
+  extend-var-inl (tm-var (var-inr x)) τ = {!!}
+  extend-var-inl (tm-meta M ts) τ = {!!}
+  extend-var-inl (tm-oper f es) τ = {!!}
 
 
   ≈s-extend-sˡ p (var-inl x) = ≈s-weakenˡ p

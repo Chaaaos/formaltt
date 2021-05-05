@@ -1,4 +1,4 @@
---{-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --allow-unsolved-metas #-}
 
 open import Agda.Primitive using (lzero; lsuc; _⊔_; Level)
 open import Relation.Unary hiding (_∈_)
@@ -69,12 +69,6 @@ module SecondOrder.MetaTheoremR {ℓ ℓs ℓo ℓa : Level}
   ≈r-extend-r {Θ} {Γ} {Δ} {Ξ} {σ = σ} {τ = τ} p (var-inl x) = ≈tm-rename {ρ = var-inl} (p x)
   ≈r-extend-r p (var-inr x) = eq-refl
 
-  -- interactions between extensions
-  extend-var-inl : ∀ {Γ Δ Ξ Λ Θ A} (t : Term Θ (Λ ,, Ξ) A) (τ : Θ ⊕ Γ ⇒s Λ)
-    → ⊢ Θ ⊕ ((Γ ,, Δ) ,, Ξ) ∥
-        (([ (extend-r {Θ = Θ} var-inl) ]r t) [ extend-sˡ (extend-sˡ τ) ]s)
-      ≈ ([ (extend-r {Θ = Θ} var-inl) ]r (t [ extend-sˡ τ ]s)) ⦂ A
-
   -- auxiliary function for id-action-r, with extended context
   id-action-r-aux : ∀ {Θ Γ Ξ A} {a : Term Θ (Γ ,, Ξ) A}
     → (⊢ Θ ⊕ (Γ ,, Ξ) ∥ a ≈ ([ (id-r {Θ = Θ}) ]r a) ⦂ A)
@@ -84,6 +78,9 @@ module SecondOrder.MetaTheoremR {ℓ ℓs ℓo ℓa : Level}
     → ⊢ Θ ⊕ (Γ ,, Ξ) ∥
          tm-var (extend-r {Θ} {Γ} {Γ} (id-r {Θ = Θ} {Γ = Γ}) {Ξ} a)
        ≈ tm-var (id-r {Θ = Θ} {Γ = Γ ,, Ξ} a) ⦂ A
+
+  -- -- extending two time is like extending only one time
+  -- extend-r² : ∀ {Θ Γ Δ Ξ Λ A} {s t ∈ Term Θ ((Γ ,, Ξ) ,, Λ)}
 
 
 
@@ -99,12 +96,22 @@ module SecondOrder.MetaTheoremR {ℓ ℓs ℓo ℓa : Level}
   r-congr {t = tm-meta M ts} p = eq-congr-mv λ i → r-congr p
   r-congr {t = tm-oper f es} p = eq-congr λ i → r-congr (≈r-extend-r p)
 
+
+  r∘M-≈ : ∀ {Θ ψ Γ Δ A} {t : Term Θ ctx-empty A} {ρ : ψ ⊕ Γ ⇒r Δ} {ι : ψ ⇒M Θ ⊕ Γ}
+          → ⊢ ψ ⊕ Δ ∥ ([ ρ ]r ([ rename-ctx-empty-r {Θ = ψ} ]r (t [ ι ]M))) ≈ ([ rename-ctx-empty-r {Θ = ψ} ]r (t [ ρ r∘M ι ]M)) ⦂ A
+  r∘M-≈ = {!!}
+
+
   ≈tm-rename eq-refl = eq-refl
   ≈tm-rename (eq-symm p) = eq-symm (≈tm-rename p)
   ≈tm-rename (eq-trans p₁ p₂) = eq-trans (≈tm-rename p₁) (≈tm-rename p₂)
   ≈tm-rename (eq-congr p) = eq-congr λ i → ≈tm-rename (p i)
   ≈tm-rename (eq-congr-mv p) = eq-congr-mv λ i → ≈tm-rename (p i)
-  ≈tm-rename {ρ = ρ} (eq-axiom ε ι) = {!!} -- I have no idea how one could solve this for the moment
+  ≈tm-rename {ρ = ρ} (eq-axiom ε ι) = eq-trans
+                                        (r∘M-≈ {t = ax-lhs ε})
+                                        (eq-trans
+                                          (eq-axiom ε (ρ r∘M ι))
+                                          (eq-symm (r∘M-≈ {t = ax-rhs ε})))
 
   ∘r-≈ {t = tm-var x} = eq-refl
   ∘r-≈ {t = tm-meta M ts} = eq-congr-mv λ i → ∘r-≈
@@ -117,12 +124,8 @@ module SecondOrder.MetaTheoremR {ℓ ℓs ℓo ℓa : Level}
   -- B.
   ≈s-weakenˡ {x = x} p = ≈tm-rename (p x)
 
-  extend-var-inl (tm-var (var-inl x)) τ = {!eq-refl!}
-  extend-var-inl (tm-var (var-inr x)) τ = {!!}
-  extend-var-inl (tm-meta M ts) τ = {!!}
-  extend-var-inl (tm-oper f es) τ = {!!}
-
   id-action-r-aux = id-action-r
 
   id-r-extend {a = var-inl a} = eq-refl
   id-r-extend {a = var-inr a} = eq-refl
+

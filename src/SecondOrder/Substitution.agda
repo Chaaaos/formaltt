@@ -189,7 +189,7 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
   _s∘M_ σ ι M = ι M [ extend-sˡ σ ]s
 
   -- action of a renaming on a metavariable instantiation
-  _r∘M_ : ∀ {Θ ψ Δ Ξ} → ψ ⇒M Θ ⊕ Ξ → Θ ⊕ Ξ ⇒r Δ → ψ ⇒M Θ ⊕ Δ
-  _r∘M_ {Θ = Θ} ι ρ M = [ (extend-r {Θ = Θ} ρ) ]r (ι M)
+  _r∘M_ : ∀ {Θ ψ Δ Ξ} → Θ ⊕ Ξ ⇒r Δ → ψ ⇒M Θ ⊕ Ξ → ψ ⇒M Θ ⊕ Δ
+  _r∘M_ {Θ = Θ} ρ ι M = [ (extend-r {Θ = Θ} ρ) ]r (ι M)
 
 
