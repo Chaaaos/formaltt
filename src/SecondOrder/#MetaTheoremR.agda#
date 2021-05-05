@@ -117,7 +117,7 @@ module SecondOrder.MetaTheoremR {ℓ ℓs ℓo ℓa : Level}
   -- B.
   ≈s-weakenˡ {x = x} p = ≈tm-rename (p x)
 
-  extend-var-inl (tm-var (var-inl x)) τ = {!eq-refl!}
+  extend-var-inl (tm-var (var-inl x)) τ = {!!}
   extend-var-inl (tm-var (var-inr x)) τ = {!!}
   extend-var-inl (tm-meta M ts) τ = {!!}
   extend-var-inl (tm-oper f es) τ = {!!}
