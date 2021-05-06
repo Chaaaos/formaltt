@@ -70,6 +70,11 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
         → Term Θ ((Δ ,, Γ) ,, Ξ) A
       term-reassoc = [ rename-assoc-l ]r_
 
+      term-reassoc-inv : ∀ {Δ Γ Ξ A}
+        → Term Θ ((Δ ,, Γ) ,, Ξ) A
+        → Term Θ (Δ ,, (Γ ,, Ξ)) A
+      term-reassoc-inv = [ rename-assoc-r ]r_
+
       -- the empty context is the unit
       rename-ctx-empty-r : ∀ {Γ} → Θ ⊕ Γ ,, ctx-empty ⇒r Γ
       rename-ctx-empty-r (var-inl x) = x

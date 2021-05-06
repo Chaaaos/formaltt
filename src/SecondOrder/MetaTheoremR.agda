@@ -69,6 +69,14 @@ module SecondOrder.MetaTheoremR {ℓ ℓs ℓo ℓa : Level}
   ≈r-extend-r {Θ} {Γ} {Δ} {Ξ} {σ = σ} {τ = τ} p (var-inl x) = ≈tm-rename {ρ = var-inl} (p x)
   ≈r-extend-r p (var-inr x) = eq-refl
 
+
+  extend-weaken : ∀ {Θ Γ Δ Ξ A} {σ : Θ ⊕ Γ ⇒r Δ} {t : Term Θ Γ A}
+    → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ [ extend-r {Θ = Θ} σ ]r (weakenˡ t) ≈ weakenˡ ( [ σ ]r t) ⦂ A
+  extend-weaken {t = tm-var x} = eq-refl
+  extend-weaken {t = tm-meta M ts} = eq-congr-mv λ i → extend-weaken
+  extend-weaken {t = tm-oper f es} = eq-congr (λ i → {!!})
+
+
   -- auxiliary function for id-action-r, with extended context
   id-action-r-aux : ∀ {Θ Γ Ξ A} {a : Term Θ (Γ ,, Ξ) A}
     → (⊢ Θ ⊕ (Γ ,, Ξ) ∥ a ≈ ([ (id-r {Θ = Θ}) ]r a) ⦂ A)
@@ -79,9 +87,19 @@ module SecondOrder.MetaTheoremR {ℓ ℓs ℓo ℓa : Level}
          tm-var (extend-r {Θ} {Γ} {Γ} (id-r {Θ = Θ} {Γ = Γ}) {Ξ} a)
        ≈ tm-var (id-r {Θ = Θ} {Γ = Γ ,, Ξ} a) ⦂ A
 
-  -- -- extending two time is like extending only one time
-  -- extend-r² : ∀ {Θ Γ Δ Ξ Λ A} {s t ∈ Term Θ ((Γ ,, Ξ) ,, Λ)}
+  -- extending a composition is like extending each function and then compose
+  extend-∘r : ∀ {Θ Γ Δ Ξ Λ A} {t : Term Θ Γ A} {ρ : Θ ⊕ Γ ⇒r Δ} {ν : Θ ⊕ Δ ⇒r Ξ}
+              → ⊢ Θ ⊕ (Ξ ,, Λ) ∥ [ extend-r {Θ = Θ} ν ]r ([ extend-r {Θ = Θ} ρ ]r (weakenˡ t)) ≈ [ extend-r {Θ = Θ} ( _∘r_ {Θ = Θ} ν ρ) ]r (weakenˡ t) ⦂ A
+  extend-∘r {t = SecondOrderSignature.Signature.tm-var x} = eq-refl
+  extend-∘r {t = SecondOrderSignature.Signature.tm-meta M ts} = eq-congr-mv λ i → extend-∘r
+  extend-∘r {t = SecondOrderSignature.Signature.tm-oper f es} = eq-congr λ i → {!!}
 
+  extend-∘r' : ∀ {Θ Γ Δ Ξ Λ A} {t : Term Θ (Γ ,, Λ) A} {ρ : Θ ⊕ Γ ⇒r Δ} {ν : Θ ⊕ Δ ⇒r Ξ}
+              → ⊢ Θ ⊕ (Ξ ,, Λ) ∥ [ extend-r {Θ = Θ} ν ]r ([ extend-r {Θ = Θ} ρ ]r t) ≈ [ extend-r {Θ = Θ} ( _∘r_ {Θ = Θ} ν ρ) ]r t ⦂ A
+  extend-∘r' {t = SecondOrderSignature.Signature.tm-var (var-inl x)} = eq-refl
+  extend-∘r' {t = SecondOrderSignature.Signature.tm-var (var-inr x)} = eq-refl
+  extend-∘r' {t = SecondOrderSignature.Signature.tm-meta M ts} = eq-congr-mv (λ i → extend-∘r')
+  extend-∘r' {t = SecondOrderSignature.Signature.tm-oper f es} = eq-congr (λ i → {!!})
 
 
   --==================================================================================================

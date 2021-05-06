@@ -125,6 +125,10 @@ module SecondOrder.SecondOrderTheory {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ
       _≈s_ : ∀ {Γ Δ : Context} {Θ} (σ τ : Θ ⊕ Δ ⇒s Γ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
       _≈s_ {Γ} {Δ} {Θ} σ τ = ∀ {A} (x : A ∈ Γ) → ⊢ Θ ⊕ Δ ∥ σ x ≈ τ x ⦂ A
 
-      -- equality of metavariable instatiations
+      -- equality of metavariable instantiations
       _≈M_ : ∀ {Γ Θ ψ} (ι μ : _⇒M_⊕_ {Σ = Σ} ψ Θ Γ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
       _≈M_ {Γ} {Θ} {ψ} ι μ = ∀ (M : mv Θ) → ⊢ ψ ⊕ (Γ ,, mv-arity Θ M) ∥ ι M ≈ μ M ⦂ (mv-sort Θ M)
+
+      -- propositional equality implies judgemental equality
+      ≡-to-≈ : ∀ {Θ Γ A} {s t : Term Θ Γ A} → s ≡ t → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A
+      ≡-to-≈ refl = eq-refl

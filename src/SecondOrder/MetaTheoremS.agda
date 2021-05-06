@@ -1,4 +1,4 @@
--- {-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --allow-unsolved-metas #-}
 
 open import Agda.Primitive using (lzero; lsuc; _⊔_; Level)
 open import Relation.Unary hiding (_∈_)
