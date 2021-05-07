@@ -70,3 +70,7 @@ module SecondOrder.Substitution
     -- action of a substitution on a renaming
     _s∘ʳ_ : ∀ {Γ Δ Ξ} → Θ ⊕ Δ ⇒ˢ Γ → Δ ⇒ʳ Ξ → Θ ⊕ Ξ ⇒ˢ Γ
     σ s∘ʳ ρ = σ ∘ˢ ρ ʳ⃗ˢ
+
+    -- syntactic equality of substitutions
+    _≈ˢ_ : ∀ {Γ Δ} (σ τ : Θ ⊕ Δ ⇒ˢ Γ) → Set (lsuc (ℓs ⊔ ℓo))
+    _≈ˢ_ {Γ} σ τ = ∀ {A} (x : A ∈ Γ) → σ x ≈ τ x

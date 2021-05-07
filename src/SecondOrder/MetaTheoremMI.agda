@@ -43,7 +43,7 @@ module SecondOrder.MetaTheoremMI {ℓ ℓs ℓo ℓa : Level}
 
   -- actions of equal metavariable instantiations are pointwise equal
   mv-inst-congr : ∀ {Θ ψ Γ Δ A} {t : Term Θ Δ A} {I μ : ψ ⇒ⁱ Θ ⊕ Γ}
-                  → I ≈M μ → ⊢ ψ ⊕ (Γ ,, Δ) ∥ t [ I ]ⁱ ≈ t [ μ ]ⁱ ⦂ A
+                  → I ≈ⁱ μ → ⊢ ψ ⊕ (Γ ,, Δ) ∥ t [ I ]ⁱ ≈ t [ μ ]ⁱ ⦂ A
 
   -- action of a metavariable instantiation preserves equality of terms
   ≈tm-mv-inst : ∀ {Θ ψ Γ Δ A} {s t : Term Θ Δ A} {μ : ψ ⇒ⁱ Θ ⊕ Γ}
@@ -64,7 +64,7 @@ module SecondOrder.MetaTheoremMI {ℓ ℓs ℓo ℓa : Level}
 
   []ⁱ-mv-≈ : ∀ {Θ ψ Γ Δ} (M : mv Θ) (xs ys : ∀ {B} (i : mv-arg Θ M B) → Term Θ Γ B)
              (I : ψ ⇒ⁱ Θ ⊕ Δ) → (∀ {B} (i : mv-arg Θ M B) → ⊢ Θ ⊕ Γ ∥ xs i ≈ ys i ⦂ B )
-             → []ⁱ-mv M xs I ≈s []ⁱ-mv M ys I
+             → []ⁱ-mv M xs I ≈ˢ []ⁱ-mv M ys I
   []ⁱ-mv-≈ M xs ys I ps (var-inl x) = eq-refl
   []ⁱ-mv-≈ M xs ys I ps (var-inr x) = ≈tm-mv-inst (ps x)
 
@@ -75,7 +75,7 @@ module SecondOrder.MetaTheoremMI {ℓ ℓs ℓo ℓa : Level}
                    → ⊢ Θ ⊕ (Γ ,, (Δ ,, Ξ)) ∥ s ≈ t ⦂ A
   []ⁱ-mv-congr : ∀ {Θ ψ Γ Δ A} (M : mv Θ) (ts : ∀ {B} (i : mv-arg Θ M B) → Term Θ Γ B)
                  (I μ : ψ ⇒ⁱ Θ ⊕ Δ) (x : A ∈ (Δ ,, mv-arity Θ M))
-                 → I ≈M μ → ⊢ ψ ⊕ (Δ ,, Γ) ∥ []ⁱ-mv M ts I x ≈ []ⁱ-mv M ts μ x ⦂ A
+                 → I ≈ⁱ μ → ⊢ ψ ⊕ (Δ ,, Γ) ∥ []ⁱ-mv M ts I x ≈ []ⁱ-mv M ts μ x ⦂ A
   []ⁱ-mv-congr M ts I μ (var-inl x) p = eq-refl
   []ⁱ-mv-congr M ts I μ (var-inr x) p = mv-inst-congr {t = ts x} p
 
@@ -109,7 +109,7 @@ module SecondOrder.MetaTheoremMI {ℓ ℓs ℓo ℓa : Level}
 
 
 
-  -- mv-inst-congr-mv : ∀ {Θ ψ Γ Δ A} (M : mv Θ) (ts : ∀ {B} (i : mv-arg Θ M B) → Term Θ Γ B)  (I μ : ψ ⇒ⁱ Θ ⊕ Δ) (x : A ∈ (Δ ,, mv-arity Θ M))  → I ≈M μ → ⊢ ψ ⊕ (Δ ,, Γ) ∥ mv-subst-mv {A = A} M ts I x ≈ mv-subst-mv {A = A} M ts μ x ⦂ A
+  -- mv-inst-congr-mv : ∀ {Θ ψ Γ Δ A} (M : mv Θ) (ts : ∀ {B} (i : mv-arg Θ M B) → Term Θ Γ B)  (I μ : ψ ⇒ⁱ Θ ⊕ Δ) (x : A ∈ (Δ ,, mv-arity Θ M))  → I ≈ⁱ μ → ⊢ ψ ⊕ (Δ ,, Γ) ∥ mv-subst-mv {A = A} M ts I x ≈ mv-subst-mv {A = A} M ts μ x ⦂ A
 
   --==================================================================================================
   --∥                                    ====================                                        ∥

@@ -44,10 +44,10 @@ module SecondOrder.Renaming
   rename-assoc (var-inr (var-inl y)) = var-inl (var-inr y)
   rename-assoc (var-inr (var-inr z)) = var-inr z
 
-  -- the empty context is the unit
+  -- the empty context is the right unit
 
-  rename-ctx-empty-r : ∀ {Γ} → Γ ,, ctx-empty ⇒ʳ Γ
-  rename-ctx-empty-r (var-inl x) = x
+  ctx-empty-right-unit : ∀ {Γ} → Γ ,, ctx-empty ⇒ʳ Γ
+  ctx-empty-right-unit (var-inl x) = x
 
   rename-ctx-empty-inv : ∀ {Γ} → Γ ⇒ʳ Γ ,, ctx-empty
   rename-ctx-empty-inv x = var-inl x
@@ -71,3 +71,7 @@ module SecondOrder.Renaming
     -- weakening
     ⇑ʳ : ∀ {Γ Δ A} → Term Θ Γ A → Term Θ (Γ ,, Δ) A
     ⇑ʳ = [ var-inl ]ʳ_
+
+  -- equality of renamings
+  _≡ʳ_ : ∀ {Γ Δ} (σ τ : Γ ⇒ʳ Δ) → Set ℓs
+  _≡ʳ_ {Γ} σ τ = ∀ {A} (x : A ∈ Γ) → σ x ≡ τ x

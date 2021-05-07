@@ -34,11 +34,11 @@ module SecondOrder.Term
   infix 4 _≈_
 
   data _≈_ {Θ : MetaContext} : ∀ {Γ : Context} {A : sort} → Term Θ Γ A → Term Θ Γ A → Set (lsuc (ℓs ⊔ ℓo)) where
-    ≈-≡ : ∀ {Γ A} {t u : Term Θ Γ A} → t ≡ u → t ≈ u
-    ≈-meta : ∀ {Γ} {M : mv Θ} {ts us : ∀ {B} (i : mv-arg Θ M B) → Term Θ Γ B} →
-               (∀ {B} i → ts {B} i ≈ us {B} i) → tm-meta M ts ≈ tm-meta M us
-    ≈-oper : ∀ {Γ} {f : oper} {ds es : ∀ (i : oper-arg f) → Arg Θ Γ (arg-sort f i)  (arg-bind f i)} →
-               (∀ i → ds i ≈ es i) → tm-oper f ds ≈ tm-oper f es
+    ≈-≡ : ∀ {Γ A} {t u : Term Θ Γ A} (ξ : t ≡ u) → t ≈ u
+    ≈-meta : ∀ {Γ} {M : mv Θ} {ts us : ∀ {B} (i : mv-arg Θ M B) → Term Θ Γ B}
+               (ξ : ∀ {B} i → ts {B} i ≈ us {B} i) → tm-meta M ts ≈ tm-meta M us
+    ≈-oper : ∀ {Γ} {f : oper} {ds es : ∀ (i : oper-arg f) → Arg Θ Γ (arg-sort f i)  (arg-bind f i)}
+               (ξ : ∀ i → ds i ≈ es i) → tm-oper f ds ≈ tm-oper f es
 
   ≈-refl : ∀ {Θ Γ A} {t : Term Θ Γ A} → t ≈ t
   ≈-refl = ≈-≡ refl

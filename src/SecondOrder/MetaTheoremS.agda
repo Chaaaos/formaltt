@@ -50,7 +50,7 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
   syntax r-to-subst ρ = ρ ˢ
 
   r-to-subst-⇑ˢ : ∀ {Θ Γ Δ Ξ} {ρ : Θ ⊕ Γ ⇒ʳ Δ}
-    →  _≈s_ {Θ = Θ} (r-to-subst (extendʳ {Θ = Θ} ρ {Ξ = Ξ})) (⇑ˢ (r-to-subst ρ))
+    →  _≈ˢ_ {Θ = Θ} (r-to-subst (extendʳ {Θ = Θ} ρ {Ξ = Ξ})) (⇑ˢ (r-to-subst ρ))
 
   -- For any renaming ρ and term t, it doesn't matter if we act on t with
   -- the renaming ρ or act on t with the substitution induced by ρ
@@ -74,7 +74,7 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
 
   -- actions of equal substitutions are pointwise equal
   subst-congr : ∀ {Θ Γ Δ A} {t : Term Θ Γ A} {σ τ : Θ ⊕ Δ ⇒ˢ Γ}
-    → σ ≈s τ → ⊢ Θ ⊕ Δ ∥ t [ σ ]ˢ ≈  t [ τ ]ˢ ⦂ A
+    → σ ≈ˢ τ → ⊢ Θ ⊕ Δ ∥ t [ σ ]ˢ ≈  t [ τ ]ˢ ⦂ A
 
   -- action of the identity substitution is the identity
   -- Proposition 3.19 (2)
@@ -99,11 +99,11 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
     → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ ⇑ˢ {Θ} {Γ} {Γ} {Ξ} (idˢ {Γ = Γ}) {A} a ≈  idˢ {Γ = Γ ,, Ξ} a ⦂ A
 
   subst-congr-aux : ∀ {Θ Γ Δ Ξ A} {t : Term Θ (Γ ,, Ξ) A} {σ τ : Θ ⊕ Δ ⇒ˢ Γ}
-    → σ ≈s τ → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ t [ ⇑ˢ σ ]ˢ ≈  t [ ⇑ˢ τ ]ˢ ⦂ A
+    → σ ≈ˢ τ → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ t [ ⇑ˢ σ ]ˢ ≈  t [ ⇑ˢ τ ]ˢ ⦂ A
 
   -- extension of substitutions preserve composition
   ∘ˢ-extendˡ : ∀ {Θ Γ Δ Ξ Λ} {σ : Θ ⊕ Δ ⇒ˢ Ξ} {τ : Θ ⊕ Γ ⇒ˢ Δ}
-    → ((⇑ˢ {Γ = Δ} {Δ = Ξ} {Ξ = Λ} σ) ∘ˢ (⇑ˢ τ)) ≈s ⇑ˢ {Γ = Γ} {Δ = Ξ} {Ξ = Λ} (σ ∘ˢ τ)
+    → ((⇑ˢ {Γ = Δ} {Δ = Ξ} {Ξ = Λ} σ) ∘ˢ (⇑ˢ τ)) ≈ˢ ⇑ˢ {Γ = Γ} {Δ = Ξ} {Ξ = Λ} (σ ∘ˢ τ)
 
   ∘ˢ-extendˡ-aux : ∀ {Θ Γ Δ Ξ A} {τ : Θ ⊕ Δ ⇒ˢ Γ} {t : Term Θ Γ A}
     → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ ([ var-inl ]ʳ t) [ ⇑ˢ τ ]ˢ ≈ [ var-inl ]ʳ (t [ τ ]ˢ) ⦂ A
@@ -112,13 +112,13 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
     → ⊢ Θ ⊕ (Ξ ,, Λ) ∥ (t [ ⇑ˢ σ ]ˢ) [ ⇑ˢ τ ]ˢ ≈ (t [ (⇑ˢ σ) ∘ˢ (⇑ˢ τ) ]ˢ) ⦂ A
 
   -- extension of substitutions preserves equality of substitutions
-  ≈s-⇑ˢ : ∀ {Θ Γ Δ Ξ} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
-    → σ ≈s τ
-    → ⇑ˢ {Θ} {Γ} {Δ} {Ξ} σ ≈s ⇑ˢ {Θ} {Γ} {Δ} {Ξ} τ
+  ≈ˢ-⇑ˢ : ∀ {Θ Γ Δ Ξ} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
+    → σ ≈ˢ τ
+    → ⇑ˢ {Θ} {Γ} {Δ} {Ξ} σ ≈ˢ ⇑ˢ {Θ} {Γ} {Δ} {Ξ} τ
 
 
   -- temp2 : ∀ {Θ Γ Δ Ξ Ψ} {ρ : _⇒ʳ_ {Θ} Γ Δ} {σ : _⇒ˢ_ {Θ} Ξ Δ}
-  --   → ((⇑ˢ {Θ} {Ξ} {Δ} {Ψ} σ) s∘ʳ (extendʳ {Θ} {Γ} {Δ} ρ {Ψ})) ≈s ⇑ˢ (σ s∘ʳ ρ)
+  --   → ((⇑ˢ {Θ} {Ξ} {Δ} {Ψ} σ) s∘ʳ (extendʳ {Θ} {Γ} {Δ} ρ {Ψ})) ≈ˢ ⇑ˢ (σ s∘ʳ ρ)
   -- temp2 (var-inl x) = eq-refl
   -- temp2 (var-inr y) = eq-refl
 
@@ -128,7 +128,7 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
 
 
   temp3 : ∀ {Θ Γ Δ Ξ} (ρ : Θ ⊕ Δ ⇒ʳ Ξ) (σ : Θ ⊕ Δ ⇒ˢ Γ)
-    → (σ s∘ʳ ρ) ≈s (σ ∘ˢ (r-to-subst ρ))
+    → (σ s∘ʳ ρ) ≈ˢ (σ ∘ˢ (r-to-subst ρ))
   temp3 ρ σ x = r-to-subst-≈
 
   -- substitution commutes with renamings
@@ -219,10 +219,10 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
   ∘ˢ-≈aux {t = tm-oper f es} {σ = σ} {τ = τ} = eq-oper λ i → eq-trans (∘ˢ-≈aux {t = es i}) (subst-congr {t = es i} {σ = ⇑ˢ (⇑ˢ σ) ∘ˢ ⇑ˢ (⇑ˢ τ)} {τ = ⇑ˢ (⇑ˢ σ ∘ˢ ⇑ˢ τ)} ∘ˢ-extendˡ)
 
 
-  ≈s-⇑ˢ p (var-inl x) = ≈s-⇑ʳ p
-  ≈s-⇑ˢ p (var-inr x) = eq-refl
+  ≈ˢ-⇑ˢ p (var-inl x) = ≈ˢ-⇑ʳ p
+  ≈ˢ-⇑ˢ p (var-inr x) = eq-refl
 
-  subst-congr-aux {Γ = Γ} {Ξ = Ξ} {t = t} p = subst-congr {Γ = Γ ,, Ξ} {t = t} λ x → ≈s-⇑ˢ p x
+  subst-congr-aux {Γ = Γ} {Ξ = Ξ} {t = t} p = subst-congr {Γ = Γ ,, Ξ} {t = t} λ x → ≈ˢ-⇑ˢ p x
 
 
 
@@ -235,5 +235,5 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
 
 
   subst-congr₂ : ∀ {Θ Γ Δ A} {s t : Term Θ Γ A} {σ τ : Θ ⊕ Δ ⇒ˢ Γ}
-    → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → σ ≈s τ → ⊢ Θ ⊕ Δ ∥ s [ σ ]ˢ ≈  t [ τ ]ˢ ⦂ A
+    → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → σ ≈ˢ τ → ⊢ Θ ⊕ Δ ∥ s [ σ ]ˢ ≈  t [ τ ]ˢ ⦂ A
   subst-congr₂ {s = s} pt ps = eq-trans (subst-congr {t = s} ps) (≈tm-subst pt)

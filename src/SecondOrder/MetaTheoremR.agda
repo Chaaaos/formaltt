@@ -39,7 +39,7 @@ module SecondOrder.MetaTheoremR {ℓ ℓs ℓo ℓa : Level}
 
   -- renamings preserve equality of terms
   r-congr : ∀ {Θ Γ Δ A} {t : Term Θ Γ A} {σ τ : Θ ⊕ Γ ⇒ʳ Δ}
-    → _≈r_ {Θ = Θ} σ τ
+    → _≈ʳ_ {Θ = Θ} σ τ
     → ⊢ Θ ⊕ Δ ∥ [ σ ]ʳ t ≈ [ τ ]ʳ t ⦂ A
 
   -- renaming preserves equality of terms
@@ -59,15 +59,15 @@ module SecondOrder.MetaTheoremR {ℓ ℓs ℓo ℓa : Level}
   ------------------------------
 
   -- weakening preserves equality of substitutions
-  ≈s-⇑ʳ : ∀ {Θ Γ Δ Ξ A} {σ τ : Θ ⊕ Δ ⇒ˢ Γ} {x : A ∈ Γ}
-    → σ ≈s τ
+  ≈ˢ-⇑ʳ : ∀ {Θ Γ Δ Ξ A} {σ τ : Θ ⊕ Δ ⇒ˢ Γ} {x : A ∈ Γ}
+    → σ ≈ˢ τ
     → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ ⇑ʳ (σ x) ≈ ⇑ʳ (τ x) ⦂ A
   -- extension preserves equality of renamings
-  ≈r-extendʳ : ∀ {Θ : MetaContext} {Γ Δ Ξ} {σ τ : Θ ⊕ Γ ⇒ʳ Δ}
-    → σ ≈r τ
-    → _≈r_ {Γ ,, Ξ} {Δ ,, Ξ} (extendʳ {Θ} {Γ} {Δ} σ) (extendʳ {Θ} {Γ} {Δ} τ)
-  ≈r-extendʳ {Θ} {Γ} {Δ} {Ξ} {σ = σ} {τ = τ} p (var-inl x) = ≈tm-rename {ρ = var-inl} (p x)
-  ≈r-extendʳ p (var-inr x) = eq-refl
+  ≈ʳ-extendʳ : ∀ {Θ : MetaContext} {Γ Δ Ξ} {σ τ : Θ ⊕ Γ ⇒ʳ Δ}
+    → σ ≈ʳ τ
+    → _≈ʳ_ {Γ ,, Ξ} {Δ ,, Ξ} (extendʳ {Θ} {Γ} {Δ} σ) (extendʳ {Θ} {Γ} {Δ} τ)
+  ≈ʳ-extendʳ {Θ} {Γ} {Δ} {Ξ} {σ = σ} {τ = τ} p (var-inl x) = ≈tm-rename {ρ = var-inl} (p x)
+  ≈ʳ-extendʳ p (var-inr x) = eq-refl
 
   -- interactions between extensions
   extend-var-inl : ∀ {Γ Δ Ξ Λ Θ A} (t : Term Θ (Λ ,, Ξ) A) (τ : Θ ⊕ Γ ⇒ˢ Λ)
@@ -97,7 +97,7 @@ module SecondOrder.MetaTheoremR {ℓ ℓs ℓo ℓa : Level}
   -- A.
   r-congr {t = tm-var x} p = p x
   r-congr {t = tm-meta M ts} p = eq-meta λ i → r-congr p
-  r-congr {t = tm-oper f es} p = eq-oper λ i → r-congr (≈r-extendʳ p)
+  r-congr {t = tm-oper f es} p = eq-oper λ i → r-congr (≈ʳ-extendʳ p)
 
   ≈tm-rename eq-refl = eq-refl
   ≈tm-rename (eq-symm p) = eq-symm (≈tm-rename p)
@@ -115,7 +115,7 @@ module SecondOrder.MetaTheoremR {ℓ ℓs ℓo ℓa : Level}
   id-action-r {a = tm-oper f es} = eq-oper λ i → eq-trans id-action-r-aux (eq-symm (r-congr λ x → idʳ-extend))
 
   -- B.
-  ≈s-⇑ʳ {x = x} p = ≈tm-rename (p x)
+  ≈ˢ-⇑ʳ {x = x} p = ≈tm-rename (p x)
 
   extend-var-inl (tm-var (var-inl x)) τ = {!eq-refl!}
   extend-var-inl (tm-var (var-inr x)) τ = {!!}
