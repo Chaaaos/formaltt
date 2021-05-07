@@ -33,7 +33,7 @@ module SecondOrder.Instantiation
 
   [_]i_ : ∀ {Θ Ψ Γ Δ A} → Ψ ⇒i Θ ⊕ Δ → Term Θ Γ A → Term Ψ (Δ ,, Γ) A
   [ I ]i (tm-var x) = tm-var (var-inr x)
-  [ I ]i (tm-meta M ts) = I M [ (renaming-s var-inl) ⋈s (λ x →  [ I ]i ts x) ]s
+  [ I ]i (tm-meta M ts) = I M [ var-inl ʳ⃗ˢ ⋈ˢ (λ x →  [ I ]i ts x) ]ˢ
   [ I ]i (tm-oper f es) = tm-oper f λ i → term-reassoc ([ I ]i es i)
 
   -- id-i-inv : ∀ {Θ Γ} → (ctx-empty ,, Γ) ⇒ʳ Γ

@@ -78,7 +78,7 @@ module SecondOrder.Equality
   _≈r_ {Γ} {Δ} {Θ} σ τ = ∀ {A} (x : A ∈ Γ) → ⊢ Θ ⊕ Δ ∥ tm-var (σ x) ≈ tm-var (τ x) ⦂ A
 
   -- equality of substitutions
-  _≈s_ : ∀ {Γ Δ : Context} {Θ} (σ τ : Θ ⊕ Δ ⇒s Γ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
+  _≈s_ : ∀ {Γ Δ : Context} {Θ} (σ τ : Θ ⊕ Δ ⇒ˢ Γ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
   _≈s_ {Γ} {Δ} {Θ} σ τ = ∀ {A} (x : A ∈ Γ) → ⊢ Θ ⊕ Δ ∥ σ x ≈ τ x ⦂ A
 
   -- equality of metavariable instatiations

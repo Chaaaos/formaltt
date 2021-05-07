@@ -59,7 +59,7 @@ module SecondOrder.MetaTheoremR {ℓ ℓs ℓo ℓa : Level}
   ------------------------------
 
   -- weakening preserves equality of substitutions
-  ≈s-⇑ʳ : ∀ {Θ Γ Δ Ξ A} {σ τ : Θ ⊕ Δ ⇒s Γ} {x : A ∈ Γ}
+  ≈s-⇑ʳ : ∀ {Θ Γ Δ Ξ A} {σ τ : Θ ⊕ Δ ⇒ˢ Γ} {x : A ∈ Γ}
     → σ ≈s τ
     → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ ⇑ʳ (σ x) ≈ ⇑ʳ (τ x) ⦂ A
   -- extension preserves equality of renamings
@@ -70,10 +70,10 @@ module SecondOrder.MetaTheoremR {ℓ ℓs ℓo ℓa : Level}
   ≈r-extendʳ p (var-inr x) = eq-refl
 
   -- interactions between extensions
-  extend-var-inl : ∀ {Γ Δ Ξ Λ Θ A} (t : Term Θ (Λ ,, Ξ) A) (τ : Θ ⊕ Γ ⇒s Λ)
+  extend-var-inl : ∀ {Γ Δ Ξ Λ Θ A} (t : Term Θ (Λ ,, Ξ) A) (τ : Θ ⊕ Γ ⇒ˢ Λ)
     → ⊢ Θ ⊕ ((Γ ,, Δ) ,, Ξ) ∥
-        (([ (extendʳ {Θ = Θ} var-inl) ]ʳ t) [ extend-sˡ (extend-sˡ τ) ]s)
-      ≈ ([ (extendʳ {Θ = Θ} var-inl) ]ʳ (t [ extend-sˡ τ ]s)) ⦂ A
+        (([ (extendʳ {Θ = Θ} var-inl) ]ʳ t) [ ⇑ˢ (⇑ˢ τ) ]ˢ)
+      ≈ ([ (extendʳ {Θ = Θ} var-inl) ]ʳ (t [ ⇑ˢ τ ]ˢ)) ⦂ A
 
   -- auxiliary function for id-action-r, with extended context
   id-action-r-aux : ∀ {Θ Γ Ξ A} {a : Term Θ (Γ ,, Ξ) A}

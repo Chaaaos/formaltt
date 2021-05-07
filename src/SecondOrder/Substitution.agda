@@ -19,57 +19,54 @@ module SecondOrder.Substitution
 
   -- substitition
 
-  infix 4 _⊕_⇒s_
+  infix 4 _⊕_⇒ˢ_
 
-  _⊕_⇒s_ : ∀ (Θ : MetaContext) (Γ Δ : Context) → Set (lsuc (ℓs ⊔ ℓo))
-  Θ ⊕ Γ ⇒s Δ = ∀ {A} (x : A ∈ Δ) → Term Θ Γ A
+  _⊕_⇒ˢ_ : ∀ (Θ : MetaContext) (Γ Δ : Context) → Set (lsuc (ℓs ⊔ ℓo))
+  Θ ⊕ Γ ⇒ˢ Δ = ∀ {A} (x : A ∈ Δ) → Term Θ Γ A
 
   -- identity substitution
-  id-s : ∀ {Θ Γ} → Θ ⊕ Γ ⇒s Γ
-  id-s = tm-var
+  idˢ : ∀ {Θ Γ} → Θ ⊕ Γ ⇒ˢ Γ
+  idˢ = tm-var
 
   module _ {Θ : MetaContext}  where
 
     -- the join of substitutions
-    infixl 7 _⋈s_
+    infixl 7 _⋈ˢ_
 
-    _⋈s_ : ∀ {Γ Δ Ξ} → Θ ⊕ Γ ⇒s Δ → Θ ⊕ Γ ⇒s Ξ → Θ ⊕ Γ ⇒s Δ ,, Ξ
-    (σ ⋈s τ) (var-inl x) = σ x
-    (σ ⋈s τ) (var-inr y) = τ y
+    _⋈ˢ_ : ∀ {Γ Δ Ξ} → Θ ⊕ Γ ⇒ˢ Δ → Θ ⊕ Γ ⇒ˢ Ξ → Θ ⊕ Γ ⇒ˢ Δ ,, Ξ
+    (σ ⋈ˢ τ) (var-inl x) = σ x
+    (σ ⋈ˢ τ) (var-inr y) = τ y
 
     -- the sum of substitutions
 
-    infixl 8 _+s_
+    infixl 8 _+ˢ_
 
-    _+s_ : ∀ {Γ Γ' Δ Δ'} → Θ ⊕ Γ ⇒s Δ → Θ ⊕ Γ' ⇒s Δ' → Θ ⊕ (Γ ,, Γ') ⇒s Δ ,, Δ'
-    σ +s τ = (λ x → [ var-inl ]ʳ (σ x)) ⋈s (λ y → [ var-inr ]ʳ (τ y))
+    _+ˢ_ : ∀ {Γ Γ' Δ Δ'} → Θ ⊕ Γ ⇒ˢ Δ → Θ ⊕ Γ' ⇒ˢ Δ' → Θ ⊕ (Γ ,, Γ') ⇒ˢ Δ ,, Δ'
+    σ +ˢ τ = (λ x → [ var-inl ]ʳ (σ x)) ⋈ˢ (λ y → [ var-inr ]ʳ (τ y))
 
     -- renaming as a substitution
-    renaming-s : ∀ {Γ Δ} → Δ ⇒ʳ Γ → Θ ⊕ Γ ⇒s Δ
-    renaming-s ρ x = tm-var (ρ x)
+    _ʳ⃗ˢ : ∀ {Γ Δ} → Δ ⇒ʳ Γ → Θ ⊕ Γ ⇒ˢ Δ
+    (ρ ʳ⃗ˢ) x = tm-var (ρ x)
 
     -- extending a substitution
-    extend-sˡ : ∀ {Γ Δ Ξ} → Θ ⊕ Γ ⇒s Δ → Θ ⊕ (Γ ,, Ξ) ⇒s (Δ ,, Ξ)
-    extend-sˡ σ = σ +s id-s
-
-    extend-sʳ : ∀ {Γ Δ Ξ} → Θ ⊕ Γ ⇒s Δ → Θ ⊕ Ξ ,, Γ ⇒s Ξ ,, Δ
-    extend-sʳ σ = id-s +s σ
+    ⇑ˢ : ∀ {Γ Δ Ξ} → Θ ⊕ Γ ⇒ˢ Δ → Θ ⊕ (Γ ,, Ξ) ⇒ˢ (Δ ,, Ξ)
+    ⇑ˢ σ = σ +ˢ idˢ
 
     -- the action of a substitution on a term (contravariant)
-    infixr 6 _[_]s
+    infixr 6 _[_]ˢ
 
-    _[_]s : ∀ {Γ Δ : Context} {A : sort} → Term Θ Δ A → Θ ⊕ Γ ⇒s Δ → Term Θ Γ A
-    (tm-var x) [ σ ]s = σ x
-    (tm-meta M ts) [ σ ]s = tm-meta M (λ i → (ts i) [ σ ]s)
-    (tm-oper f es) [ σ ]s = tm-oper f (λ i → es i [ extend-sˡ σ ]s)
+    _[_]ˢ : ∀ {Γ Δ : Context} {A : sort} → Term Θ Δ A → Θ ⊕ Γ ⇒ˢ Δ → Term Θ Γ A
+    (tm-var x) [ σ ]ˢ = σ x
+    (tm-meta M ts) [ σ ]ˢ = tm-meta M (λ i → (ts i) [ σ ]ˢ)
+    (tm-oper f es) [ σ ]ˢ = tm-oper f (λ i → es i [ ⇑ˢ σ ]ˢ)
 
     -- composition of substitutions
 
-    infixl 7 _∘s_
+    infixl 7 _∘ˢ_
 
-    _∘s_ : ∀ {Γ Δ Ξ : Context} → Θ ⊕ Δ ⇒s Ξ → Θ ⊕ Γ ⇒s Δ → Θ ⊕ Γ ⇒s Ξ
-    (σ ∘s ρ) x = σ x [ ρ ]s
+    _∘ˢ_ : ∀ {Γ Δ Ξ : Context} → Θ ⊕ Δ ⇒ˢ Ξ → Θ ⊕ Γ ⇒ˢ Δ → Θ ⊕ Γ ⇒ˢ Ξ
+    (σ ∘ˢ ρ) x = σ x [ ρ ]ˢ
 
     -- action of a substitution on a renaming
-    _s∘ʳ_ : ∀ {Γ Δ Ξ} → Θ ⊕ Δ ⇒s Γ → Δ ⇒ʳ Ξ → Θ ⊕ Ξ ⇒s Γ
-    σ s∘ʳ ρ = σ ∘s renaming-s ρ
+    _s∘ʳ_ : ∀ {Γ Δ Ξ} → Θ ⊕ Δ ⇒ˢ Γ → Δ ⇒ʳ Ξ → Θ ⊕ Ξ ⇒ˢ Γ
+    σ s∘ʳ ρ = σ ∘ˢ ρ ʳ⃗ˢ
