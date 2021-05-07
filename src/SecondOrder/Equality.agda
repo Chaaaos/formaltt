@@ -1,10 +1,13 @@
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
+open import Relation.Binary using (Setoid)
 
 import SecondOrder.Arity
-import SecondOrder.Context
 import SecondOrder.Signature
 import SecondOrder.Metavariable
+import SecondOrder.Renaming
 import SecondOrder.Term
+import SecondOrder.Substitution
+import SecondOrder.Instantiation
 import SecondOrder.Theory
 
 module SecondOrder.Equality
@@ -15,11 +18,13 @@ module SecondOrder.Equality
   where
 
   open SecondOrder.Metavariable Σ
+  open SecondOrder.Renaming Σ
   open SecondOrder.Term Σ
   open SecondOrder.Signature.Signature Σ
+  open SecondOrder.Instantiation Σ
   open SecondOrder.Theory.Theory 𝕋
 
-  record Equality : Set (lsuc (ℓs ⊔ ℓo)) where
+  record Equation : Set (lsuc (ℓs ⊔ ℓo)) where
     constructor make-eq
     field
       eq-mv-ctx : MetaContext -- metavariable context of an equation
@@ -27,22 +32,24 @@ module SecondOrder.Equality
       eq-sort : sort -- sort of an equation
       eq-lhs : Term eq-mv-ctx eq-ctx eq-sort -- left-hand side
       eq-rhs : Term eq-mv-ctx eq-ctx eq-sort -- right-hand side
+
   infix 5 make-eq
+
   syntax make-eq Θ Γ A s t = Θ ⊕ Γ ∥ s ≈ t ⦂ A
 
   -- The equality judgement
+
   infix 4 ⊢_
-  data ⊢_ : Equality → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa)) where
+
+  data ⊢_ : Equation → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa)) where
     -- general rules
-    eq-refl : ∀ {Θ Γ A} {t : Term Θ Γ A} → ⊢ Θ ⊕ Γ ∥ t ≈ t ⦂ A
-    eq-symm : ∀ {Θ Γ A} {s t : Term Θ Γ A} → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → ⊢ Θ ⊕ Γ ∥ t ≈ s ⦂ A
-    eq-trans : ∀ {Θ Γ A} {s t u : Term Θ Γ A} → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → ⊢ Θ ⊕ Γ ∥ t ≈ u ⦂ A → ⊢ Θ ⊕ Γ ∥ s ≈ u ⦂ A
+    eq-≈ : ∀ {Θ Γ A} {s t : Term Θ Γ A} → s ≈ t → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A
     -- Congruence rule for operations
     -- the premises are: an operation f, two sets of arguments xs, ys of f that give
     -- for each argument of f a term in the extended context with the arguments that f binds
     -- such that xᵢ ≈ yᵢ for each i ∈ oper-arity f
     -- then f xs ≈ f ys (in the appropriate context)
-    eq-congr : ∀ {Γ Θ} {f : oper}
+    eq-oper : ∀ {Γ Θ} {f : oper}
                  {xs ys : ∀ (i : oper-arg f) → Term Θ (Γ ,, arg-bind f i) (arg-sort f i)}
                  → (∀ i → ⊢ Θ ⊕ (Γ ,, arg-bind f i) ∥ (xs i) ≈ (ys i) ⦂ (arg-sort f i))
                  → ⊢ Θ ⊕ Γ ∥  (tm-oper f xs) ≈ (tm-oper f ys) ⦂ (oper-sort f)
@@ -50,37 +57,44 @@ module SecondOrder.Equality
     -- the permises are: a meta-variable M, and two sets of arguments of the appropriate
     -- sorts and arities to apply M, such that xᵢ ≈ yᵢ
     -- then M xs ≈ M ys
-    eq-congr-mv : ∀ {Γ Θ} {M : mv Θ} {xs ys : ∀ {B : sort} (i : mv-arg Θ M B) → Term Θ Γ B}
+    eq-meta : ∀ {Γ Θ} {M : mv Θ} {xs ys : ∀ {B : sort} (i : mv-arg Θ M B) → Term Θ Γ B}
                 → (∀ {B : sort} (i : mv-arg Θ M B)
                 → ⊢ Θ ⊕ Γ ∥ (xs i) ≈ (ys i) ⦂ B)
                 → ⊢ Θ ⊕ Γ ∥  (tm-meta M xs) ≈ (tm-meta M ys) ⦂ (mv-sort Θ M)
     -- equational axiom
-    eq-axiom : ∀ (ε : ax) {Θ : MetaContext} {Γ : Context} (ι : Θ ⇒M (ax-mv-ctx ε) ⊕ Γ) →
-               ⊢ Θ ⊕ Γ ∥ ( [ (rename-ctx-empty-r {Θ = Θ}) ]ʳ (ax-lhs ε [ ι ]M)) ≈
-                         ([ (rename-ctx-empty-r {Θ = Θ}) ]ʳ (ax-rhs ε [ ι ]M)) ⦂ (ax-sort ε)
+    eq-axiom : ∀ (ε : ax) {Θ : MetaContext} {Γ : Context} (I : Θ ⇒ⁱ (ax-mv-ctx ε) ⊕ Γ) →
+               ⊢ Θ ⊕ Γ ∥ ( [ (rename-ctx-empty-r {Θ = Θ}) ]ʳ ([ I ]ⁱ ax-lhs ε)) ≈
+                         ([ (rename-ctx-empty-r {Θ = Θ}) ]ʳ ([ I ]ⁱ ax-rhs ε)) ⦂ (ax-sort ε)
 
-  --  terms and judgemental equality form a setoid
-  eq-setoid : ∀ (Γ : Context) (Θ : MetaContext) (A : sort) → Setoid (lsuc (ℓo ⊔ ℓs ⊔ ℓa )) (lsuc (ℓ ⊔ ℓo ⊔ ℓs ⊔ ℓa))
-  eq-setoid Γ Θ A =
-    record
-      { Carrier = Term Θ Γ A
-      ;  _≈_ = λ s t → (⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A)
-      ; isEquivalence =
-                      record
-                        { refl = eq-refl
-                        ; sym = eq-symm
-                        ; trans = eq-trans
-                        }
-        }
 
-  -- equality of renamings
-  _≈r_ : ∀ {Γ Δ : Context} {Θ} (σ τ : Θ ⊕ Γ ⇒ʳ Δ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
-  _≈r_ {Γ} {Δ} {Θ} σ τ = ∀ {A} (x : A ∈ Γ) → ⊢ Θ ⊕ Δ ∥ tm-var (σ x) ≈ tm-var (τ x) ⦂ A
+  -- eq-refl : ∀ {Θ Γ A} {t : Term Θ Γ A} → ⊢ Θ ⊕ Γ ∥ t ≈ t ⦂ A
+  -- eq-symm : ∀ {Θ Γ A} {s t : Term Θ Γ A} → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → ⊢ Θ ⊕ Γ ∥ t ≈ s ⦂ A
+  -- eq-trans : ∀ {Θ Γ A} {s t u : Term Θ Γ A} → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → ⊢ Θ ⊕ Γ ∥ t ≈ u ⦂ A → ⊢ Θ ⊕ Γ ∥ s ≈ u ⦂ A
 
-  -- equality of substitutions
-  _≈s_ : ∀ {Γ Δ : Context} {Θ} (σ τ : Θ ⊕ Δ ⇒ˢ Γ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
-  _≈s_ {Γ} {Δ} {Θ} σ τ = ∀ {A} (x : A ∈ Γ) → ⊢ Θ ⊕ Δ ∥ σ x ≈ τ x ⦂ A
 
-  -- equality of metavariable instatiations
-  _≈M_ : ∀ {Γ Θ ψ} (ι μ : _⇒M_⊕_ {Σ = Σ} ψ Θ Γ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
-  _≈M_ {Γ} {Θ} {ψ} ι μ = ∀ (M : mv Θ) → ⊢ ψ ⊕ (Γ ,, mv-arity Θ M) ∥ ι M ≈ μ M ⦂ (mv-sort Θ M)
+
+  -- --  terms and judgemental equality form a setoid
+  -- eq-setoid : ∀ (Γ : Context) (Θ : MetaContext) (A : sort) → Setoid (lsuc (ℓo ⊔ ℓs ⊔ ℓa )) (lsuc (ℓ ⊔ ℓo ⊔ ℓs ⊔ ℓa))
+  -- eq-setoid Γ Θ A =
+  --   record
+  --     { Carrier = Term Θ Γ A
+  --     ;  _≈_ = λ s t → (⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A)
+  --     ; isEquivalence =
+  --                     record
+  --                       { refl = eq-refl
+  --                       ; sym = eq-symm
+  --                       ; trans = eq-trans
+  --                       }
+  --       }
+
+  -- -- equality of renamings
+  -- _≈r_ : ∀ {Γ Δ : Context} {Θ} (σ τ : Θ ⊕ Γ ⇒ʳ Δ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
+  -- _≈r_ {Γ} {Δ} {Θ} σ τ = ∀ {A} (x : A ∈ Γ) → ⊢ Θ ⊕ Δ ∥ tm-var (σ x) ≈ tm-var (τ x) ⦂ A
+
+  -- -- equality of substitutions
+  -- _≈s_ : ∀ {Γ Δ : Context} {Θ} (σ τ : Θ ⊕ Δ ⇒ˢ Γ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
+  -- _≈s_ {Γ} {Δ} {Θ} σ τ = ∀ {A} (x : A ∈ Γ) → ⊢ Θ ⊕ Δ ∥ σ x ≈ τ x ⦂ A
+
+  -- -- equality of metavariable instatiations
+  -- _≈M_ : ∀ {Γ Θ ψ} (I μ : _⇒ⁱ_⊕_ {Σ = Σ} ψ Θ Γ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
+  -- _≈M_ {Γ} {Θ} {ψ} I μ = ∀ (M : mv Θ) → ⊢ ψ ⊕ (Γ ,, mv-arity Θ M) ∥ I M ≈ μ M ⦂ (mv-sort Θ M)

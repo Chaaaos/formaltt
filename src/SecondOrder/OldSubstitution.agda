@@ -147,47 +147,47 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
       -- ** Metavariable instantiations **
 
   -- metavariable instantiation
-  _⇒M_⊕_  : MetaContext → MetaContext → Context → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa))
-  ψ ⇒M Θ ⊕ Γ = ∀ (M : mv Θ) → Term ψ (Γ ,, mv-arity Θ M) (mv-sort Θ M)
+  _⇒ⁱ_⊕_  : MetaContext → MetaContext → Context → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa))
+  ψ ⇒ⁱ Θ ⊕ Γ = ∀ (M : mv Θ) → Term ψ (Γ ,, mv-arity Θ M) (mv-sort Θ M)
 
   -- action of a metavariable instantiation on terms
-  _[_]M : ∀ {Γ : Context} {A : sort} {Θ Ψ : MetaContext} {Δ} → Term Θ Γ A → ∀ (ι : Ψ ⇒M Θ ⊕ Δ) → Term Ψ (Δ ,, Γ) A
+  _[_]ⁱ : ∀ {Γ : Context} {A : sort} {Θ Ψ : MetaContext} {Δ} → Term Θ Γ A → ∀ (I : Ψ ⇒ⁱ Θ ⊕ Δ) → Term Ψ (Δ ,, Γ) A
 
-  []M-mv : ∀ {Γ : Context} {Θ Ψ : MetaContext} {Δ} (M : mv Θ) (ts : ∀ {B} (i : mv-arg Θ M B) → Term Θ Γ B) (ι : Ψ ⇒M Θ ⊕ Δ) → Ψ ⊕ Δ ,, Γ ⇒ˢ Δ ,, mv-arity Θ M
+  []ⁱ-mv : ∀ {Γ : Context} {Θ Ψ : MetaContext} {Δ} (M : mv Θ) (ts : ∀ {B} (i : mv-arg Θ M B) → Term Θ Γ B) (I : Ψ ⇒ⁱ Θ ⊕ Δ) → Ψ ⊕ Δ ,, Γ ⇒ˢ Δ ,, mv-arity Θ M
 
-  []M-mv M ts ι (var-inl x) = tm-var (var-inl x)
-  []M-mv M ts ι (var-inr x) =  (ts x) [ ι ]M
+  []ⁱ-mv M ts I (var-inl x) = tm-var (var-inl x)
+  []ⁱ-mv M ts I (var-inr x) =  (ts x) [ I ]ⁱ
 
-  (tm-var x) [ ι ]M = tm-var (var-inr x)
-  _[_]M {Γ = Γ} {Θ = Θ} {Δ = Δ} (tm-meta M ts) ι = (ι M) [ []M-mv M ts ι ]ˢ
-  _[_]M {Ψ = Ψ} (tm-oper f es) ι = tm-oper f (λ i → [ (rename-assoc-l {Θ = Ψ}) ]ʳ (es i [ ι ]M) )
+  (tm-var x) [ I ]ⁱ = tm-var (var-inr x)
+  _[_]ⁱ {Γ = Γ} {Θ = Θ} {Δ = Δ} (tm-meta M ts) I = (I M) [ []ⁱ-mv M ts I ]ˢ
+  _[_]ⁱ {Ψ = Ψ} (tm-oper f es) I = tm-oper f (λ i → [ (rename-assoc-l {Θ = Ψ}) ]ʳ (es i [ I ]ⁱ) )
 
-  infixr 6 _[_]M
+  infixr 6 _[_]ⁱ
 
   -- the identity metavariable instantiation
-  id-M : ∀ {Θ} → Θ ⇒M Θ ⊕ ctx-empty
-  id-M t = tm-meta t (λ i → weakenʳ (tm-var i))
+  idⁱ : ∀ {Θ} → Θ ⇒ⁱ Θ ⊕ ctx-empty
+  idⁱ t = tm-meta t (λ i → weakenʳ (tm-var i))
 
-  id-M-inv : ∀ {Θ Γ} → Θ ⊕ (ctx-empty ,, Γ) ⇒ʳ Γ
-  id-M-inv (var-inr x) = x
+  idⁱ-inv : ∀ {Θ Γ} → Θ ⊕ (ctx-empty ,, Γ) ⇒ʳ Γ
+  idⁱ-inv (var-inr x) = x
 
   -- composition of metavariable instantiations
-  _∘M_ : ∀ {Θ ψ Ω Γ Δ} → Ω ⇒M ψ ⊕ Δ → ψ ⇒M Θ ⊕ Γ → (Ω ⇒M Θ ⊕ (Δ ,, Γ))
-  _∘M_ {Θ = Θ} {ψ = ψ} {Γ = Γ} {Δ = Δ} μ ι = λ M → term-reassoc (ι M [ μ ]M)
+  _∘ⁱ_ : ∀ {Θ ψ Ω Γ Δ} → Ω ⇒ⁱ ψ ⊕ Δ → ψ ⇒ⁱ Θ ⊕ Γ → (Ω ⇒ⁱ Θ ⊕ (Δ ,, Γ))
+  _∘ⁱ_ {Θ = Θ} {ψ = ψ} {Γ = Γ} {Δ = Δ} μ I = λ M → term-reassoc (I M [ μ ]ⁱ)
 
 
 
     -- ** Interactions **
 
   -- action of a metavariable instantiation on a substitution
-  _M∘ˢ_ : ∀ {Θ ψ Γ Δ Ξ} → ψ ⇒M Θ ⊕ Ξ → Θ ⊕ Δ ⇒ˢ Γ → ψ ⊕ (Ξ ,, Δ) ⇒ˢ (Ξ ,, Γ)
-  (ι M∘ˢ σ) (var-inl x) = tm-var (var-inl x)
-  (ι M∘ˢ σ) (var-inr x) = σ x [ ι ]M
+  _M∘ˢ_ : ∀ {Θ ψ Γ Δ Ξ} → ψ ⇒ⁱ Θ ⊕ Ξ → Θ ⊕ Δ ⇒ˢ Γ → ψ ⊕ (Ξ ,, Δ) ⇒ˢ (Ξ ,, Γ)
+  (I M∘ˢ σ) (var-inl x) = tm-var (var-inl x)
+  (I M∘ˢ σ) (var-inr x) = σ x [ I ]ⁱ
 
   -- action of a substitution on a metavariable instantiation
-  _s∘M_ : ∀ {Θ ψ Γ Δ} → ψ ⊕ Δ ⇒ˢ Γ → ψ ⇒M Θ ⊕ Γ → ψ ⇒M Θ ⊕ Δ
-  _s∘M_ σ ι M = ι M [ ⇑ˢ σ ]ˢ
+  _s∘ⁱ_ : ∀ {Θ ψ Γ Δ} → ψ ⊕ Δ ⇒ˢ Γ → ψ ⇒ⁱ Θ ⊕ Γ → ψ ⇒ⁱ Θ ⊕ Δ
+  _s∘ⁱ_ σ I M = I M [ ⇑ˢ σ ]ˢ
 
   -- action of a renaming on a metavariable instantiation
-  _r∘M_ : ∀ {Θ ψ Δ Ξ} → ψ ⇒M Θ ⊕ Ξ → Θ ⊕ Ξ ⇒ʳ Δ → ψ ⇒M Θ ⊕ Δ
-  _r∘M_ {Θ = Θ} ι ρ M = [ (extendʳ {Θ = Θ} ρ) ]ʳ (ι M)
+  _r∘ⁱ_ : ∀ {Θ ψ Δ Ξ} → ψ ⇒ⁱ Θ ⊕ Ξ → Θ ⊕ Ξ ⇒ʳ Δ → ψ ⇒ⁱ Θ ⊕ Δ
+  _r∘ⁱ_ {Θ = Θ} I ρ M = [ (extendʳ {Θ = Θ} ρ) ]ʳ (I M)

@@ -86,7 +86,7 @@ module SecondOrder.SecondOrderTheory {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ
         -- for each argument of f a term in the extended context with the arguments that f binds
         -- such that xᵢ ≈ yᵢ for each i ∈ oper-arity f
         -- then f xs ≈ f ys (in the appropriate context)
-        eq-congr : ∀ {Γ Θ} {f : oper}
+        eq-oper : ∀ {Γ Θ} {f : oper}
                      {xs ys : ∀ (i : oper-arg f) → Term Θ (Γ ,, arg-bind f i) (arg-sort f i)}
                      → (∀ i → ⊢ Θ ⊕ (Γ ,, arg-bind f i) ∥ (xs i) ≈ (ys i) ⦂ (arg-sort f i))
                      → ⊢ Θ ⊕ Γ ∥  (tm-oper f xs) ≈ (tm-oper f ys) ⦂ (oper-sort f)
@@ -94,14 +94,14 @@ module SecondOrder.SecondOrderTheory {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ
         -- the permises are: a meta-variable M, and two sets of arguments of the appropriate
         -- sorts and arities to apply M, such that xᵢ ≈ yᵢ
         -- then M xs ≈ M ys
-        eq-congr-mv : ∀ {Γ Θ} {M : mv Θ} {xs ys : ∀ {B : sort} (i : mv-arg Θ M B) → Term Θ Γ B}
+        eq-meta : ∀ {Γ Θ} {M : mv Θ} {xs ys : ∀ {B : sort} (i : mv-arg Θ M B) → Term Θ Γ B}
                     → (∀ {B : sort} (i : mv-arg Θ M B)
                     → ⊢ Θ ⊕ Γ ∥ (xs i) ≈ (ys i) ⦂ B)
                     → ⊢ Θ ⊕ Γ ∥  (tm-meta M xs) ≈ (tm-meta M ys) ⦂ (mv-sort Θ M)
         -- equational axiom
-        eq-axiom : ∀ (ε : ax) {Θ : MetaContext} {Γ : Context} (ι : Θ ⇒M (ax-mv-ctx ε) ⊕ Γ) →
-                   ⊢ Θ ⊕ Γ ∥ ( [ (rename-ctx-empty-r {Θ = Θ}) ]ʳ (ax-lhs ε [ ι ]M)) ≈
-                             ([ (rename-ctx-empty-r {Θ = Θ}) ]ʳ (ax-rhs ε [ ι ]M)) ⦂ (ax-sort ε)
+        eq-axiom : ∀ (ε : ax) {Θ : MetaContext} {Γ : Context} (I : Θ ⇒ⁱ (ax-mv-ctx ε) ⊕ Γ) →
+                   ⊢ Θ ⊕ Γ ∥ ( [ (rename-ctx-empty-r {Θ = Θ}) ]ʳ (ax-lhs ε [ I ]ⁱ)) ≈
+                             ([ (rename-ctx-empty-r {Θ = Θ}) ]ʳ (ax-rhs ε [ I ]ⁱ)) ⦂ (ax-sort ε)
 
     -- terms and judgemental equality form a setoid
       eq-setoid : ∀ (Γ : Context) (Θ : MetaContext) (A : sort) → Setoid (lsuc (ℓo ⊔ ℓs ⊔ ℓa )) (lsuc (ℓ ⊔ ℓo ⊔ ℓs ⊔ ℓa))
@@ -126,5 +126,5 @@ module SecondOrder.SecondOrderTheory {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ
       _≈s_ {Γ} {Δ} {Θ} σ τ = ∀ {A} (x : A ∈ Γ) → ⊢ Θ ⊕ Δ ∥ σ x ≈ τ x ⦂ A
 
       -- equality of metavariable instatiations
-      _≈M_ : ∀ {Γ Θ ψ} (ι μ : _⇒M_⊕_ {Σ = Σ} ψ Θ Γ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
-      _≈M_ {Γ} {Θ} {ψ} ι μ = ∀ (M : mv Θ) → ⊢ ψ ⊕ (Γ ,, mv-arity Θ M) ∥ ι M ≈ μ M ⦂ (mv-sort Θ M)
+      _≈M_ : ∀ {Γ Θ ψ} (I μ : _⇒ⁱ_⊕_ {Σ = Σ} ψ Θ Γ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
+      _≈M_ {Γ} {Θ} {ψ} I μ = ∀ (M : mv Θ) → ⊢ ψ ⊕ (Γ ,, mv-arity Θ M) ∥ I M ≈ μ M ⦂ (mv-sort Θ M)

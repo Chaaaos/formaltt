@@ -96,23 +96,23 @@ module SecondOrder.MetaTheoremR {ℓ ℓs ℓo ℓa : Level}
   ------------------------------------------------------------------------------------------------------
   -- A.
   r-congr {t = tm-var x} p = p x
-  r-congr {t = tm-meta M ts} p = eq-congr-mv λ i → r-congr p
-  r-congr {t = tm-oper f es} p = eq-congr λ i → r-congr (≈r-extendʳ p)
+  r-congr {t = tm-meta M ts} p = eq-meta λ i → r-congr p
+  r-congr {t = tm-oper f es} p = eq-oper λ i → r-congr (≈r-extendʳ p)
 
   ≈tm-rename eq-refl = eq-refl
   ≈tm-rename (eq-symm p) = eq-symm (≈tm-rename p)
   ≈tm-rename (eq-trans p₁ p₂) = eq-trans (≈tm-rename p₁) (≈tm-rename p₂)
-  ≈tm-rename (eq-congr p) = eq-congr λ i → ≈tm-rename (p i)
-  ≈tm-rename (eq-congr-mv p) = eq-congr-mv λ i → ≈tm-rename (p i)
-  ≈tm-rename {ρ = ρ} (eq-axiom ε ι) = {!!} -- I have no idea how one could solve this for the moment
+  ≈tm-rename (eq-oper p) = eq-oper λ i → ≈tm-rename (p i)
+  ≈tm-rename (eq-meta p) = eq-meta λ i → ≈tm-rename (p i)
+  ≈tm-rename {ρ = ρ} (eq-axiom ε I) = {!!} -- I have no idea how one could solve this for the moment
 
   ∘ʳ-≈ {t = tm-var x} = eq-refl
-  ∘ʳ-≈ {t = tm-meta M ts} = eq-congr-mv λ i → ∘ʳ-≈
-  ∘ʳ-≈ {t = tm-oper f es} = eq-congr λ i → {!!} -- needs an auxialiary function
+  ∘ʳ-≈ {t = tm-meta M ts} = eq-meta λ i → ∘ʳ-≈
+  ∘ʳ-≈ {t = tm-oper f es} = eq-oper λ i → {!!} -- needs an auxialiary function
 
   id-action-r {a = tm-var x} = eq-refl
-  id-action-r {a = tm-meta M ts} = eq-congr-mv λ i → id-action-r
-  id-action-r {a = tm-oper f es} = eq-congr λ i → eq-trans id-action-r-aux (eq-symm (r-congr λ x → idʳ-extend))
+  id-action-r {a = tm-meta M ts} = eq-meta λ i → id-action-r
+  id-action-r {a = tm-oper f es} = eq-oper λ i → eq-trans id-action-r-aux (eq-symm (r-congr λ x → idʳ-extend))
 
   -- B.
   ≈s-⇑ʳ {x = x} p = ≈tm-rename (p x)

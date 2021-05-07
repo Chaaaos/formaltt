@@ -137,18 +137,18 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
   s-comm-r {Θ} {Γ} {Δ} {Ξ} {A} {ρ = ρ} {σ = σ} t = {!!}
 
   -- s-comm-r (tm-var x) = eq-refl
-  -- s-comm-r (tm-meta M ts) = eq-congr-mv (λ i → s-comm-r (ts i))
-  -- s-comm-r {Θ} {Γ} {Δ} {Ξ} {A} {ρ = ρ} {σ = σ} (tm-oper f es) = eq-congr λ i → {!tm-oper f es!}
+  -- s-comm-r (tm-meta M ts) = eq-meta (λ i → s-comm-r (ts i))
+  -- s-comm-r {Θ} {Γ} {Δ} {Ξ} {A} {ρ = ρ} {σ = σ} (tm-oper f es) = eq-oper λ i → {!tm-oper f es!}
 
   -- s-comm-r {Θ} {Γ} {Δ} {Ξ} {A} {ρ = ρ} {σ = σ} (tm-oper f es) =
-  --   eq-congr λ i → temp {Θ} {Γ} {Δ} {Ξ} {(arg-bind f i)} {(arg-sort f i)} ρ σ {!es i!}
+  --   eq-oper λ i → temp {Θ} {Γ} {Δ} {Ξ} {(arg-bind f i)} {(arg-sort f i)} ρ σ {!es i!}
 
   -- renaming commutes with substitution
   -- r-comm-s : ∀ {Θ Γ Δ Ξ A} (σ : _⇒ˢ_ {Θ} Ξ Δ) (ρ : _⇒ʳ_ {Θ} Γ Δ) (t : Term Θ Γ A)
   --   → ⊢ Θ ⊕ Ξ ∥ (t [ σ ]ˢ) [ ρ ]ʳ ≈ t [ σ s∘ʳ ρ ]ˢ ⦂ A
   -- r-comm-s σ ρ (tm-var x) = eq-refl
-  -- r-comm-s σ ρ (tm-meta M ts) = eq-congr-mv (λ i → r-comm-s σ ρ (ts i))
-  -- r-comm-s σ ρ (tm-oper f es) = eq-congr (λ i → r-comm-s (⇑ˢ σ) (extendʳ ρ) {!es i!})
+  -- r-comm-s σ ρ (tm-meta M ts) = eq-meta (λ i → r-comm-s σ ρ (ts i))
+  -- r-comm-s σ ρ (tm-oper f es) = eq-oper (λ i → r-comm-s (⇑ˢ σ) (extendʳ ρ) {!es i!})
 
 
 
@@ -171,8 +171,8 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
 
 
   r-to-subst-≈ {t = tm-var x} = eq-refl
-  r-to-subst-≈ {t = tm-meta M ts} = eq-congr-mv λ i → r-to-subst-≈
-  r-to-subst-≈ {t = tm-oper f es} = eq-congr λ i → r-to-subst-≈aux
+  r-to-subst-≈ {t = tm-meta M ts} = eq-meta λ i → r-to-subst-≈
+  r-to-subst-≈ {t = tm-oper f es} = eq-oper λ i → r-to-subst-≈aux
 
   r-to-subst-≈aux {Θ = Θ} {Γ = Γ} {Δ = Δ} {t = t} {ρ = ρ} = eq-trans r-to-subst-≈ (subst-congr {t = t} (r-to-subst-⇑ˢ {ρ = ρ}))
 
@@ -181,12 +181,12 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
   -- II.
   -- A.
   subst-congr {t = Signature.tm-var x} p = p x
-  subst-congr {t = Signature.tm-meta M ts} p = eq-congr-mv λ i → subst-congr {t = ts i} p
-  subst-congr {t = Signature.tm-oper f es} p = eq-congr λ i → subst-congr-aux {t = es i} p
+  subst-congr {t = Signature.tm-meta M ts} p = eq-meta λ i → subst-congr {t = ts i} p
+  subst-congr {t = Signature.tm-oper f es} p = eq-oper λ i → subst-congr-aux {t = es i} p
 
   id-action {a = tm-var x} = eq-refl
-  id-action {a = tm-meta M ts} = eq-congr-mv λ i → id-action
-  id-action {a = tm-oper f es} = eq-congr λ i → eq-trans id-action-aux (eq-symm (subst-congr {t = es i} λ x → idˢ-extendˡ))
+  id-action {a = tm-meta M ts} = eq-meta λ i → id-action
+  id-action {a = tm-oper f es} = eq-oper λ i → eq-trans id-action-aux (eq-symm (subst-congr {t = es i} λ x → idˢ-extendˡ))
     where
       id-action-aux : ∀ {Θ Γ Ξ A} {t : Term Θ (Γ ,, Ξ) A} → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ t ≈  (t [ idˢ ]ˢ) ⦂ A
       id-action-aux = id-action
@@ -194,13 +194,13 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
   ≈tm-subst eq-refl = eq-refl
   ≈tm-subst (eq-symm p) = eq-symm (≈tm-subst p)
   ≈tm-subst (eq-trans p₁ p₂) = eq-trans (≈tm-subst p₁) (≈tm-subst p₂)
-  ≈tm-subst (eq-congr x) = eq-congr λ i → ≈tm-subst (x i) -- needs an auxiliary function
-  ≈tm-subst (eq-congr-mv ps) = eq-congr-mv λ i → ≈tm-subst (ps i)
-  ≈tm-subst (eq-axiom ε ι) = {!!} -- Should we find a way to "compose" substitution and instantiation so as to get an instatiation ? We also have to take care of the renaming with empty context
+  ≈tm-subst (eq-oper x) = eq-oper λ i → ≈tm-subst (x i) -- needs an auxiliary function
+  ≈tm-subst (eq-meta ps) = eq-meta λ i → ≈tm-subst (ps i)
+  ≈tm-subst (eq-axiom ε I) = {!!} -- Should we find a way to "compose" substitution and instantiation so as to get an instatiation ? We also have to take care of the renaming with empty context
 
   ∘ˢ-≈ {t = tm-var x} = eq-refl
-  ∘ˢ-≈ {t = tm-meta M ts} = eq-congr-mv λ i → ∘ˢ-≈ {t = ts i}
-  ∘ˢ-≈ {t = tm-oper f es} {σ = σ} {τ = τ} = eq-congr λ i → eq-trans (∘ˢ-≈aux {t = es i} {σ = σ} {τ = τ}) (subst-congr {t = es i} {σ =  ⇑ˢ σ ∘ˢ ⇑ˢ τ} {τ = ⇑ˢ (σ ∘ˢ τ)} ∘ˢ-extendˡ)
+  ∘ˢ-≈ {t = tm-meta M ts} = eq-meta λ i → ∘ˢ-≈ {t = ts i}
+  ∘ˢ-≈ {t = tm-oper f es} {σ = σ} {τ = τ} = eq-oper λ i → eq-trans (∘ˢ-≈aux {t = es i} {σ = σ} {τ = τ}) (subst-congr {t = es i} {σ =  ⇑ˢ σ ∘ˢ ⇑ˢ τ} {τ = ⇑ˢ (σ ∘ˢ τ)} ∘ˢ-extendˡ)
 
 
   -- B.
@@ -211,12 +211,12 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
   ∘ˢ-extendˡ {Γ = Γ} {Δ = Δ} {Ξ = Ξ} {σ = σ} (var-inl x)  = ∘ˢ-extendˡ-aux {Γ = Δ} {Δ = Γ} {t = σ x}
 
   ∘ˢ-extendˡ-aux {t = tm-var x} = eq-refl
-  ∘ˢ-extendˡ-aux {t = tm-meta M ts} = eq-congr-mv λ i → ∘ˢ-extendˡ-aux {t = ts i}
-  ∘ˢ-extendˡ-aux {τ = τ} {t = tm-oper f es} = eq-congr λ i → extend-var-inl (es i) τ
+  ∘ˢ-extendˡ-aux {t = tm-meta M ts} = eq-meta λ i → ∘ˢ-extendˡ-aux {t = ts i}
+  ∘ˢ-extendˡ-aux {τ = τ} {t = tm-oper f es} = eq-oper λ i → extend-var-inl (es i) τ
 
   ∘ˢ-≈aux {Γ = Γ} {Λ = Λ} {t = tm-var x}  {σ = σ} = ∘ˢ-≈ {Γ = (Γ ,, Λ)} {t = tm-var x} {σ = ⇑ˢ σ}
-  ∘ˢ-≈aux {t = tm-meta M ts} = eq-congr-mv λ i → ∘ˢ-≈aux {t = ts i}
-  ∘ˢ-≈aux {t = tm-oper f es} {σ = σ} {τ = τ} = eq-congr λ i → eq-trans (∘ˢ-≈aux {t = es i}) (subst-congr {t = es i} {σ = ⇑ˢ (⇑ˢ σ) ∘ˢ ⇑ˢ (⇑ˢ τ)} {τ = ⇑ˢ (⇑ˢ σ ∘ˢ ⇑ˢ τ)} ∘ˢ-extendˡ)
+  ∘ˢ-≈aux {t = tm-meta M ts} = eq-meta λ i → ∘ˢ-≈aux {t = ts i}
+  ∘ˢ-≈aux {t = tm-oper f es} {σ = σ} {τ = τ} = eq-oper λ i → eq-trans (∘ˢ-≈aux {t = es i}) (subst-congr {t = es i} {σ = ⇑ˢ (⇑ˢ σ) ∘ˢ ⇑ˢ (⇑ˢ τ)} {τ = ⇑ˢ (⇑ˢ σ ∘ˢ ⇑ˢ τ)} ∘ˢ-extendˡ)
 
 
   ≈s-⇑ˢ p (var-inl x) = ≈s-⇑ʳ p
