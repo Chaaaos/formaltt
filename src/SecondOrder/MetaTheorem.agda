@@ -172,7 +172,7 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
 
 
   -- temp2 : ∀ {Θ Γ Δ Ξ Ψ} {ρ : _⇒ʳ_ {Θ} Γ Δ} {σ : _⇒ˢ_ {Θ} Ξ Δ}
-  --   → ((⇑ˢ {Θ} {Ξ} {Δ} {Ψ} σ) s∘ʳ (extendʳ {Θ} {Γ} {Δ} ρ {Ψ})) ≈ˢ ⇑ˢ (σ s∘ʳ ρ)
+  --   → ((⇑ˢ {Θ} {Ξ} {Δ} {Ψ} σ) ˢ∘ʳ (extendʳ {Θ} {Γ} {Δ} ρ {Ψ})) ≈ˢ ⇑ˢ (σ ˢ∘ʳ ρ)
   -- temp2 (var-inl x) = eq-refl
   -- temp2 (var-inr y) = eq-refl
 
@@ -182,7 +182,7 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
 
 
   temp3 : ∀ {Θ Γ Δ Ξ} (ρ : Θ ⊕ Δ ⇒ʳ Ξ) (σ : Θ ⊕ Δ ⇒ˢ Γ)
-    → (σ s∘ʳ ρ) ≈ˢ (σ ∘ˢ (r-to-subst ρ))
+    → (σ ˢ∘ʳ ρ) ≈ˢ (σ ∘ˢ (r-to-subst ρ))
   temp3 ρ σ x = r-to-subst-≈
 
   -- substitution commutes with renamings
@@ -199,7 +199,7 @@ module SecondOrder.MetaTheorem {ℓ ℓs ℓo ℓa : Level}
 
   -- renaming commutes with substitution
   -- r-comm-s : ∀ {Θ Γ Δ Ξ A} (σ : _⇒ˢ_ {Θ} Ξ Δ) (ρ : _⇒ʳ_ {Θ} Γ Δ) (t : Term Θ Γ A)
-  --   → ⊢ Θ ⊕ Ξ ∥ (t [ σ ]ˢ) [ ρ ]ʳ ≈ t [ σ s∘ʳ ρ ]ˢ ⦂ A
+  --   → ⊢ Θ ⊕ Ξ ∥ (t [ σ ]ˢ) [ ρ ]ʳ ≈ t [ σ ˢ∘ʳ ρ ]ˢ ⦂ A
   -- r-comm-s σ ρ (tm-var x) = eq-refl
   -- r-comm-s σ ρ (tm-meta M ts) = eq-meta (λ i → r-comm-s σ ρ (ts i))
   -- r-comm-s σ ρ (tm-oper f es) = eq-oper (λ i → r-comm-s (⇑ˢ σ) (extendʳ ρ) {!es i!})
