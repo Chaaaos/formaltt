@@ -15,19 +15,41 @@ module SecondOrder.Term
   open SecondOrder.Metavariable Σ
 
   -- The term judgement
-  data Term (Θ : MetaContext) : ∀ (Γ : Context) (A : sort) → Set (lsuc (ℓs ⊔ ℓo)) where
+  data Term (Θ : MetaContext) : ∀ (Γ : Context) (A : sort) → Set (lsuc (ℓs ⊔ ℓo))
+
+  Arg : ∀ (Θ : MetaContext) (Γ : Context) (A : sort) (Δ : Context) → Set (lsuc (ℓs ⊔ ℓo))
+  Arg Θ Γ A Δ = Term Θ (Γ ,, Δ) A
+
+  data Term Θ where
     tm-var : ∀ {Γ} {A} (x : A ∈ Γ) → Term Θ Γ A
     tm-meta : ∀ {Γ} (M : mv Θ)
                 (ts : ∀ {B} (i : mv-arg Θ M B) → Term Θ Γ B)
                 → Term Θ Γ (mv-sort Θ M)
-    tm-oper : ∀ {Γ} (f : oper)
-                (es : ∀ (i : oper-arg f) → Term Θ (Γ ,, arg-bind f i) (arg-sort f i))
+    tm-oper : ∀ {Γ} (f : oper) (es : ∀ (i : oper-arg f) → Arg Θ Γ (arg-sort f i) (arg-bind f i))
                 → Term Θ Γ (oper-sort f)
 
-  -- Special cases of function extensionality
+  -- Syntactic equality of terms
 
-  postulate tm-eq-meta : ∀ {Θ Γ} {M : mv Θ} {ts us : ∀ {B} (i : mv-arg Θ M B) → Term Θ Γ B} →
-                         (∀ {B} i → ts {B} i ≡ us {B} i) → tm-meta M ts ≡ tm-meta M us
+  infix 4 _≈_
 
-  postulate tm-eq-oper : ∀ {Θ Γ} {f : oper} {ds es : ∀ (i : oper-arg f) → Term Θ (Γ ,, arg-bind f i) (arg-sort f i)} →
-                         (∀ i → ds i ≡ es i) → tm-oper f ds ≡ tm-oper f es
+  data _≈_ {Θ : MetaContext} : ∀ {Γ : Context} {A : sort} → Term Θ Γ A → Term Θ Γ A → Set (lsuc (ℓs ⊔ ℓo)) where
+    ≈-≡ : ∀ {Γ A} {t u : Term Θ Γ A} → t ≡ u → t ≈ u
+    ≈-meta : ∀ {Γ} {M : mv Θ} {ts us : ∀ {B} (i : mv-arg Θ M B) → Term Θ Γ B} →
+               (∀ {B} i → ts {B} i ≈ us {B} i) → tm-meta M ts ≈ tm-meta M us
+    ≈-oper : ∀ {Γ} {f : oper} {ds es : ∀ (i : oper-arg f) → Arg Θ Γ (arg-sort f i)  (arg-bind f i)} →
+               (∀ i → ds i ≈ es i) → tm-oper f ds ≈ tm-oper f es
+
+  ≈-refl : ∀ {Θ Γ A} {t : Term Θ Γ A} → t ≈ t
+  ≈-refl = ≈-≡ refl
+
+  ≈-sym : ∀ {Θ Γ A} {t u : Term Θ Γ A} → t ≈ u → u ≈ t
+  ≈-sym (≈-≡ refl) = ≈-≡ refl
+  ≈-sym (≈-meta ξ) = ≈-meta λ i → ≈-sym (ξ i)
+  ≈-sym (≈-oper ξ) = ≈-oper (λ i → ≈-sym (ξ i))
+
+  ≈-trans : ∀ {Θ Γ A} {t u v : Term Θ Γ A} → t ≈ u → u ≈ v → t ≈ v
+  ≈-trans (≈-≡ refl) ξ = ξ
+  ≈-trans (≈-meta ζ) (≈-≡ refl) = ≈-meta ζ
+  ≈-trans (≈-meta ζ) (≈-meta ξ) = ≈-meta (λ i → ≈-trans (ζ i) (ξ i))
+  ≈-trans (≈-oper ζ) (≈-≡ refl) = ≈-oper ζ
+  ≈-trans (≈-oper ζ) (≈-oper ξ) = ≈-oper (λ i → ≈-trans (ζ i) (ξ i))
