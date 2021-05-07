@@ -100,6 +100,7 @@ module SecondOrder.MetaTheoremMI {ℓ ℓs ℓo ℓa : Level}
   extend-r² = {!!}
 
 
+
   extend-empty-ctx-renameˡ : ∀ {Θ Γ Δ A} {t : Term Θ ((Γ ,, ctx-empty) ,, Δ) A}
                            → ⊢ Θ ⊕ ((Γ ,, ctx-empty) ,, Δ) ∥ ([ extend-r {Θ = Θ} (rename-ctx-empty-inv {Θ = Θ}) ]r ([ extend-r {Θ = Θ} (rename-ctx-empty-r {Θ = Θ})]r t)) ≈ t ⦂ A
   extend-empty-ctx-renameˡ {Θ = Θ} {Γ = Γ} {Δ = Δ} {t = tm-var (var-inl x)} = eq-trans
