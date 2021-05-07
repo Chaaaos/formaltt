@@ -42,10 +42,10 @@ module SecondOrder.Substitution
     infixl 8 _+s_
 
     _+s_ : ∀ {Γ Γ' Δ Δ'} → Θ ⊕ Γ ⇒s Δ → Θ ⊕ Γ' ⇒s Δ' → Θ ⊕ (Γ ,, Γ') ⇒s Δ ,, Δ'
-    σ +s τ = (λ x → weakenˡ (σ x)) ⋈s (λ y → weakenʳ (τ y))
+    σ +s τ = (λ x → [ var-inl ]ʳ (σ x)) ⋈s (λ y → [ var-inr ]ʳ (τ y))
 
     -- renaming as a substitution
-    renaming-s : ∀ {Γ Δ} → Δ ⇒r Γ → Θ ⊕ Γ ⇒s Δ
+    renaming-s : ∀ {Γ Δ} → Δ ⇒ʳ Γ → Θ ⊕ Γ ⇒s Δ
     renaming-s ρ x = tm-var (ρ x)
 
     -- extending a substitution
@@ -71,5 +71,5 @@ module SecondOrder.Substitution
     (σ ∘s ρ) x = σ x [ ρ ]s
 
     -- action of a substitution on a renaming
-    _s∘r_ : ∀ {Γ Δ Ξ} → Θ ⊕ Δ ⇒s Γ → Δ ⇒r Ξ → Θ ⊕ Ξ ⇒s Γ
-    σ s∘r ρ = σ ∘s renaming-s ρ
+    _s∘ʳ_ : ∀ {Γ Δ Ξ} → Θ ⊕ Δ ⇒s Γ → Δ ⇒ʳ Ξ → Θ ⊕ Ξ ⇒s Γ
+    σ s∘ʳ ρ = σ ∘s renaming-s ρ

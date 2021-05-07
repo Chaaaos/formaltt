@@ -56,8 +56,8 @@ module SecondOrder.Equality
                 → ⊢ Θ ⊕ Γ ∥  (tm-meta M xs) ≈ (tm-meta M ys) ⦂ (mv-sort Θ M)
     -- equational axiom
     eq-axiom : ∀ (ε : ax) {Θ : MetaContext} {Γ : Context} (ι : Θ ⇒M (ax-mv-ctx ε) ⊕ Γ) →
-               ⊢ Θ ⊕ Γ ∥ ( [ (rename-ctx-empty-r {Θ = Θ}) ]r (ax-lhs ε [ ι ]M)) ≈
-                         ([ (rename-ctx-empty-r {Θ = Θ}) ]r (ax-rhs ε [ ι ]M)) ⦂ (ax-sort ε)
+               ⊢ Θ ⊕ Γ ∥ ( [ (rename-ctx-empty-r {Θ = Θ}) ]ʳ (ax-lhs ε [ ι ]M)) ≈
+                         ([ (rename-ctx-empty-r {Θ = Θ}) ]ʳ (ax-rhs ε [ ι ]M)) ⦂ (ax-sort ε)
 
   --  terms and judgemental equality form a setoid
   eq-setoid : ∀ (Γ : Context) (Θ : MetaContext) (A : sort) → Setoid (lsuc (ℓo ⊔ ℓs ⊔ ℓa )) (lsuc (ℓ ⊔ ℓo ⊔ ℓs ⊔ ℓa))
@@ -74,7 +74,7 @@ module SecondOrder.Equality
         }
 
   -- equality of renamings
-  _≈r_ : ∀ {Γ Δ : Context} {Θ} (σ τ : Θ ⊕ Γ ⇒r Δ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
+  _≈r_ : ∀ {Γ Δ : Context} {Θ} (σ τ : Θ ⊕ Γ ⇒ʳ Δ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa ⊔ ℓ))
   _≈r_ {Γ} {Δ} {Θ} σ τ = ∀ {A} (x : A ∈ Γ) → ⊢ Θ ⊕ Δ ∥ tm-var (σ x) ≈ tm-var (τ x) ⦂ A
 
   -- equality of substitutions

@@ -25,7 +25,7 @@ module SecondOrder.Instantiation
 
   -- the identity metavariable instantiation
   id-i : ∀ {Θ} → Θ ⇒i Θ ⊕ ctx-empty
-  id-i t = tm-meta t (λ i → weakenʳ (tm-var i))
+  id-i t = tm-meta t (λ i → [ var-inr ]ʳ (tm-var i))
 
   -- action of a metavariable instantiation on terms
 
@@ -36,7 +36,7 @@ module SecondOrder.Instantiation
   [ I ]i (tm-meta M ts) = I M [ (renaming-s var-inl) ⋈s (λ x →  [ I ]i ts x) ]s
   [ I ]i (tm-oper f es) = tm-oper f λ i → term-reassoc ([ I ]i es i)
 
-  -- id-i-inv : ∀ {Θ Γ} → (ctx-empty ,, Γ) ⇒r Γ
+  -- id-i-inv : ∀ {Θ Γ} → (ctx-empty ,, Γ) ⇒ʳ Γ
   -- id-i-inv (var-inr x) = x
 
   -- composition of metavariable instantiations

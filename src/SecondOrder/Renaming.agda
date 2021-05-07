@@ -17,68 +17,57 @@ module SecondOrder.Renaming
   open SecondOrder.Term Σ
 
   -- a renaming is a morphism between contexts
-  _⇒r_ : ∀ (Γ Δ : Context) → Set ℓs
-  Γ ⇒r Δ = ∀ {A} → A ∈ Γ → A ∈ Δ
+  _⇒ʳ_ : ∀ (Γ Δ : Context) → Set ℓs
+  Γ ⇒ʳ Δ = ∀ {A} → A ∈ Γ → A ∈ Δ
 
-  infix 4 _⇒r_
+  infix 4 _⇒ʳ_
 
   -- renaming extension
-  extend-r : ∀ {Γ Δ} → Γ ⇒r Δ → ∀ {Ξ} → Γ ,, Ξ ⇒r Δ ,, Ξ
-  extend-r ρ (var-inl x) = var-inl (ρ x)
-  extend-r ρ (var-inr y) = var-inr y
+  extendʳ : ∀ {Γ Δ} → Γ ⇒ʳ Δ → ∀ {Ξ} → Γ ,, Ξ ⇒ʳ Δ ,, Ξ
+  extendʳ ρ (var-inl x) = var-inl (ρ x)
+  extendʳ ρ (var-inr y) = var-inr y
 
   -- the identity renaming
-  id-r : ∀ {Γ : Context} → Γ ⇒r Γ
-  id-r x = x
+  idʳ : ∀ {Γ : Context} → Γ ⇒ʳ Γ
+  idʳ x = x
 
   -- composition of renamings
-  _∘r_ : ∀ {Γ Δ Ξ : Context} → Δ ⇒r Ξ → Γ ⇒r Δ → Γ ⇒r Ξ
-  (σ ∘r ρ) x = σ (ρ x)
+  _∘ʳ_ : ∀ {Γ Δ Ξ : Context} → Δ ⇒ʳ Ξ → Γ ⇒ʳ Δ → Γ ⇒ʳ Ξ
+  (σ ∘ʳ ρ) x = σ (ρ x)
 
-  infix 7 _∘r_
+  infix 7 _∘ʳ_
 
   -- the reassociation renaming
 
-  rename-assoc : ∀ {Γ Δ Ξ} → Γ ,, (Δ ,, Ξ) ⇒r (Γ ,, Δ) ,, Ξ
+  rename-assoc : ∀ {Γ Δ Ξ} → Γ ,, (Δ ,, Ξ) ⇒ʳ (Γ ,, Δ) ,, Ξ
   rename-assoc (var-inl x) = var-inl (var-inl x)
   rename-assoc (var-inr (var-inl y)) = var-inl (var-inr y)
   rename-assoc (var-inr (var-inr z)) = var-inr z
 
   -- the empty context is the unit
 
-  rename-ctx-empty-r : ∀ {Γ} → Γ ,, ctx-empty ⇒r Γ
+  rename-ctx-empty-r : ∀ {Γ} → Γ ,, ctx-empty ⇒ʳ Γ
   rename-ctx-empty-r (var-inl x) = x
 
-  rename-ctx-empty-inv : ∀ {Γ} → Γ ⇒r Γ ,, ctx-empty
+  rename-ctx-empty-inv : ∀ {Γ} → Γ ⇒ʳ Γ ,, ctx-empty
   rename-ctx-empty-inv x = var-inl x
 
   module _ {Θ : MetaContext} where
 
     -- action of a renaming on terms
-    [_]r_ : ∀ {Γ Δ A} → Γ ⇒r Δ → Term Θ Γ A → Term Θ Δ A
-    [ ρ ]r (tm-var x) = tm-var (ρ x)
-    [ ρ ]r (tm-meta M ts) = tm-meta M (λ i → [ ρ ]r (ts i))
-    [ ρ ]r (tm-oper f es) = tm-oper f (λ i → [ (extend-r ρ) ]r (es i))
+    [_]ʳ_ : ∀ {Γ Δ A} → Γ ⇒ʳ Δ → Term Θ Γ A → Term Θ Δ A
+    [ ρ ]ʳ (tm-var x) = tm-var (ρ x)
+    [ ρ ]ʳ (tm-meta M ts) = tm-meta M (λ i → [ ρ ]ʳ (ts i))
+    [ ρ ]ʳ (tm-oper f es) = tm-oper f (λ i → [ (extendʳ ρ) ]ʳ (es i))
 
-    infix 6 [_]r_
+    infix 6 [_]ʳ_
 
     -- apply the reassociation renaming on terms
     term-reassoc : ∀ {Δ Γ Ξ A}
       → Term Θ (Δ ,, (Γ ,, Ξ)) A
       → Term Θ ((Δ ,, Γ) ,, Ξ) A
-    term-reassoc = [ rename-assoc ]r_
+    term-reassoc = [ rename-assoc ]ʳ_
 
     -- weakening
-    weakenˡ : ∀ {Γ Δ A} → Term Θ Γ A → Term Θ (Γ ,, Δ) A
-    weakenˡ = [ var-inl ]r_
-
-    weakenʳ : ∀ {Γ Δ A} → Term Θ Δ A → Term Θ (Γ ,, Δ) A
-    weakenʳ = [ var-inr ]r_
-
-    -- functoriality of renaming action
-
-    []r-id : ∀ {Γ Δ A} {t : Term Θ (Γ ,, Δ) A} → [ extend-r id-r ]r t ≡ t
-    []r-id {t = tm-var (var-inl x)} = refl
-    []r-id {t = tm-var (var-inr x)} = refl
-    []r-id {t = tm-meta M ts} = tm-eq-meta (λ _ → []r-id)
-    []r-id {t = tm-oper f es} = tm-eq-oper (λ i → {!!})
+    ⇑ʳ : ∀ {Γ Δ A} → Term Θ Γ A → Term Θ (Γ ,, Δ) A
+    ⇑ʳ = [ var-inl ]ʳ_

@@ -22,44 +22,44 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
 
   -- a renaming is a morphism between scopes
   -- renaming
-  _⊕_⇒r_ : ∀ (Θ : MetaContext) (Γ Δ : Context) → Set ℓs
-  Θ ⊕ Γ ⇒r Δ = ∀ {A} → A ∈ Γ → A ∈ Δ
+  _⊕_⇒ʳ_ : ∀ (Θ : MetaContext) (Γ Δ : Context) → Set ℓs
+  Θ ⊕ Γ ⇒ʳ Δ = ∀ {A} → A ∈ Γ → A ∈ Δ
 
-  infix 4 _⊕_⇒r_
+  infix 4 _⊕_⇒ʳ_
 
 
   module _ {Θ : MetaContext}  where
 
       -- extending a renaming
-      extend-r : ∀ {Γ Δ} → Θ ⊕ Γ ⇒r Δ → ∀ {Ξ} → Θ ⊕ Γ ,, Ξ ⇒r Δ ,, Ξ
-      extend-r ρ (var-inl x) = var-inl (ρ x)
-      extend-r ρ (var-inr y) = var-inr y
+      extendʳ : ∀ {Γ Δ} → Θ ⊕ Γ ⇒ʳ Δ → ∀ {Ξ} → Θ ⊕ Γ ,, Ξ ⇒ʳ Δ ,, Ξ
+      extendʳ ρ (var-inl x) = var-inl (ρ x)
+      extendʳ ρ (var-inr y) = var-inr y
 
       -- the identity renaming
-      id-r : ∀ {Γ : Context} → Θ ⊕ Γ ⇒r Γ
-      id-r x = x
+      idʳ : ∀ {Γ : Context} → Θ ⊕ Γ ⇒ʳ Γ
+      idʳ x = x
 
       -- composition of renamings
-      _∘r_ : ∀ {Γ Δ Ξ : Context} → Θ ⊕ Δ ⇒r Ξ → Θ ⊕ Γ ⇒r Δ → Θ ⊕ Γ ⇒r Ξ
-      (σ ∘r ρ) x = σ (ρ x)
+      _∘ʳ_ : ∀ {Γ Δ Ξ : Context} → Θ ⊕ Δ ⇒ʳ Ξ → Θ ⊕ Γ ⇒ʳ Δ → Θ ⊕ Γ ⇒ʳ Ξ
+      (σ ∘ʳ ρ) x = σ (ρ x)
 
-      infix 7 _∘r_
+      infix 7 _∘ʳ_
 
       -- action of a renaming on terms
-      [_]r_ : ∀ {Γ Δ A} → Θ ⊕ Γ ⇒r Δ → Term Θ Γ A → Term Θ Δ A
-      [ ρ ]r (tm-var x) = tm-var (ρ x)
-      [ ρ ]r (tm-meta M ts) = tm-meta M (λ i → [ ρ ]r (ts i))
-      [ ρ ]r (tm-oper f es) = tm-oper f (λ i → [ (extend-r ρ) ]r (es i))
+      [_]ʳ_ : ∀ {Γ Δ A} → Θ ⊕ Γ ⇒ʳ Δ → Term Θ Γ A → Term Θ Δ A
+      [ ρ ]ʳ (tm-var x) = tm-var (ρ x)
+      [ ρ ]ʳ (tm-meta M ts) = tm-meta M (λ i → [ ρ ]ʳ (ts i))
+      [ ρ ]ʳ (tm-oper f es) = tm-oper f (λ i → [ (extendʳ ρ) ]ʳ (es i))
 
-      infix 6 [_]r_
+      infix 6 [_]ʳ_
 
       -- the reassociation renaming
-      rename-assoc-r : ∀ {Γ Δ Ξ} → Θ ⊕ (Γ ,, Δ) ,, Ξ ⇒r Γ ,, (Δ ,, Ξ)
+      rename-assoc-r : ∀ {Γ Δ Ξ} → Θ ⊕ (Γ ,, Δ) ,, Ξ ⇒ʳ Γ ,, (Δ ,, Ξ)
       rename-assoc-r (var-inl (var-inl x)) = var-inl x
       rename-assoc-r (var-inl (var-inr y)) = var-inr (var-inl y)
       rename-assoc-r (var-inr z) = var-inr (var-inr z)
 
-      rename-assoc-l : ∀ {Γ Δ Ξ} → Θ ⊕ Γ ,, (Δ ,, Ξ) ⇒r (Γ ,, Δ) ,, Ξ
+      rename-assoc-l : ∀ {Γ Δ Ξ} → Θ ⊕ Γ ,, (Δ ,, Ξ) ⇒ʳ (Γ ,, Δ) ,, Ξ
       rename-assoc-l (var-inl x) = var-inl (var-inl x)
       rename-assoc-l (var-inr (var-inl y)) = var-inl (var-inr y)
       rename-assoc-l (var-inr (var-inr z)) = var-inr z
@@ -68,26 +68,26 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
       term-reassoc : ∀ {Δ Γ Ξ A}
         → Term Θ (Δ ,, (Γ ,, Ξ)) A
         → Term Θ ((Δ ,, Γ) ,, Ξ) A
-      term-reassoc = [ rename-assoc-l ]r_
+      term-reassoc = [ rename-assoc-l ]ʳ_
 
       -- the empty context is the unit
-      rename-ctx-empty-r : ∀ {Γ} → Θ ⊕ Γ ,, ctx-empty ⇒r Γ
+      rename-ctx-empty-r : ∀ {Γ} → Θ ⊕ Γ ,, ctx-empty ⇒ʳ Γ
       rename-ctx-empty-r (var-inl x) = x
 
-      rename-ctx-empty-inv : ∀ {Γ} → Θ ⊕ Γ ⇒r Γ ,, ctx-empty
+      rename-ctx-empty-inv : ∀ {Γ} → Θ ⊕ Γ ⇒ʳ Γ ,, ctx-empty
       rename-ctx-empty-inv x = var-inl x
 
       -- weakening
-      weakenˡ : ∀ {Γ Δ A} → Term Θ Γ A → Term Θ (Γ ,, Δ) A
-      weakenˡ = [ var-inl ]r_
+      ⇑ʳ : ∀ {Γ Δ A} → Term Θ Γ A → Term Θ (Γ ,, Δ) A
+      ⇑ʳ = [ var-inl ]ʳ_
 
       weakenʳ : ∀ {Γ Δ A} → Term Θ Δ A → Term Θ (Γ ,, Δ) A
-      weakenʳ = [ var-inr ]r_
+      weakenʳ = [ var-inr ]ʳ_
 
       -- this is probably useless to have a name for
       -- but it allows us to use the extended renaming as a fuction from terms to terms
-      app-extend-r : ∀ {Γ Δ Ξ A} → Θ ⊕ Γ ⇒r Δ → Term Θ (Γ ,, Ξ) A → Term Θ (Δ ,, Ξ) A
-      app-extend-r ρ t = [ extend-r ρ ]r t
+      app-extendʳ : ∀ {Γ Δ Ξ A} → Θ ⊕ Γ ⇒ʳ Δ → Term Θ (Γ ,, Ξ) A → Term Θ (Δ ,, Ξ) A
+      app-extendʳ ρ t = [ extendʳ ρ ]ʳ t
 
 
 
@@ -103,7 +103,7 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
 
       -- extending a substitution
       extend-sˡ : ∀ {Γ Δ Ξ} → Θ ⊕ Γ ⇒s Δ → Θ ⊕ (Γ ,, Ξ) ⇒s (Δ ,, Ξ)
-      extend-sˡ {Ξ = Ξ} σ (var-inl x) = weakenˡ (σ x)
+      extend-sˡ {Ξ = Ξ} σ (var-inl x) = ⇑ʳ (σ x)
       extend-sˡ σ (var-inr x) = tm-var (var-inr x)
 
       extend-sʳ : ∀ {Γ Δ Ξ} → Θ ⊕ Γ ⇒s Δ → Θ ⊕ Ξ ,, Γ ⇒s Ξ ,, Δ
@@ -135,12 +135,12 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
       infixl 7 _∘s_
 
       -- action of a renaming on a substitution
-      _r∘s_ : ∀ {Γ Δ Ξ} → Θ ⊕ Γ ⇒r Δ → Θ ⊕ Ξ ⇒s Δ → Θ ⊕ Ξ ⇒s Γ
+      _r∘s_ : ∀ {Γ Δ Ξ} → Θ ⊕ Γ ⇒ʳ Δ → Θ ⊕ Ξ ⇒s Δ → Θ ⊕ Ξ ⇒s Γ
       (ρ r∘s σ) x = σ (ρ x)
 
       -- action of a substitution on a renaming
-      _s∘r_ : ∀ {Γ Δ Ξ} → Θ ⊕ Δ ⇒s Γ → Θ ⊕ Δ ⇒r Ξ → Θ ⊕ Ξ ⇒s Γ
-      (σ s∘r ρ) x = [ ρ ]r (σ x)
+      _s∘ʳ_ : ∀ {Γ Δ Ξ} → Θ ⊕ Δ ⇒s Γ → Θ ⊕ Δ ⇒ʳ Ξ → Θ ⊕ Ξ ⇒s Γ
+      (σ s∘ʳ ρ) x = [ ρ ]ʳ (σ x)
 
 
 
@@ -160,7 +160,7 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
 
   (tm-var x) [ ι ]M = tm-var (var-inr x)
   _[_]M {Γ = Γ} {Θ = Θ} {Δ = Δ} (tm-meta M ts) ι = (ι M) [ []M-mv M ts ι ]s
-  _[_]M {Ψ = Ψ} (tm-oper f es) ι = tm-oper f (λ i → [ (rename-assoc-l {Θ = Ψ}) ]r (es i [ ι ]M) )
+  _[_]M {Ψ = Ψ} (tm-oper f es) ι = tm-oper f (λ i → [ (rename-assoc-l {Θ = Ψ}) ]ʳ (es i [ ι ]M) )
 
   infixr 6 _[_]M
 
@@ -168,7 +168,7 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
   id-M : ∀ {Θ} → Θ ⇒M Θ ⊕ ctx-empty
   id-M t = tm-meta t (λ i → weakenʳ (tm-var i))
 
-  id-M-inv : ∀ {Θ Γ} → Θ ⊕ (ctx-empty ,, Γ) ⇒r Γ
+  id-M-inv : ∀ {Θ Γ} → Θ ⊕ (ctx-empty ,, Γ) ⇒ʳ Γ
   id-M-inv (var-inr x) = x
 
   -- composition of metavariable instantiations
@@ -189,5 +189,5 @@ module SecondOrder.Substitution {ℓs ℓo ℓa : Level} {𝔸 : Arity} {Σ : Se
   _s∘M_ σ ι M = ι M [ extend-sˡ σ ]s
 
   -- action of a renaming on a metavariable instantiation
-  _r∘M_ : ∀ {Θ ψ Δ Ξ} → ψ ⇒M Θ ⊕ Ξ → Θ ⊕ Ξ ⇒r Δ → ψ ⇒M Θ ⊕ Δ
-  _r∘M_ {Θ = Θ} ι ρ M = [ (extend-r {Θ = Θ} ρ) ]r (ι M)
+  _r∘M_ : ∀ {Θ ψ Δ Ξ} → ψ ⇒M Θ ⊕ Ξ → Θ ⊕ Ξ ⇒ʳ Δ → ψ ⇒M Θ ⊕ Δ
+  _r∘M_ {Θ = Θ} ι ρ M = [ (extendʳ {Θ = Θ} ρ) ]ʳ (ι M)
