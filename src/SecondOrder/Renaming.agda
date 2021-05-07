@@ -1,4 +1,5 @@
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subst)
 
 import SecondOrder.Arity
 import SecondOrder.Signature
@@ -74,7 +75,10 @@ module SecondOrder.Renaming
     weakenʳ : ∀ {Γ Δ A} → Term Θ Δ A → Term Θ (Γ ,, Δ) A
     weakenʳ = [ var-inr ]r_
 
-    -- this is probably useless to have a name for
-    -- but it allows us to use the extended renaming as a fuction from terms to terms
-    app-extend-r : ∀ {Γ Δ Ξ A} → Γ ⇒r Δ → Term Θ (Γ ,, Ξ) A → Term Θ (Δ ,, Ξ) A
-    app-extend-r ρ t = [ extend-r ρ ]r t
+    -- functoriality of renaming action
+
+    []r-id : ∀ {Γ Δ A} {t : Term Θ (Γ ,, Δ) A} → [ extend-r id-r ]r t ≡ t
+    []r-id {t = tm-var (var-inl x)} = refl
+    []r-id {t = tm-var (var-inr x)} = refl
+    []r-id {t = tm-meta M ts} = tm-eq-meta (λ _ → []r-id)
+    []r-id {t = tm-oper f es} = tm-eq-oper (λ i → {!!})

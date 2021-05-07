@@ -14,9 +14,9 @@ module SecondOrder.Equality
   (𝕋 : SecondOrder.Theory.Theory Σ ℓa)
   where
 
-  open SecondOrder.Metavariable Σ public
-    open SecondOerder.Term Σ public
-  open SecondOrder.Signature.Signature Σ public
+  open SecondOrder.Metavariable Σ
+  open SecondOrder.Term Σ
+  open SecondOrder.Signature.Signature Σ
   open SecondOrder.Theory.Theory 𝕋
 
   record Equality : Set (lsuc (ℓs ⊔ ℓo)) where

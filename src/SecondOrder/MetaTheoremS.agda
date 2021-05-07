@@ -133,7 +133,7 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
 
   -- substitution commutes with renamings
   s-comm-r : ∀ {Θ Γ Δ Ξ A} {ρ : Θ ⊕ Γ ⇒r Δ} {σ : Θ ⊕ Ξ ⇒s Δ} (t : Term Θ Γ A)
-    → ⊢ Θ ⊕ Ξ ∥ ([ ρ ]r t) [ σ ]s ≈ t [ ρ r∘s σ ]s ⦂ A
+    → ⊢ Θ ⊕ Ξ ∥ ([ ρ ]r t) [ σ ]s ≈ t [ renaming-s ρ ∘s σ ]s ⦂ A
   s-comm-r {Θ} {Γ} {Δ} {Ξ} {A} {ρ = ρ} {σ = σ} t = {!!}
 
   -- s-comm-r (tm-var x) = eq-refl

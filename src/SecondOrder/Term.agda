@@ -1,4 +1,5 @@
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
+open import Relation.Binary.PropositionalEquality
 
 import SecondOrder.Arity
 import SecondOrder.Signature
@@ -22,3 +23,11 @@ module SecondOrder.Term
     tm-oper : ∀ {Γ} (f : oper)
                 (es : ∀ (i : oper-arg f) → Term Θ (Γ ,, arg-bind f i) (arg-sort f i))
                 → Term Θ Γ (oper-sort f)
+
+  -- Special cases of function extensionality
+
+  postulate tm-eq-meta : ∀ {Θ Γ} {M : mv Θ} {ts us : ∀ {B} (i : mv-arg Θ M B) → Term Θ Γ B} →
+                         (∀ {B} i → ts {B} i ≡ us {B} i) → tm-meta M ts ≡ tm-meta M us
+
+  postulate tm-eq-oper : ∀ {Θ Γ} {f : oper} {ds es : ∀ (i : oper-arg f) → Term Θ (Γ ,, arg-bind f i) (arg-sort f i)} →
+                         (∀ i → ds i ≡ es i) → tm-oper f ds ≡ tm-oper f es
