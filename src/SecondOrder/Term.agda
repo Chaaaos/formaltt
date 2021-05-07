@@ -1,5 +1,6 @@
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Binary.PropositionalEquality
+open import Relation.Binary using (Setoid)
 
 import SecondOrder.Arity
 import SecondOrder.Signature
@@ -53,3 +54,10 @@ module SecondOrder.Term
   ≈-trans (≈-meta ζ) (≈-meta ξ) = ≈-meta (λ i → ≈-trans (ζ i) (ξ i))
   ≈-trans (≈-oper ζ) (≈-≡ refl) = ≈-oper ζ
   ≈-trans (≈-oper ζ) (≈-oper ξ) = ≈-oper (λ i → ≈-trans (ζ i) (ξ i))
+
+  Term-setoid : ∀ (Θ : MetaContext) (Γ : Context)  (A : sort) → Setoid (lsuc (ℓs ⊔ ℓo)) (lsuc (ℓs ⊔ ℓo))
+  Term-setoid Θ Γ A =
+    record
+      { Carrier = Term Θ Γ A
+      ; _≈_ = _≈_
+      ; isEquivalence = record { refl = ≈-refl ; sym = ≈-sym ; trans = ≈-trans } }
