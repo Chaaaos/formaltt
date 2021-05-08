@@ -104,12 +104,29 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
   subst-congr-aux : ∀ {Θ Γ Δ Ξ A} {t : Term Θ (Γ ,, Ξ) A} {σ τ : Θ ⊕ Δ ⇒s Γ}
     → σ ≈s τ → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ t [ extend-sˡ σ ]s ≈  t [ extend-sˡ τ ]s ⦂ A
 
+  -- interactions between extensions
+  extend-var-inl : ∀ {Γ Δ Ξ Λ Θ A} (t : Term Θ (Λ ,, Ξ) A) (τ : Θ ⊕ Γ ⇒s Λ)
+    → ⊢ Θ ⊕ ((Γ ,, Δ) ,, Ξ) ∥
+        (([ (extend-r {Θ = Θ} var-inl) ]r t) [ extend-sˡ (extend-sˡ τ) ]s)
+      ≈ ([ (extend-r {Θ = Θ} var-inl) ]r (t [ extend-sˡ τ ]s)) ⦂ A
+  extend-var-inl {Γ} {Δ} {Ξ} {Λ} {Θ} {A} (tm-var (var-inl x)) τ =
+    let open SetoidR (eq-setoid (Γ ,, Δ ,, Ξ) Θ A) in
+      {!!}
+  extend-var-inl (tm-var (var-inr y)) τ = {!!}
+  extend-var-inl (tm-meta M ts) τ = {!!}
+  extend-var-inl (tm-oper f es) τ = {!!}
+
   -- extension of substitutions preserve composition
   ∘s-extendˡ : ∀ {Θ Γ Δ Ξ Λ} {σ : Θ ⊕ Δ ⇒s Ξ} {τ : Θ ⊕ Γ ⇒s Δ}
     → ((extend-sˡ {Γ = Δ} {Δ = Ξ} {Ξ = Λ} σ) ∘s (extend-sˡ τ)) ≈s extend-sˡ {Γ = Γ} {Δ = Ξ} {Ξ = Λ} (σ ∘s τ)
-
-  ∘s-extendˡ-aux : ∀ {Θ Γ Δ Ξ A} {τ : Θ ⊕ Δ ⇒s Γ} {t : Term Θ Γ A}
-    → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ ([ var-inl ]r t) [ extend-sˡ τ ]s ≈ [ var-inl ]r (t [ τ ]s) ⦂ A
+  ∘s-extendˡ (var-inr x) = eq-refl
+  ∘s-extendˡ {Γ = Γ} {Δ = Δ} {Ξ = Ξ} {σ = σ} (var-inl x)  = ∘s-extendˡ-aux {Γ = Δ} {Δ = Γ} {t = σ x}
+    where
+      ∘s-extendˡ-aux : ∀ {Θ Γ Δ Ξ A} {τ : Θ ⊕ Δ ⇒s Γ} {t : Term Θ Γ A}
+        → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ ([ var-inl ]r t) [ extend-sˡ τ ]s ≈ [ var-inl ]r (t [ τ ]s) ⦂ A
+      ∘s-extendˡ-aux {t = tm-var x} = eq-refl
+      ∘s-extendˡ-aux {t = tm-meta M ts} = eq-congr-mv λ i → ∘s-extendˡ-aux {t = ts i}
+      ∘s-extendˡ-aux {τ = τ} {t = tm-oper f es} = eq-congr λ i → extend-var-inl (es i) τ
 
   ∘s-≈aux :  ∀ {Θ Γ Δ Ξ Λ A} {t : Term Θ (Γ ,, Λ) A} {σ : Θ ⊕ Δ ⇒s Γ} {τ : Θ ⊕ Ξ ⇒s Δ}
     → ⊢ Θ ⊕ (Ξ ,, Λ) ∥ (t [ extend-sˡ σ ]s) [ extend-sˡ τ ]s ≈ (t [ (extend-sˡ σ) ∘s (extend-sˡ τ) ]s) ⦂ A
@@ -141,15 +158,6 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
     → ((r-to-subst ρ) ∘s σ) ≈s (ρ r∘s σ)
   r∘s≈s x = eq-refl
 
-  -- interactions between extensions
-  extend-var-inl : ∀ {Γ Δ Ξ Λ Θ A} (t : Term Θ (Λ ,, Ξ) A) (τ : Θ ⊕ Γ ⇒s Λ)
-    → ⊢ Θ ⊕ ((Γ ,, Δ) ,, Ξ) ∥
-        (([ (extend-r {Θ = Θ} var-inl) ]r t) [ extend-sˡ (extend-sˡ τ) ]s)
-      ≈ ([ (extend-r {Θ = Θ} var-inl) ]r (t [ extend-sˡ τ ]s)) ⦂ A
-  extend-var-inl (tm-var (var-inl x)) τ = {!!}
-  extend-var-inl (tm-var (var-inr x)) τ = {!!}
-  extend-var-inl (tm-meta M ts) τ = {!!}
-  extend-var-inl (tm-oper f es) τ = {!!}
 
   -- substitution commutes with renamings when acting on terms
   s-comm-r : ∀ {Θ Γ Δ Ξ A} {ρ : Θ ⊕ Γ ⇒r Δ} {σ : Θ ⊕ Ξ ⇒s Δ} (t : Term Θ Γ A)
@@ -268,13 +276,8 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
   id-s-extendˡ {a = var-inl a} = eq-refl
   id-s-extendˡ {a = var-inr a} = eq-refl
 
-  ∘s-extendˡ (var-inr x) = eq-refl
-  ∘s-extendˡ {Γ = Γ} {Δ = Δ} {Ξ = Ξ} {σ = σ} (var-inl x)  = ∘s-extendˡ-aux {Γ = Δ} {Δ = Γ} {t = σ x}
 
-  ∘s-extendˡ-aux {t = tm-var x} = eq-refl
-  ∘s-extendˡ-aux {t = tm-meta M ts} = eq-congr-mv λ i → ∘s-extendˡ-aux {t = ts i}
-  ∘s-extendˡ-aux {τ = τ} {t = tm-oper f es} = eq-congr λ i → extend-var-inl (es i) τ
-
+  
   ∘s-≈aux {Γ = Γ} {Λ = Λ} {t = tm-var x}  {σ = σ} = ∘s-≈ {Γ = (Γ ,, Λ)} {t = tm-var x} {σ = extend-sˡ σ}
   ∘s-≈aux {t = tm-meta M ts} = eq-congr-mv λ i → ∘s-≈aux {t = ts i}
   ∘s-≈aux {t = tm-oper f es} {σ = σ} {τ = τ} = eq-congr λ i → eq-trans (∘s-≈aux {t = es i}) (subst-congr {t = es i} {σ = extend-sˡ (extend-sˡ σ) ∘s extend-sˡ (extend-sˡ τ)} {τ = extend-sˡ (extend-sˡ σ ∘s extend-sˡ τ)} ∘s-extendˡ)
