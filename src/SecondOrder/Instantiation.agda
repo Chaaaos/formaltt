@@ -1,4 +1,5 @@
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subst)
 
 import SecondOrder.Arity
 import SecondOrder.Signature
@@ -18,6 +19,9 @@ module SecondOrder.Instantiation
   open SecondOrder.Term Σ
   open SecondOrder.Renaming Σ
   open SecondOrder.Substitution Σ
+
+
+-- ** DEFINITIONS **
 
   -- metavariable instantiation
   _⇒ⁱ_⊕_  : MetaContext → MetaContext → Context → Set (lsuc (ℓs ⊔ ℓo))
@@ -54,3 +58,36 @@ module SecondOrder.Instantiation
 
   instantiate-closed-term : ∀ {Θ Ξ Γ A} (I : Θ ⇒ⁱ Ξ ⊕ Γ) → Term Θ ctx-empty A → Term Ξ Γ A
   instantiate-closed-term I t =  [ ctx-empty-right-unit ]ʳ ([ I ]ⁱ t)
+
+
+-- ** METATHEOREMS **
+
+  -- two equal instantiations have the same action
+  ≈ⁱ[]ⁱ : ∀ {Θ Ω Γ Δ A} {t : Term Θ Δ A} {σ τ : Θ ⇒ⁱ Ω ⊕ Γ}
+        → σ ≈ⁱ τ → [ σ ]ⁱ t ≈ [ τ ]ⁱ t
+  ≈ⁱ[]ⁱ {t = tm-var x} p = ≈-≡ refl
+  ≈ⁱ[]ⁱ {t = tm-meta M ts} p = {!!} -- ≈-meta λ i → ≈ˢ[]ˢ {t = ts i} p
+  ≈ⁱ[]ⁱ {t = tm-oper f es} p = ≈-oper λ i → ≈-tm-ʳ (≈ⁱ[]ⁱ {t = es i} p)
+
+  -- composition of substitutions commutes with equality
+  ∘ⁱ-≈ : ∀ {Θ Ω ψ Γ Δ Ξ A} (t : Term Θ Ξ A) (σ : Θ ⇒ⁱ Ω ⊕ Γ) (τ : Ω ⇒ⁱ ψ ⊕ Δ)
+        → [ τ ∘ⁱ σ ]ⁱ t ≈ term-reassoc ([ τ ]ⁱ ([ σ ]ⁱ t))
+  ∘ⁱ-≈ (tm-var x) σ τ = ≈-≡ refl
+  ∘ⁱ-≈ (tm-meta M ts) σ τ = {!!} -- ≈-meta (λ i → ∘ˢ-≈ (ts i) σ τ)
+  ∘ⁱ-≈ (tm-oper f es) σ τ = ≈-oper λ i → {!!}
+
+  -- the action of the identity instantiation is the identity
+  []ⁱidⁱ : ∀ {Θ Γ A} (t : Term Θ Γ A)
+           → [ ctx-empty-left-unit ]ʳ ([ idⁱ ]ⁱ t) ≈ t
+  []ⁱidⁱ (tm-var x) = ≈-≡ refl
+  []ⁱidⁱ (tm-meta M ts) = {!!} -- ≈-meta λ i → []ˢidˢ (ts i)
+  []ⁱidⁱ (tm-oper f es) = ≈-oper λ i → {!!} -- ≈-oper λ i → ≈-trans
+                                         -- (≈ˢ[]ˢ {t = es i} idˢextendˢ)
+                                         -- ([]ˢidˢ (es i))
+
+  -- substitutions preserve syntactical equality of terms
+  ≈-tm-ⁱ : ∀ {Θ Ω Γ Δ A} {s t : Term Θ Δ A} {σ : Θ ⇒ⁱ Ω ⊕ Γ}
+        → s ≈ t → [ σ ]ⁱ s ≈ [ σ ]ⁱ t
+  ≈-tm-ⁱ (≈-≡ refl) = ≈-≡ refl
+  ≈-tm-ⁱ {t = tm-meta M ts} {σ = σ} (≈-meta ξ) = ≈ˢ[]ˢ {t = σ M} {!!}
+  ≈-tm-ⁱ (≈-oper ξ) = ≈-oper λ i → ≈-tm-ʳ (≈-tm-ⁱ (ξ i))

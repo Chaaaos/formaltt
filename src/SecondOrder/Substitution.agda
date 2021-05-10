@@ -1,3 +1,4 @@
+{-# OPTIONS --allow-unsolved-metas #-}
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subst)
 
@@ -18,6 +19,9 @@ module SecondOrder.Substitution
   open SecondOrder.Metavariable Σ
   open SecondOrder.Term Σ
   open SecondOrder.Renaming Σ
+
+
+-- ** DEFINITIONS **
 
   -- substitution
 

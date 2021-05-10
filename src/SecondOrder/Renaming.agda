@@ -58,6 +58,12 @@ module SecondOrder.Renaming
   rename-ctx-empty-inv : ∀ {Γ} → Γ ⇒ʳ Γ ,, ctx-empty
   rename-ctx-empty-inv x = var-inl x
 
+  -- the empty context is the left unit
+
+  ctx-empty-left-unit : ∀ {Γ} → ctx-empty ,, Γ ⇒ʳ Γ
+  ctx-empty-left-unit (var-inr x) = x
+
+
   module _ {Θ : MetaContext} where
 
     -- action of a renaming on terms
@@ -80,14 +86,14 @@ module SecondOrder.Renaming
 
 
 
-    -- the join of substitutions
+    -- the join of renamings
     infixl 7 _⋈ʳ_
 
     _⋈ʳ_ : ∀ {Γ Δ Ψ} → Γ ⇒ʳ Ψ → Δ ⇒ʳ Ψ → Γ ,, Δ ⇒ʳ Ψ
     (σ ⋈ʳ τ) (var-inl x) = σ x
     (σ ⋈ʳ τ) (var-inr y) = τ y
 
-    -- the sum of substitutions
+    -- the sum of renamings
 
     infixl 8 _+ʳ_
 
