@@ -61,3 +61,8 @@ module SecondOrder.Term
       { Carrier = Term Θ Γ A
       ; _≈_ = _≈_
       ; isEquivalence = record { refl = ≈-refl ; sym = ≈-sym ; trans = ≈-trans } }
+
+  -- to equal variable give rise to two equal terms
+  ≡-var : ∀ {Θ Γ A} → {s t : A ∈ Γ} → s ≡ t → tm-var {Θ = Θ} s ≡ tm-var t
+  ≡-var refl = refl
+

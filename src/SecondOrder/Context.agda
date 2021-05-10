@@ -1,6 +1,8 @@
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subst)
+
 module SecondOrder.Context {ℓ} (Sort : Set ℓ)  where
 
-  -- A context is a binary tree whose leaves are labeled with sorts
+  -- a context is a binary tree whose leaves are labeled with sorts
   data Context : Set ℓ where
     ctx-empty : Context
     ctx-slot : Sort → Context
@@ -16,6 +18,11 @@ module SecondOrder.Context {ℓ} (Sort : Set ℓ)  where
     var-inl : ∀ {Γ Δ} (x : A ∈ Γ) → A ∈ Γ ,, Δ
     var-inr : ∀ {Γ Δ} (y : A ∈ Δ) → A ∈ Γ ,, Δ
 
-  -- It is absurd to have a variable in the empty context
+  -- it is absurd to have a variable in the empty context
   ctx-empty-absurd : ∀ {ℓ} {A} {P : A ∈ ctx-empty → Set ℓ} (x : A ∈ ctx-empty) → P x
   ctx-empty-absurd ()
+
+  -- the injection of two equal variables are equal
+  ≡-inl : ∀ {Γ Δ A} {s t : A ∈ Γ}
+        → s ≡ t → var-inl {Δ = Δ} s ≡ var-inl t
+  ≡-inl refl = refl

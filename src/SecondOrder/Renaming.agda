@@ -1,3 +1,5 @@
+-- {-# OPTIONS --allow-unsolved-metas #-}
+
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subst)
 
@@ -15,6 +17,10 @@ module SecondOrder.Renaming
   open SecondOrder.Signature.Signature Σ
   open SecondOrder.Metavariable Σ
   open SecondOrder.Term Σ
+
+
+
+-- ** DEFINITIONS **
 
   -- a renaming is a morphism between contexts
   _⇒ʳ_ : ∀ (Γ Δ : Context) → Set ℓs
@@ -72,6 +78,78 @@ module SecondOrder.Renaming
     ⇑ʳ : ∀ {Γ Δ A} → Term Θ Γ A → Term Θ (Γ ,, Δ) A
     ⇑ʳ = [ var-inl ]ʳ_
 
+
+
+    -- the join of substitutions
+    infixl 7 _⋈ʳ_
+
+    _⋈ʳ_ : ∀ {Γ Δ Ψ} → Γ ⇒ʳ Ψ → Δ ⇒ʳ Ψ → Γ ,, Δ ⇒ʳ Ψ
+    (σ ⋈ʳ τ) (var-inl x) = σ x
+    (σ ⋈ʳ τ) (var-inr y) = τ y
+
+    -- the sum of substitutions
+
+    infixl 8 _+ʳ_
+
+    _+ʳ_ : ∀ {Γ Γ' Δ Δ'} → Γ ⇒ʳ Δ → Γ' ⇒ʳ Δ' → (Γ ,, Γ') ⇒ʳ Δ ,, Δ'
+    σ +ʳ τ = (λ x → var-inl (σ x)) ⋈ʳ (λ y → var-inr (τ y))
+
   -- equality of renamings
   _≡ʳ_ : ∀ {Γ Δ} (σ τ : Γ ⇒ʳ Δ) → Set ℓs
   _≡ʳ_ {Γ} σ τ = ∀ {A} (x : A ∈ Γ) → σ x ≡ τ x
+
+
+
+
+-- ** METATHEOREMS **
+
+
+  -- the extension of to equal renamings are equal
+  ≡ʳextendʳ : ∀ {Γ Δ Ξ} {ρ ν : Γ ⇒ʳ Δ}
+        → ρ ≡ʳ ν → extendʳ ρ {Ξ = Ξ} ≡ʳ extendʳ ν
+  ≡ʳextendʳ p (var-inl x) = ≡-inl (p x)
+  ≡ʳextendʳ p (var-inr x) = refl
+
+  -- two equal renamings have the same action
+  ≈ʳ[]ʳ : ∀ {Θ Γ Δ A} {t : Term Θ Γ A} {ρ ν : Γ ⇒ʳ Δ}
+        → ρ ≡ʳ ν → [ ρ ]ʳ t ≈ [ ν ]ʳ t
+  ≈ʳ[]ʳ {t = tm-var x} p = ≈-≡ (≡-var (p x))
+  ≈ʳ[]ʳ {t = tm-meta M ts} p = ≈-meta λ i → ≈ʳ[]ʳ p
+  ≈ʳ[]ʳ {Θ} {A = A} {t = tm-oper f es} p = ≈-oper (λ i → ≈ʳ[]ʳ (≡ʳextendʳ p))
+
+  -- the extension of a composition is equal to the composition of extensions
+  ∘r-≈-extendʳ : ∀ {Γ Δ Λ Ξ} (ρ : Γ ⇒ʳ Δ) (ν : Δ ⇒ʳ Λ)
+        →  extendʳ (ν ∘ʳ ρ) {Ξ = Ξ} ≡ʳ ((extendʳ ν) ∘ʳ (extendʳ ρ))
+  ∘r-≈-extendʳ ρ ν (var-inl x) = refl
+  ∘r-≈-extendʳ ρ ν (var-inr x) = refl
+
+  -- composition of renamings commutes with equality
+  ∘r-≈ : ∀ {Θ Γ Δ ψ A} (t : Term Θ Γ A) (ρ : Γ ⇒ʳ Δ) (ν : Δ ⇒ʳ ψ)
+        → [ ν ∘ʳ ρ ]ʳ t ≈ [ ν ]ʳ ([ ρ ]ʳ t)
+  ∘r-≈ (tm-var x) ρ ν = ≈-≡ refl
+  ∘r-≈ (tm-meta M ts) ρ ν = ≈-meta (λ i → ∘r-≈ (ts i) ρ ν)
+  ∘r-≈ (tm-oper f es) ρ ν = ≈-oper λ i → ≈-trans
+                                           (≈ʳ[]ʳ (∘r-≈-extendʳ ρ ν))
+                                           (∘r-≈ (es i) (extendʳ ρ) (extendʳ ν))
+
+
+  -- the action of the identity renaming is the identity
+
+  idʳextendʳ : ∀ {Γ Ξ} → extendʳ (idʳ {Γ = Γ})  {Ξ = Ξ}  ≡ʳ idʳ
+  idʳextendʳ (var-inl x) = refl
+  idʳextendʳ (var-inr x) = refl
+
+  []ʳidʳ : ∀ {Θ Γ A} (t : Term Θ Γ A)
+          → [ idʳ ]ʳ t ≈ t
+  []ʳidʳ (SecondOrder.Term.tm-var x) = ≈-≡ refl
+  []ʳidʳ (SecondOrder.Term.tm-meta M ts) = ≈-meta λ i → []ʳidʳ (ts i)
+  []ʳidʳ (SecondOrder.Term.tm-oper f es) = ≈-oper λ i → ≈-trans
+                                                          (≈ʳ[]ʳ idʳextendʳ)
+                                                          ([]ʳidʳ (es i))
+
+  -- renamings preserve syntactical equality of terms
+  ≈-tm-ʳ : ∀ {Θ Γ Δ A} {s t : Term Θ Γ A} {ρ : Γ ⇒ʳ Δ}
+        → s ≈ t → [ ρ ]ʳ s ≈ [ ρ ]ʳ t
+  ≈-tm-ʳ (≈-≡ refl) = ≈-≡ refl
+  ≈-tm-ʳ (≈-meta ξ) = ≈-meta (λ i → ≈-tm-ʳ (ξ i))
+  ≈-tm-ʳ (≈-oper ξ) = ≈-oper (λ i → ≈-tm-ʳ (ξ i))

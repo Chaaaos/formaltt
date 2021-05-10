@@ -98,7 +98,7 @@ module SecondOrder.Equality
 
   -- judgemental equality of substitutions
   _≋ˢ_ : ∀ {Θ Γ Δ} (σ τ : Θ ⊕ Γ ⇒ˢ Δ) → Set (lsuc (ℓs ⊔ ℓo ⊔ ℓa))
-  _≋ˢ_ {Θ} {Γ} {Δ} σ τ = ∀ {A} (x : A ∈ Δ) → ⊢ Θ ⊕ Γ ∥ σ x ≋ τ x ⦂ A
+  _≋ˢ_ {Θ} {Γ} {Δ} σ τ = ∀ {A} (x : A ∈ Γ) → ⊢ Θ ⊕ Δ ∥ σ x ≋ τ x ⦂ A
 
   ≈ˢ-≋ˢ : ∀ {Θ Γ Δ} {σ τ : Θ ⊕ Γ ⇒ˢ Δ} → σ ≈ˢ τ → σ ≋ˢ τ
   ≈ˢ-≋ˢ ξ = λ x → ≈-≋ (ξ x)
