@@ -40,12 +40,8 @@ module SecondOrder.Instantiation
   [ I ]ⁱ (tm-meta M ts) = [ var-inl ʳ⃗ˢ ⋈ˢ (λ x →  [ I ]ⁱ ts x) ]ˢ I M
   [ I ]ⁱ (tm-oper f es) = tm-oper f λ i → term-reassoc ([ I ]ⁱ es i)
 
-  -- idⁱ-inv : ∀ {Θ Γ} → (ctx-empty ,, Γ) ⇒ʳ Γ
-  -- idⁱ-inv (var-inr x) = x
-
   -- composition of metavariable instantiations
   infixl 5 _∘ⁱ_
-
   _∘ⁱ_ : ∀ {Θ Ξ Ω Γ Δ} → Ξ ⇒ⁱ Ω ⊕ Δ → Θ ⇒ⁱ Ξ ⊕ Γ → (Θ ⇒ⁱ Ω ⊕ (Δ ,, Γ))
   (I ∘ⁱ J) M =  term-reassoc ([ I ]ⁱ (J M))
 
@@ -55,39 +51,66 @@ module SecondOrder.Instantiation
 
   -- as a special case we define instantiation of a closed term such that
   -- the empty context does not appear. This is used when axioms are instantiated.
-
   instantiate-closed-term : ∀ {Θ Ξ Γ A} (I : Θ ⇒ⁱ Ξ ⊕ Γ) → Term Θ ctx-empty A → Term Ξ Γ A
   instantiate-closed-term I t =  [ ctx-empty-right-unit ]ʳ ([ I ]ⁱ t)
 
 
 -- ** METATHEOREMS **
 
-  -- two equal instantiations have the same action
-  ≈ⁱ[]ⁱ : ∀ {Θ Ω Γ Δ A} {t : Term Θ Δ A} {σ τ : Θ ⇒ⁱ Ω ⊕ Γ}
-        → σ ≈ⁱ τ → [ σ ]ⁱ t ≈ [ τ ]ⁱ t
+  -- (1) two equal instantiations have the same action
+  ≈ⁱ[]ⁱ : ∀ {Θ Ω Γ Δ A} {t : Term Θ Δ A} {I J : Θ ⇒ⁱ Ω ⊕ Γ}
+        → I ≈ⁱ J → [ I ]ⁱ t ≈ [ J ]ⁱ t
   ≈ⁱ[]ⁱ {t = tm-var x} p = ≈-≡ refl
-  ≈ⁱ[]ⁱ {t = tm-meta M ts} p = {!!} -- ≈-meta λ i → ≈ˢ[]ˢ {t = ts i} p
+  ≈ⁱ[]ⁱ {t = tm-meta M ts} {I = I} {J = J} p = ≈-trans
+                                               (≈ˢ[]ˢ
+                                                 {t = I M}
+                                                 {σ = var-inl ʳ⃗ˢ ⋈ˢ (λ x → [ I ]ⁱ ts x)}
+                                                 {τ =  var-inl ʳ⃗ˢ ⋈ˢ (λ x → [ J ]ⁱ ts x)}
+                                                 (⋈ˢ-≈ˢ-r λ x → ≈ⁱ[]ⁱ {t = ts x} p))
+                                               (≈-tm-ˢ (p M))
   ≈ⁱ[]ⁱ {t = tm-oper f es} p = ≈-oper λ i → ≈-tm-ʳ (≈ⁱ[]ⁱ {t = es i} p)
 
-  -- composition of substitutions commutes with equality
-  ∘ⁱ-≈ : ∀ {Θ Ω ψ Γ Δ Ξ A} (t : Term Θ Ξ A) (σ : Θ ⇒ⁱ Ω ⊕ Γ) (τ : Ω ⇒ⁱ ψ ⊕ Δ)
-        → [ τ ∘ⁱ σ ]ⁱ t ≈ term-reassoc ([ τ ]ⁱ ([ σ ]ⁱ t))
-  ∘ⁱ-≈ (tm-var x) σ τ = ≈-≡ refl
-  ∘ⁱ-≈ (tm-meta M ts) σ τ = {!!} -- ≈-meta (λ i → ∘ˢ-≈ (ts i) σ τ)
-  ∘ⁱ-≈ (tm-oper f es) σ τ = ≈-oper λ i → {!!}
 
-  -- the action of the identity instantiation is the identity
+  -- (2) composition of substitutions commutes with equality (the proof comes later)
+  ∘ⁱ-≈ : ∀ {Θ Ω ψ Γ Δ Ξ A} (t : Term Θ Ξ A) (I : Ω ⇒ⁱ ψ ⊕ Δ) (J : Θ ⇒ⁱ Ω ⊕ Γ)
+        → [ I ∘ⁱ J ]ⁱ t ≈ term-reassoc ([ I ]ⁱ ([ J ]ⁱ t))
+
+  -- reassociation of a composition
+  reassoc-∘ⁱ : ∀ {Θ Ω ψ Γ Δ Ξ Λ A} (t : Term Θ (Ξ ,, Λ) A) (I : Ω ⇒ⁱ ψ ⊕ Δ) (J : Θ ⇒ⁱ Ω ⊕ Γ)
+              → term-reassoc ([ I ∘ⁱ J ]ⁱ t) ≈  term-reassoc (term-reassoc ([ I ]ⁱ ([ J ]ⁱ t)))
+  reassoc-∘ⁱ t I J = ≈-tm-ʳ (∘ⁱ-≈ t I J)
+
+  -- auxiliary function for (2), to deal with extensions in the oper case
+  ∘ⁱ-≈-oper : ∀ {Θ Ω ψ Γ Δ Ξ Λ A} (t : Term Θ (Ξ ,, Λ) A) (I : Ω ⇒ⁱ ψ ⊕ Δ) (J : Θ ⇒ⁱ Ω ⊕ Γ)
+              → term-reassoc ([ I ∘ⁱ J ]ⁱ t) ≈ [ extendʳ rename-assoc ]ʳ term-reassoc ([ I ]ⁱ term-reassoc ([ J ]ⁱ t))
+  ∘ⁱ-≈-oper t I J = ≈-trans (reassoc-∘ⁱ t I J) {!!}
+
+  -- proof of (2)
+  ∘ⁱ-≈ (tm-var x) I J = ≈-≡ refl
+  ∘ⁱ-≈ (tm-meta M ts) I J = {!!} -- I don't really know how to begin with this
+  ∘ⁱ-≈ (tm-oper f es) I J = ≈-oper λ i → ∘ⁱ-≈-oper (es i) I J
+
+
+  -- (3) the action of the identity instantiation is the identity
+  -- auxiliary function for (3), to deal with extensions in the oper case
+  []ⁱidⁱ-oper : ∀ {Θ Γ Ξ A} (t : Term Θ (Γ ,, Ξ) A)
+              → [ extendʳ ctx-empty-left-unit ]ʳ term-reassoc ([ idⁱ ]ⁱ t) ≈ t
+  []ⁱidⁱ-oper (SecondOrder.Term.tm-var (var-inl x)) = ≈-≡ refl
+  []ⁱidⁱ-oper (SecondOrder.Term.tm-var (var-inr x)) = ≈-≡ refl
+  []ⁱidⁱ-oper (SecondOrder.Term.tm-meta M ts) = ≈-meta λ i → {!!}
+  []ⁱidⁱ-oper (SecondOrder.Term.tm-oper f es) = ≈-oper (λ i → {!!}) -- problem with extensions of extensions of functions : should be avoided
+
+  -- (3)
   []ⁱidⁱ : ∀ {Θ Γ A} (t : Term Θ Γ A)
            → [ ctx-empty-left-unit ]ʳ ([ idⁱ ]ⁱ t) ≈ t
   []ⁱidⁱ (tm-var x) = ≈-≡ refl
-  []ⁱidⁱ (tm-meta M ts) = {!!} -- ≈-meta λ i → []ˢidˢ (ts i)
-  []ⁱidⁱ (tm-oper f es) = ≈-oper λ i → {!!} -- ≈-oper λ i → ≈-trans
-                                         -- (≈ˢ[]ˢ {t = es i} idˢextendˢ)
-                                         -- ([]ˢidˢ (es i))
+  []ⁱidⁱ (tm-meta M ts) = {!!}
+  []ⁱidⁱ (tm-oper f es) = ≈-oper λ i → []ⁱidⁱ-oper (es i)
 
-  -- substitutions preserve syntactical equality of terms
-  ≈-tm-ⁱ : ∀ {Θ Ω Γ Δ A} {s t : Term Θ Δ A} {σ : Θ ⇒ⁱ Ω ⊕ Γ}
-        → s ≈ t → [ σ ]ⁱ s ≈ [ σ ]ⁱ t
+
+  -- (4) substitutions preserve syntactical equality of terms
+  ≈-tm-ⁱ : ∀ {Θ Ω Γ Δ A} {s t : Term Θ Δ A} {I : Θ ⇒ⁱ Ω ⊕ Γ}
+        → s ≈ t → [ I ]ⁱ s ≈ [ I ]ⁱ t
   ≈-tm-ⁱ (≈-≡ refl) = ≈-≡ refl
-  ≈-tm-ⁱ {t = tm-meta M ts} {σ = σ} (≈-meta ξ) = ≈ˢ[]ˢ {t = σ M} {!!}
+  ≈-tm-ⁱ {t = tm-meta M ts} {I = I} (≈-meta ξ) = ≈ˢ[]ˢ {t = I M} (⋈ˢ-≈ˢ-r (λ x → ≈-tm-ⁱ (ξ x)))
   ≈-tm-ⁱ (≈-oper ξ) = ≈-oper λ i → ≈-tm-ʳ (≈-tm-ⁱ (ξ i))

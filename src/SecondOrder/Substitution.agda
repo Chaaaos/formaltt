@@ -69,14 +69,12 @@ module SecondOrder.Substitution
     [ σ ]ˢ (tm-oper f es) = tm-oper f (λ i → [ ⇑ˢ σ ]ˢ es i)
 
     -- composition of substitutions
-
     infixl 7 _∘ˢ_
-
-    _∘ˢ_ : ∀ {Γ Δ Ψ : Context} → Θ ⊕ Δ ⇒ˢ Ψ → Θ ⊕ Γ ⇒ˢ Δ → Θ ⊕ Γ ⇒ˢ Ψ
+    _∘ˢ_ : ∀ {Γ Δ Ξ : Context} → Θ ⊕ Δ ⇒ˢ Ξ → Θ ⊕ Γ ⇒ˢ Δ → Θ ⊕ Γ ⇒ˢ Ξ
     (σ ∘ˢ ρ) x = [ σ ]ˢ ρ x
 
     -- action of a substitution on a renaming
-    _ˢ∘ʳ_ : ∀ {Γ Δ Ψ} → Θ ⊕ Δ ⇒ˢ Ψ → Γ ⇒ʳ Δ → Θ ⊕ Γ ⇒ˢ Ψ
+    _ˢ∘ʳ_ : ∀ {Γ Δ Ξ} → Θ ⊕ Δ ⇒ˢ Ξ → Γ ⇒ʳ Δ → Θ ⊕ Γ ⇒ˢ Ξ
     σ ˢ∘ʳ ρ = σ ∘ˢ ρ ʳ⃗ˢ
 
     -- syntactic equality of substitutions
@@ -87,18 +85,37 @@ module SecondOrder.Substitution
 -- ** METATHEOREMS **
 
 
-  -- the extension of to equal substitutions are equal
+  -- (1) the weakening of to equal substitutions are equal
   ≈ˢextendˢ : ∀ {Θ Γ Δ Ξ} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
         → σ ≈ˢ τ → ⇑ˢ {Ξ = Ξ} σ ≈ˢ ⇑ˢ τ
   ≈ˢextendˢ p (var-inl x) = ≈-tm-ʳ (p x)
   ≈ˢextendˢ p (var-inr x) = ≈-≡ refl
 
-  -- two equal renamings have the same action
+  -- (2) two equal substitution have the same action
   ≈ˢ[]ˢ : ∀ {Θ Γ Δ A} {t : Term Θ Γ A} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
         → σ ≈ˢ τ → [ σ ]ˢ t ≈ [ τ ]ˢ t
   ≈ˢ[]ˢ {t = tm-var x} p = p x
   ≈ˢ[]ˢ {t = tm-meta M ts} p = ≈-meta λ i → ≈ˢ[]ˢ {t = ts i} p
   ≈ˢ[]ˢ {t = tm-oper f es} p = ≈-oper λ i → ≈ˢ[]ˢ {t = es i} (≈ˢextendˢ p)
+
+
+  -- (3) composition of substitutions commutes with equality
+  -- auxiliary functions :
+
+  -- composition of renamings an substitutions extended to terms
+  ˢ∘ʳtm-≈ : ∀ {Θ Γ Δ Ξ A} (σ : Θ ⊕ Δ ⇒ˢ Ξ) (ρ : Γ ⇒ʳ Δ) (t : Term Θ Γ A) → [ σ ˢ∘ʳ ρ ]ˢ  t ≈ [ σ ]ˢ ([ ρ ]ʳ t)
+  ˢ∘ʳtm-≈ σ ρ (tm-var x) = ≈-≡ refl
+  ˢ∘ʳtm-≈ σ ρ (tm-meta M ts) = ≈-meta λ i → ˢ∘ʳtm-≈ σ ρ (ts i)
+  ˢ∘ʳtm-≈ σ ρ (SecondOrder.Term.tm-oper f es) = ≈-oper (λ i → {!!}) -- needs an auxiliary function
+
+  -- interactions between extension and weakening
+  extendʳ⇑ˢ : ∀ {Θ Γ Δ Ξ Λ A} (t : Term Θ (Γ ,, Λ) A) (σ : Θ ⊕ Γ ⇒ˢ Δ)
+            → [ extendʳ (var-inl {Δ = Ξ}) ]ʳ ([ ⇑ˢ σ ]ˢ t) ≈ [ ⇑ˢ ((λ y → [ var-inl ]ʳ σ y) ⋈ˢ (λ y → tm-var (var-inr y))) ]ˢ ([ extendʳ var-inl ]ʳ t)
+  extendʳ⇑ˢ {Δ = Δ} {Ξ = Ξ} t σ = ≈-trans
+                                  (≈-sym {!!}) -- define the action of a renaming on a substitutions, show things on this
+                                  (≈-trans
+                                    {!!}
+                                    (ˢ∘ʳtm-≈ ( ⇑ˢ ((λ y → [ var-inl ]ʳ σ y) ⋈ˢ (λ y → tm-var (var-inr y)))) (extendʳ var-inl) t))
 
   -- the extension of a composition is equal to the composition of extensions
   ∘ˢ-≈-extendˢ : ∀ {Θ Γ Δ Λ Ξ} (τ : Θ ⊕ Γ ⇒ˢ Δ) (σ : Θ ⊕ Δ ⇒ˢ Λ)
@@ -109,11 +126,11 @@ module SecondOrder.Substitution
         → [ var-inl {Δ = Ξ} ]ʳ ([ σ ]ˢ t) ≈ [ (λ x → [ var-inl ]ʳ σ x) ⋈ˢ (λ y → tm-var (var-inr y)) ]ˢ ([ var-inl ]ʳ t)
       ∘ˢ-≈-extendˢ-aux (tm-var x) σ = ≈-≡ refl
       ∘ˢ-≈-extendˢ-aux (tm-meta M ts) σ = ≈-meta λ i → ∘ˢ-≈-extendˢ-aux (ts i) σ
-      ∘ˢ-≈-extendˢ-aux (tm-oper f es) σ = ≈-oper (λ i → {!!})
+      ∘ˢ-≈-extendˢ-aux (tm-oper f es) σ = ≈-oper (λ i → extendʳ⇑ˢ (es i) σ)
   ∘ˢ-≈-extendˢ τ σ (var-inr x) = ≈-≡ refl
 
 
-  -- composition of substitutions commutes with equality
+  -- (3)
   ∘ˢ-≈ : ∀ {Θ Γ Δ Ξ A} (t : Term Θ Γ A) (σ : Θ ⊕ Γ ⇒ˢ Δ) (τ : Θ ⊕ Δ ⇒ˢ Ξ)
         → [ τ ∘ˢ σ ]ˢ t ≈ [ τ ]ˢ ([ σ ]ˢ t)
   ∘ˢ-≈ (tm-var x) σ τ = ≈-≡ refl
@@ -123,12 +140,13 @@ module SecondOrder.Substitution
                                            (∘ˢ-≈ (es i) (⇑ˢ σ) (⇑ˢ τ))
 
 
-  -- the action of the identity substitution is the identity
+  -- (4) the action of the identity substitution is the identity
 
   idˢextendˢ : ∀ {Θ Γ Ξ} → _≈ˢ_ {Θ = Θ} (⇑ˢ  {Ξ = Ξ} (idˢ {Γ = Γ})) idˢ
   idˢextendˢ (var-inl x) = ≈-≡ refl
   idˢextendˢ (var-inr x) = ≈-≡ refl
 
+  -- (4)
   []ˢidˢ : ∀ {Θ Γ A} (t : Term Θ Γ A)
           → [ idˢ ]ˢ t ≈ t
   []ˢidˢ (tm-var x) = ≈-≡ refl
@@ -137,9 +155,23 @@ module SecondOrder.Substitution
                                          (≈ˢ[]ˢ {t = es i} idˢextendˢ)
                                          ([]ˢidˢ (es i))
 
-  -- substitutions preserve syntactical equality of terms
+
+  -- (5) substitutions preserve syntactical equality of terms
   ≈-tm-ˢ : ∀ {Θ Γ Δ A} {s t : Term Θ Γ A} {σ : Θ ⊕ Γ ⇒ˢ Δ}
         → s ≈ t → [ σ ]ˢ s ≈ [ σ ]ˢ t
   ≈-tm-ˢ (≈-≡ refl) = ≈-≡ refl
   ≈-tm-ˢ (≈-meta ξ) = ≈-meta (λ i → ≈-tm-ˢ (ξ i))
   ≈-tm-ˢ (≈-oper ξ) = ≈-oper (λ i → ≈-tm-ˢ (ξ i))
+
+
+  -- (6) the join preserves equality
+  ⋈ˢ-≈ˢ-r : ∀ {Θ Γ Δ Ξ} {σ : Θ ⊕ Γ ⇒ˢ Ξ} {τ₁ τ₂ : Θ ⊕ Δ ⇒ˢ Ξ} → τ₁ ≈ˢ τ₂ → (σ ⋈ˢ τ₁) ≈ˢ (σ ⋈ˢ τ₂)
+  ⋈ˢ-≈ˢ-r p (var-inl x) = ≈-≡ refl
+  ⋈ˢ-≈ˢ-r p (var-inr x) = p x
+
+  ⋈ˢ-≈ˢ-l : ∀ {Θ Γ Δ Ξ} {σ₁ σ₂ : Θ ⊕ Γ ⇒ˢ Ξ} {τ : Θ ⊕ Δ ⇒ˢ Ξ} → σ₁ ≈ˢ σ₂ → (σ₁ ⋈ˢ τ) ≈ˢ (σ₂ ⋈ˢ τ)
+  ⋈ˢ-≈ˢ-l p (var-inl x) = p x
+  ⋈ˢ-≈ˢ-l p (var-inr x) = ≈-≡ refl
+
+  ⋈ˢ-≈ˢ : ∀ {Θ Γ Δ Ξ} {σ₁ σ₂ : Θ ⊕ Γ ⇒ˢ Ξ} {τ₁ τ₂ : Θ ⊕ Δ ⇒ˢ Ξ} → σ₁ ≈ˢ σ₂ → τ₁ ≈ˢ τ₂ → (σ₁ ⋈ˢ τ₁) ≈ˢ (σ₂ ⋈ˢ τ₂)
+  ⋈ˢ-≈ˢ pσ pτ = λ x → ≈-trans (⋈ˢ-≈ˢ-r pτ x) (⋈ˢ-≈ˢ-l pσ x)
