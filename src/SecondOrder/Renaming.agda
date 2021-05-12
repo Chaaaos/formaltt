@@ -37,6 +37,13 @@ module SecondOrder.Renaming
   idʳ : ∀ {Γ : Context} → Γ ⇒ʳ Γ
   idʳ x = x
 
+  -- the injection renamings
+  inlʳ : ∀ {Γ Δ} → Γ ⇒ʳ Γ ,, Δ
+  inlʳ = var-inl
+
+  inrʳ : ∀ {Γ Δ} → Δ ⇒ʳ Γ ,, Δ
+  inrʳ = var-inr
+
   -- composition of renamings
   _∘ʳ_ : ∀ {Γ Δ Ξ : Context} → Δ ⇒ʳ Ξ → Γ ⇒ʳ Δ → Γ ⇒ʳ Ξ
   (σ ∘ʳ ρ) x = σ (ρ x)
@@ -85,30 +92,75 @@ module SecondOrder.Renaming
     ⇑ʳ = [ var-inl ]ʳ_
 
 
+  -- the join of renamings
+  infixl 7 _⋈ʳ_
 
-    -- the join of renamings
-    infixl 7 _⋈ʳ_
-
-    _⋈ʳ_ : ∀ {Γ Δ Ξ} → Γ ⇒ʳ Ξ → Δ ⇒ʳ Ξ → Γ ,, Δ ⇒ʳ Ξ
-    (σ ⋈ʳ τ) (var-inl x) = σ x
-    (σ ⋈ʳ τ) (var-inr y) = τ y
-
-    -- the sum of renamings
-
-    infixl 8 _+ʳ_
-
-    _+ʳ_ : ∀ {Γ Γ' Δ Δ'} → Γ ⇒ʳ Δ → Γ' ⇒ʳ Δ' → (Γ ,, Γ') ⇒ʳ Δ ,, Δ'
-    σ +ʳ τ = (λ x → var-inl (σ x)) ⋈ʳ (λ y → var-inr (τ y))
+  _⋈ʳ_ : ∀ {Γ Δ Ξ} → Γ ⇒ʳ Ξ → Δ ⇒ʳ Ξ → Γ ,, Δ ⇒ʳ Ξ
+  (σ ⋈ʳ τ) (var-inl x) = σ x
+  (σ ⋈ʳ τ) (var-inr y) = τ y
+                           
+  -- the sum of renamings
+                
+  infixl 8 _+ʳ_
+           
+  _+ʳ_ : ∀ {Γ Γ' Δ Δ'} → Γ ⇒ʳ Δ → Γ' ⇒ʳ Δ' → (Γ ,, Γ') ⇒ʳ Δ ,, Δ'
+  σ +ʳ τ = (λ x → var-inl (σ x)) ⋈ʳ (λ y → var-inr (τ y))
 
   -- equality of renamings
   _≡ʳ_ : ∀ {Γ Δ} (σ τ : Γ ⇒ʳ Δ) → Set ℓs
   _≡ʳ_ {Γ} σ τ = ∀ {A} (x : A ∈ Γ) → σ x ≡ τ x
 
+  infixl 3 _≡ʳ_
+  
 
 
+--========================================================================================
+--∥                              ========================                                ∥
+--∥                              ∥  ** METATHEOREMS **  ∥                                ∥
+--∥                              ========================                                ∥
+--========================================================================================
 
--- ** METATHEOREMS **
+  -------------------------------------------
+  --          Lemmas about sums           --
+  -------------------------------------------
 
+  -- We want to show that sums of renamings form a coproduct of morphisms
+  -- in the category where Contexts are the objects and renamings the morphisms
+  -- between them.
+
+  -- The join of two renamings gives us the renaming prophesied by the
+  -- universal property of coproducts.
+  -- Now we just need to show uniqueness:
+  unique⋈ : ∀ {Γ Δ Ξ} {σ : Γ ⇒ʳ Ξ} {τ : Δ ⇒ʳ Ξ} {ρ : Γ ,, Δ ⇒ʳ Ξ}
+          → (ρ ∘ʳ inlʳ) ≡ʳ σ
+          → (ρ ∘ʳ inrʳ) ≡ʳ τ
+          → ρ ≡ʳ (σ ⋈ʳ τ)
+  unique⋈ eq1 eq2 (var-inl x) = eq1 x
+  unique⋈ eq1 eq2 (var-inr y) = eq2 y
+
+  -- We have existance of coproducts of renamings with the sum
+  -- once again, what about uniqueness?
+  -- For any renaming ρ : Γ ,, Γ' → Δ ,, Δ' that makes the corresponding
+  -- squares commute, we have ρ ≡ʳ σ +ʳ τ
+  unique+ : ∀ {Γ Γ' Δ Δ' Ξ Λ} {σ : Γ ⇒ʳ Δ} {τ : Γ' ⇒ʳ Δ'} {ρ : Ξ ⇒ʳ Λ}
+    → (α₁ : Γ ⇒ʳ Ξ) → (α₂ : Δ ⇒ʳ Λ) → (ρ ∘ʳ α₁) ≡ʳ (α₂ ∘ʳ σ)
+    → (β₁ : Γ' ⇒ʳ Ξ) → (β₂ : Δ' ⇒ʳ Λ) → (ρ ∘ʳ β₁) ≡ʳ (β₂ ∘ʳ τ)
+    → ρ ∘ʳ (α₁ ⋈ʳ β₁) ≡ʳ (α₂ ⋈ʳ β₂) ∘ʳ (σ +ʳ τ)
+  unique+ α₁ α₂ eq1 β₁ β₂ eq2 (var-inl x) = eq1 x
+  unique+ α₁ α₂ eq1 β₁ β₂ eq2 (var-inr y) = eq2 y
+  
+  -- Lemma: The extension of a renaming is equal to summing with the identity renaming
+  extendʳ≡+id : ∀ {Γ Δ Ξ} {ρ : Γ ⇒ʳ Δ}
+             → (extendʳ ρ {Ξ}) ≡ʳ (ρ +ʳ idʳ)
+  extendʳ≡+id (var-inl x) = refl
+  extendʳ≡+id (var-inr y) = refl
+
+  -- Lemma: The sum of two equal renamings is equal
+  ≡ʳ+ʳ : ∀ {Γ Δ Ξ Λ} {ρ ρ' : Γ ⇒ʳ Δ} {ν ν' : Ξ ⇒ʳ Λ}
+       → ρ ≡ʳ ρ' → ν ≡ʳ ν'
+       → (ρ +ʳ ν) ≡ʳ (ρ' +ʳ ν')
+  ≡ʳ+ʳ eq1 eq2 (var-inl x) = cong var-inl (eq1 x)
+  ≡ʳ+ʳ eq1 eq2 (var-inr y) = cong var-inr (eq2 y)
 
   -- (1) the extension of to equal renamings are equal
   ≡ʳextendʳ : ∀ {Γ Δ Ξ} {ρ ν : Γ ⇒ʳ Δ}
