@@ -8,7 +8,6 @@ open import Function.Base
 open import Relation.Binary using (Setoid)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst)
 open import SecondOrder.Arity
-import Relation.Binary.Reasoning.Setoid as SetoidR
 
 import SecondOrder.Substitution
 import SecondOrder.SecondOrderSignature as SecondOrderSignature
@@ -46,25 +45,23 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
   --=================================
 
   -- enables to use a renaming as a substitution
-  r-to-subst : ∀ {Θ Γ Δ} (ρ : Θ ⊕ Γ ⇒r Δ) → Θ ⊕ Δ ⇒s Γ
-  r-to-subst ρ x = tm-var (ρ x)
-
+  r-to-subst : ∀ {Θ Γ Δ} (ρ : Θ ⊕ Γ ⇒ʳ Δ) → Θ ⊕ Δ ⇒ˢ Γ
 
   syntax r-to-subst ρ = ρ ˢ
 
-  r-to-subst-extend-sˡ : ∀ {Θ Γ Δ Ξ} {ρ : Θ ⊕ Γ ⇒r Δ}
-    →  _≈s_ {Θ = Θ} (r-to-subst (extend-r {Θ = Θ} ρ {Ξ = Ξ})) (extend-sˡ (r-to-subst ρ))
+  r-to-subst-⇑ˢ : ∀ {Θ Γ Δ Ξ} {ρ : Θ ⊕ Γ ⇒ʳ Δ}
+    →  _≈ˢ_ {Θ = Θ} (r-to-subst (extendʳ {Θ = Θ} ρ {Ξ = Ξ})) (⇑ˢ (r-to-subst ρ))
 
   -- For any renaming ρ and term t, it doesn't matter if we act on t with
   -- the renaming ρ or act on t with the substitution induced by ρ
   -- Proposition 3.19 (1)
-  r-to-subst-≈ :  ∀ {Θ Γ Δ A} {t : Term Θ Γ A} {ρ : Θ ⊕ Γ ⇒r Δ}
-    → ⊢ Θ ⊕ Δ ∥ ([ ρ ]r t) ≈ t [ r-to-subst ρ ]s ⦂ A
+  r-to-subst-≈ :  ∀ {Θ Γ Δ A} {t : Term Θ Γ A} {ρ : Θ ⊕ Γ ⇒ʳ Δ}
+    → ⊢ Θ ⊕ Δ ∥ ([ ρ ]ʳ t) ≈ t [ r-to-subst ρ ]ˢ ⦂ A
 
   -- applying an extended renaming (ρ ⊕ Ξ) on a term t is the same as extending the
   -- substitution induced by the renaming ρ
-  r-to-subst-≈aux : ∀ {Θ Γ Δ Ξ A} {t : Term Θ (Γ ,, Ξ) A} {ρ : Θ ⊕ Γ ⇒r Δ}
-    → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ ([(extend-r {Θ = Θ} ρ)]r t) ≈ t [ extend-sˡ (r-to-subst ρ) ]s ⦂ A
+  r-to-subst-≈aux : ∀ {Θ Γ Δ Ξ A} {t : Term Θ (Γ ,, Ξ) A} {ρ : Θ ⊕ Γ ⇒ʳ Δ}
+    → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ ([(extendʳ {Θ = Θ} ρ)]ʳ t) ≈ t [ ⇑ˢ (r-to-subst ρ) ]ˢ ⦂ A
 
   ---------------------------------------------------------------------------------------------
   --=====================
@@ -76,33 +73,33 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
   ---------------------
 
   -- actions of equal substitutions are pointwise equal
-  subst-congr : ∀ {Θ Γ Δ A} {t : Term Θ Γ A} {σ τ : Θ ⊕ Δ ⇒s Γ}
-    → σ ≈s τ → ⊢ Θ ⊕ Δ ∥ t [ σ ]s ≈  t [ τ ]s ⦂ A
+  subst-congr : ∀ {Θ Γ Δ A} {t : Term Θ Γ A} {σ τ : Θ ⊕ Δ ⇒ˢ Γ}
+    → σ ≈ˢ τ → ⊢ Θ ⊕ Δ ∥ t [ σ ]ˢ ≈  t [ τ ]ˢ ⦂ A
 
   -- action of the identity substitution is the identity
   -- Proposition 3.19 (2)
   id-action : ∀ {Θ Γ A} {a : Term Θ Γ A}
-    → (⊢ Θ ⊕ Γ ∥ a ≈ (a [ id-s ]s) ⦂ A)
+    → (⊢ Θ ⊕ Γ ∥ a ≈ (a [ idˢ ]ˢ) ⦂ A)
 
   -- substitution preserves equality of terms
-  ≈tm-subst : ∀ {Θ Γ Δ A} {s t : Term Θ Γ A} {σ : Θ ⊕ Δ ⇒s Γ}
-    → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → ⊢ Θ ⊕ Δ ∥ s [ σ ]s ≈  t [ σ ]s ⦂ A
+  ≈tm-subst : ∀ {Θ Γ Δ A} {s t : Term Θ Γ A} {σ : Θ ⊕ Δ ⇒ˢ Γ}
+    → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → ⊢ Θ ⊕ Δ ∥ s [ σ ]ˢ ≈  t [ σ ]ˢ ⦂ A
 
   -- action of substitutions "commutes" with composition, i.e. is functorial
   -- Proposition 3.19 (4)
-  ∘s-≈ :  ∀ {Θ Γ Δ Ξ A} {t : Term Θ Γ A} {σ : Θ ⊕ Δ ⇒s Γ} {τ : Θ ⊕ Ξ ⇒s Δ}
-    → ⊢ Θ ⊕ Ξ ∥ (t [ σ ]s) [ τ ]s ≈ (t [ σ ∘s τ ]s) ⦂ A
+  ∘ˢ-≈ :  ∀ {Θ Γ Δ Ξ A} {t : Term Θ Γ A} {σ : Θ ⊕ Δ ⇒ˢ Γ} {τ : Θ ⊕ Ξ ⇒ˢ Δ}
+    → ⊢ Θ ⊕ Ξ ∥ (t [ σ ]ˢ) [ τ ]ˢ ≈ (t [ σ ∘ˢ τ ]ˢ) ⦂ A
 
   --------------
   -- B. Lemmas |
   --------------
 
   -- extension of the identity substitution is the identity substitution
-  id-s-extendˡ : ∀ {Θ Γ Ξ A} {a : A ∈ (Γ ,, Ξ)}
-    → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ extend-sˡ {Θ} {Γ} {Γ} {Ξ} (id-s {Γ = Γ}) {A} a ≈  id-s {Γ = Γ ,, Ξ} a ⦂ A
+  idˢ-extendˡ : ∀ {Θ Γ Ξ A} {a : A ∈ (Γ ,, Ξ)}
+    → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ ⇑ˢ {Θ} {Γ} {Γ} {Ξ} (idˢ {Γ = Γ}) {A} a ≈  idˢ {Γ = Γ ,, Ξ} a ⦂ A
 
-  subst-congr-aux : ∀ {Θ Γ Δ Ξ A} {t : Term Θ (Γ ,, Ξ) A} {σ τ : Θ ⊕ Δ ⇒s Γ}
-    → σ ≈s τ → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ t [ extend-sˡ σ ]s ≈  t [ extend-sˡ τ ]s ⦂ A
+  subst-congr-aux : ∀ {Θ Γ Δ Ξ A} {t : Term Θ (Γ ,, Ξ) A} {σ τ : Θ ⊕ Δ ⇒ˢ Γ}
+    → σ ≈ˢ τ → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ t [ ⇑ˢ σ ]ˢ ≈  t [ ⇑ˢ τ ]ˢ ⦂ A
 
   -- interactions between extensions
   extend-var-inl : ∀ {Γ Δ Ξ Λ Θ A} (t : Term Θ (Λ ,, Ξ) A) (τ : Θ ⊕ Γ ⇒s Λ)
@@ -128,8 +125,8 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
       ∘s-extendˡ-aux {t = tm-meta M ts} = eq-congr-mv λ i → ∘s-extendˡ-aux {t = ts i}
       ∘s-extendˡ-aux {τ = τ} {t = tm-oper f es} = eq-congr λ i → extend-var-inl (es i) τ
 
-  ∘s-≈aux :  ∀ {Θ Γ Δ Ξ Λ A} {t : Term Θ (Γ ,, Λ) A} {σ : Θ ⊕ Δ ⇒s Γ} {τ : Θ ⊕ Ξ ⇒s Δ}
-    → ⊢ Θ ⊕ (Ξ ,, Λ) ∥ (t [ extend-sˡ σ ]s) [ extend-sˡ τ ]s ≈ (t [ (extend-sˡ σ) ∘s (extend-sˡ τ) ]s) ⦂ A
+  ∘ˢ-≈aux :  ∀ {Θ Γ Δ Ξ Λ A} {t : Term Θ (Γ ,, Λ) A} {σ : Θ ⊕ Δ ⇒ˢ Γ} {τ : Θ ⊕ Ξ ⇒ˢ Δ}
+    → ⊢ Θ ⊕ (Ξ ,, Λ) ∥ (t [ ⇑ˢ σ ]ˢ) [ ⇑ˢ τ ]ˢ ≈ (t [ (⇑ˢ σ) ∘ˢ (⇑ˢ τ) ]ˢ) ⦂ A
 
   -- extension of substitutions preserves equality of substitutions
   ≈s-extend-sˡ : ∀ {Θ Γ Δ Ξ} {σ τ : Θ ⊕ Γ ⇒s Δ}
@@ -223,69 +220,66 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
 
   ------------------------------------------------------------------------------------------------------
   -- I.
+  r-to-subst ρ x = tm-var (ρ x)
 
 
-  r-to-subst-extend-sˡ (var-inl x) = eq-refl
-  r-to-subst-extend-sˡ (var-inr x) = eq-refl
+  r-to-subst-⇑ˢ (var-inl x) = eq-refl
+  r-to-subst-⇑ˢ (var-inr x) = eq-refl
 
 
   r-to-subst-≈ {t = tm-var x} = eq-refl
-  r-to-subst-≈ {t = tm-meta M ts} = eq-congr-mv λ i → r-to-subst-≈
-  r-to-subst-≈ {t = tm-oper f es} = eq-congr λ i → r-to-subst-≈aux
+  r-to-subst-≈ {t = tm-meta M ts} = eq-meta λ i → r-to-subst-≈
+  r-to-subst-≈ {t = tm-oper f es} = eq-oper λ i → r-to-subst-≈aux
 
-  r-to-subst-≈aux {Θ = Θ} {Γ = Γ} {Δ = Δ} {t = t} {ρ = ρ} = eq-trans r-to-subst-≈ (subst-congr {t = t} (r-to-subst-extend-sˡ {ρ = ρ}))
+  r-to-subst-≈aux {Θ = Θ} {Γ = Γ} {Δ = Δ} {t = t} {ρ = ρ} = eq-trans r-to-subst-≈ (subst-congr {t = t} (r-to-subst-⇑ˢ {ρ = ρ}))
 
 
   --------------------------------------------------------------------------------------------------------
   -- II.
   -- A.
   subst-congr {t = Signature.tm-var x} p = p x
-  subst-congr {t = Signature.tm-meta M ts} p = eq-congr-mv λ i → subst-congr {t = ts i} p
-  subst-congr {t = Signature.tm-oper f es} p = eq-congr λ i → subst-congr-aux {t = es i} p
+  subst-congr {t = Signature.tm-meta M ts} p = eq-meta λ i → subst-congr {t = ts i} p
+  subst-congr {t = Signature.tm-oper f es} p = eq-oper λ i → subst-congr-aux {t = es i} p
 
   id-action {a = tm-var x} = eq-refl
-  id-action {a = tm-meta M ts} = eq-congr-mv λ i → id-action
-  id-action {a = tm-oper f es} = eq-congr λ i → eq-trans id-action-aux (eq-symm (subst-congr {t = es i} λ x → id-s-extendˡ))
+  id-action {a = tm-meta M ts} = eq-meta λ i → id-action
+  id-action {a = tm-oper f es} = eq-oper λ i → eq-trans id-action-aux (eq-symm (subst-congr {t = es i} λ x → idˢ-extendˡ))
     where
-      id-action-aux : ∀ {Θ Γ Ξ A} {t : Term Θ (Γ ,, Ξ) A} → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ t ≈  (t [ id-s ]s) ⦂ A
+      id-action-aux : ∀ {Θ Γ Ξ A} {t : Term Θ (Γ ,, Ξ) A} → ⊢ Θ ⊕ (Γ ,, Ξ) ∥ t ≈  (t [ idˢ ]ˢ) ⦂ A
       id-action-aux = id-action
-
-  s∘M-≈ : ∀ {Θ ψ Γ Δ A} {t : Term Θ ctx-empty A} {σ : ψ ⊕ Δ ⇒s Γ} {ι : ψ ⇒M Θ ⊕ Γ}
-          → ⊢ ψ ⊕ Δ ∥ (([ rename-ctx-empty-r {Θ = ψ} ]r (t [ ι ]M)) [ σ ]s) ≈ ([ rename-ctx-empty-r {Θ = ψ} ]r (t [ σ s∘M ι ]M)) ⦂ A
-  s∘M-≈ {t = tm-meta M ts} = {!!}
-  s∘M-≈ {t = tm-oper f es} = {!!}
 
   ≈tm-subst eq-refl = eq-refl
   ≈tm-subst (eq-symm p) = eq-symm (≈tm-subst p)
   ≈tm-subst (eq-trans p₁ p₂) = eq-trans (≈tm-subst p₁) (≈tm-subst p₂)
-  ≈tm-subst (eq-congr x) = eq-congr λ i → ≈tm-subst (x i) -- needs an auxiliary function
-  ≈tm-subst (eq-congr-mv ps) = eq-congr-mv λ i → ≈tm-subst (ps i)
-  ≈tm-subst {σ = σ} (eq-axiom ε ι) = eq-trans
-                                       (s∘M-≈ {t = ax-lhs ε})
-                                       (eq-trans
-                                         (eq-axiom ε (σ s∘M ι))
-                                         (eq-symm (s∘M-≈ {t = ax-rhs ε})))
+  ≈tm-subst (eq-oper x) = eq-oper λ i → ≈tm-subst (x i) -- needs an auxiliary function
+  ≈tm-subst (eq-meta ps) = eq-meta λ i → ≈tm-subst (ps i)
+  ≈tm-subst (eq-axiom ε I) = {!!} -- Should we find a way to "compose" substitution and instantiation so as to get an instatiation ? We also have to take care of the renaming with empty context
 
-
-  ∘s-≈ {t = tm-var x} = eq-refl
-  ∘s-≈ {t = tm-meta M ts} = eq-congr-mv λ i → ∘s-≈ {t = ts i}
-  ∘s-≈ {t = tm-oper f es} {σ = σ} {τ = τ} = eq-congr λ i → eq-trans (∘s-≈aux {t = es i} {σ = σ} {τ = τ}) (subst-congr {t = es i} {σ =  extend-sˡ σ ∘s extend-sˡ τ} {τ = extend-sˡ (σ ∘s τ)} ∘s-extendˡ)
+  ∘ˢ-≈ {t = tm-var x} = eq-refl
+  ∘ˢ-≈ {t = tm-meta M ts} = eq-meta λ i → ∘ˢ-≈ {t = ts i}
+  ∘ˢ-≈ {t = tm-oper f es} {σ = σ} {τ = τ} = eq-oper λ i → eq-trans (∘ˢ-≈aux {t = es i} {σ = σ} {τ = τ}) (subst-congr {t = es i} {σ =  ⇑ˢ σ ∘ˢ ⇑ˢ τ} {τ = ⇑ˢ (σ ∘ˢ τ)} ∘ˢ-extendˡ)
 
 
   -- B.
-  id-s-extendˡ {a = var-inl a} = eq-refl
-  id-s-extendˡ {a = var-inr a} = eq-refl
+  idˢ-extendˡ {a = var-inl a} = eq-refl
+  idˢ-extendˡ {a = var-inr a} = eq-refl
+
+  ∘ˢ-extendˡ (var-inr x) = eq-refl
+  ∘ˢ-extendˡ {Γ = Γ} {Δ = Δ} {Ξ = Ξ} {σ = σ} (var-inl x)  = ∘ˢ-extendˡ-aux {Γ = Δ} {Δ = Γ} {t = σ x}
+
+  ∘ˢ-extendˡ-aux {t = tm-var x} = eq-refl
+  ∘ˢ-extendˡ-aux {t = tm-meta M ts} = eq-meta λ i → ∘ˢ-extendˡ-aux {t = ts i}
+  ∘ˢ-extendˡ-aux {τ = τ} {t = tm-oper f es} = eq-oper λ i → extend-var-inl (es i) τ
+
+  ∘ˢ-≈aux {Γ = Γ} {Λ = Λ} {t = tm-var x}  {σ = σ} = ∘ˢ-≈ {Γ = (Γ ,, Λ)} {t = tm-var x} {σ = ⇑ˢ σ}
+  ∘ˢ-≈aux {t = tm-meta M ts} = eq-meta λ i → ∘ˢ-≈aux {t = ts i}
+  ∘ˢ-≈aux {t = tm-oper f es} {σ = σ} {τ = τ} = eq-oper λ i → eq-trans (∘ˢ-≈aux {t = es i}) (subst-congr {t = es i} {σ = ⇑ˢ (⇑ˢ σ) ∘ˢ ⇑ˢ (⇑ˢ τ)} {τ = ⇑ˢ (⇑ˢ σ ∘ˢ ⇑ˢ τ)} ∘ˢ-extendˡ)
 
 
-  
-  ∘s-≈aux {Γ = Γ} {Λ = Λ} {t = tm-var x}  {σ = σ} = ∘s-≈ {Γ = (Γ ,, Λ)} {t = tm-var x} {σ = extend-sˡ σ}
-  ∘s-≈aux {t = tm-meta M ts} = eq-congr-mv λ i → ∘s-≈aux {t = ts i}
-  ∘s-≈aux {t = tm-oper f es} {σ = σ} {τ = τ} = eq-congr λ i → eq-trans (∘s-≈aux {t = es i}) (subst-congr {t = es i} {σ = extend-sˡ (extend-sˡ σ) ∘s extend-sˡ (extend-sˡ τ)} {τ = extend-sˡ (extend-sˡ σ ∘s extend-sˡ τ)} ∘s-extendˡ)
+  ≈ˢ-⇑ˢ p (var-inl x) = ≈ˢ-⇑ʳ p
+  ≈ˢ-⇑ˢ p (var-inr x) = eq-refl
 
-  ≈s-extend-sˡ p (var-inl x) = ≈s-weakenˡ p
-  ≈s-extend-sˡ p (var-inr x) = eq-refl
-
-  subst-congr-aux {Γ = Γ} {Ξ = Ξ} {t = t} p = subst-congr {Γ = Γ ,, Ξ} {t = t} λ x → ≈s-extend-sˡ p x
+  subst-congr-aux {Γ = Γ} {Ξ = Ξ} {t = t} p = subst-congr {Γ = Γ ,, Ξ} {t = t} λ x → ≈ˢ-⇑ˢ p x
 
 
 
@@ -297,6 +291,6 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
 
 
 
-  subst-congr₂ : ∀ {Θ Γ Δ A} {s t : Term Θ Γ A} {σ τ : Θ ⊕ Δ ⇒s Γ}
-    → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → σ ≈s τ → ⊢ Θ ⊕ Δ ∥ s [ σ ]s ≈  t [ τ ]s ⦂ A
+  subst-congr₂ : ∀ {Θ Γ Δ A} {s t : Term Θ Γ A} {σ τ : Θ ⊕ Δ ⇒ˢ Γ}
+    → ⊢ Θ ⊕ Γ ∥ s ≈ t ⦂ A → σ ≈ˢ τ → ⊢ Θ ⊕ Δ ∥ s [ σ ]ˢ ≈  t [ τ ]ˢ ⦂ A
   subst-congr₂ {s = s} pt ps = eq-trans (subst-congr {t = s} ps) (≈tm-subst pt)
