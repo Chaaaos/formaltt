@@ -83,7 +83,7 @@ module SecondOrder.Instantiation
   -- auxiliary function for (2), to deal with extensions in the oper case
   ∘ⁱ-≈-oper : ∀ {Θ Ω ψ Γ Δ Ξ Λ A} (t : Term Θ (Ξ ,, Λ) A) (I : Ω ⇒ⁱ ψ ⊕ Δ) (J : Θ ⇒ⁱ Ω ⊕ Γ)
               → term-reassoc ([ I ∘ⁱ J ]ⁱ t) ≈ [ extendʳ rename-assoc ]ʳ term-reassoc ([ I ]ⁱ term-reassoc ([ J ]ⁱ t))
-  ∘ⁱ-≈-oper t I J = ≈-trans (reassoc-∘ⁱ t I J) {!!}
+  ∘ⁱ-≈-oper t I J = {!!}
 
   -- proof of (2)
   ∘ⁱ-≈ (tm-var x) I J = ≈-≡ refl
@@ -104,7 +104,7 @@ module SecondOrder.Instantiation
   []ⁱidⁱ : ∀ {Θ Γ A} (t : Term Θ Γ A)
            → [ ctx-empty-left-unit ]ʳ ([ idⁱ ]ⁱ t) ≈ t
   []ⁱidⁱ (tm-var x) = ≈-≡ refl
-  []ⁱidⁱ (tm-meta M ts) = {!!}
+  []ⁱidⁱ (tm-meta M ts) = ≈-meta (λ i → []ⁱidⁱ (ts i))
   []ⁱidⁱ (tm-oper f es) = ≈-oper λ i → []ⁱidⁱ-oper (es i)
 
 
