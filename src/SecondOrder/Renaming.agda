@@ -52,15 +52,10 @@ module SecondOrder.Renaming
 
   -- the reassociation renaming
 
-  rename-assocʳ : ∀ {Γ Δ Ξ} → Γ ,, (Δ ,, Ξ) ⇒ʳ (Γ ,, Δ) ,, Ξ
-  rename-assocʳ (var-inl x) = var-inl (var-inl x)
-  rename-assocʳ (var-inr (var-inl y)) = var-inl (var-inr y)
-  rename-assocʳ (var-inr (var-inr z)) = var-inr z
-
-  rename-assocˡ : ∀ {Γ Δ Ξ} → Γ ,, Δ ,, Ξ ⇒ʳ Γ ,, (Δ ,, Ξ)
-  rename-assocˡ (var-inl (var-inl x)) = {!!}
-  rename-assocˡ (var-inl (var-inr x)) = {!!}
-  rename-assocˡ (var-inr y) = {!!}
+  rename-assoc : ∀ {Γ Δ Ξ} → Γ ,, (Δ ,, Ξ) ⇒ʳ (Γ ,, Δ) ,, Ξ
+  rename-assoc (var-inl x) = var-inl (var-inl x)
+  rename-assoc (var-inr (var-inl y)) = var-inl (var-inr y)
+  rename-assoc (var-inr (var-inr z)) = var-inr z
 
   -- the inverse of the reassociation renaming
   rename-unassoc : ∀ {Γ Δ Ξ} → (Γ ,, Δ) ,, Ξ ⇒ʳ Γ ,, (Δ ,, Ξ)
@@ -96,7 +91,7 @@ module SecondOrder.Renaming
     term-reassoc : ∀ {Δ Γ Ξ A}
       → Term Θ (Δ ,, (Γ ,, Ξ)) A
       → Term Θ ((Δ ,, Γ) ,, Ξ) A
-    term-reassoc = [ rename-assocʳ ]ʳ_
+    term-reassoc = [ rename-assoc ]ʳ_
 
     -- weakening
     ⇑ʳ : ∀ {Γ Δ A} → Term Θ Γ A → Term Θ (Γ ,, Δ) A
@@ -161,6 +156,7 @@ module SecondOrder.Renaming
   unique+ α₁ α₂ eq1 β₁ β₂ eq2 (var-inl x) = eq1 x
   unique+ α₁ α₂ eq1 β₁ β₂ eq2 (var-inr y) = eq2 y
 
+  
   -- Lemma: The extension of a renaming is equal to summing with the identity renaming
   extendʳ≡+id : ∀ {Γ Δ Ξ} {ρ : Γ ⇒ʳ Δ}
              → (extendʳ ρ {Ξ}) ≡ʳ (ρ +ʳ idʳ)

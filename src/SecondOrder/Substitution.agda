@@ -1,6 +1,7 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subst)
+open import Relation.Binary using (Setoid)
 
 
 import SecondOrder.Arity
@@ -90,6 +91,34 @@ module SecondOrder.Substitution
 
     infixl 3 _≈ˢ_
 
+  ≈ˢ-refl : ∀ {Θ Γ Δ} {σ : Θ ⊕ Γ ⇒ˢ Δ}
+          → σ ≈ˢ σ
+  ≈ˢ-refl x = ≈-refl
+            
+  ≈ˢ-symm : ∀ {Θ Γ Δ} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
+          → σ ≈ˢ τ
+          → τ ≈ˢ σ
+  ≈ˢ-symm eq x = ≈-sym (eq x)
+                           
+  ≈ˢ-trans : ∀ {Θ Γ Δ} {σ τ μ : Θ ⊕ Γ ⇒ˢ Δ}
+           → σ ≈ˢ τ → τ ≈ˢ μ
+           → σ ≈ˢ μ
+  ≈ˢ-trans eq1 eq2 x = ≈-trans (eq1 x) (eq2 x)
+    
+    -- substitutions form a setoid
+  eq-setoid : ∀ (Γ Δ : Context) (Θ : MetaContext) → Setoid (lsuc ℓs ⊔ lsuc ℓo) (lsuc ℓs ⊔ lsuc ℓo)
+  eq-setoid Γ Δ Θ =
+    record
+      { Carrier = Θ ⊕ Γ ⇒ˢ Δ
+      ;  _≈_ = λ σ τ → σ ≈ˢ τ
+      ; isEquivalence =
+                      record
+                        { refl = ≈ˢ-refl
+                        ; sym = ≈ˢ-symm
+                        ; trans = ≈ˢ-trans
+                        }
+      }
+
 --========================================================================================
 --∥                              ========================                                ∥
 --∥                              ∥  ** METATHEOREMS **  ∥                                ∥
@@ -109,66 +138,33 @@ module SecondOrder.Substitution
   unique⋈ˢ eq1 eq2 (var-inl x) = eq1 x
   unique⋈ˢ eq1 eq2 (var-inr y) = eq2 y
 
-
+  --------------------------------------------------------------------------------------------------
   -------------------------------------------
   --          Lemmas about sums            --
   -------------------------------------------
 
-  temp3 : ∀ {Θ Γ Δ Ξ Λ} → (Θ ⊕ (Γ ,, Δ ,, Ξ) ⇒ˢ Λ) → (Θ ⊕ (Γ ,, (Δ ,, Ξ)) ⇒ˢ Λ)
-  temp3 σ (var-inl x) = σ (var-inl (var-inl x))
-  temp3 σ (var-inr (var-inl y)) = σ (var-inl (var-inr y))
-  temp3 σ (var-inr (var-inr z)) = σ (var-inr z)
+  unique-cotuple : ∀ {Θ Γ Γ' Ξ} {σ : Θ ⊕ Γ ⇒ˢ Ξ} {τ : Θ ⊕ Γ' ⇒ˢ Ξ} {μ ν : Θ ⊕ Γ ,, Γ' ⇒ˢ Ξ}
+          → (μ ∘ˢ inlˢ) ≈ˢ σ → (μ ∘ˢ inrˢ) ≈ˢ τ
+          → (ν ∘ˢ inlˢ) ≈ˢ σ → (ν ∘ˢ inrˢ) ≈ˢ τ
+          → μ ≈ˢ ν
+  unique-cotuple {μ = μ} {ν = ν} eq1 eq2 eq3 eq4 (var-inl x) = ≈ˢ-trans eq1 (≈ˢ-symm eq3) x
+  unique-cotuple {μ = μ} {ν = ν} eq1 eq2 eq3 eq4 (var-inr y) = ≈ˢ-trans eq2 (≈ˢ-symm eq4) y
 
-  temp4 : ∀ {Θ Γ Δ Ξ Λ} → (Θ ⊕ (Γ ,, (Δ ,, Ξ)) ⇒ˢ Λ) → (Θ ⊕ ((Γ ,, Δ) ,, Ξ) ⇒ˢ Λ)
-  temp4 σ (var-inl (var-inl x)) = σ (var-inl x)
-  temp4 σ (var-inl (var-inr y)) = σ (var-inr (var-inl y))
-  temp4 σ (var-inr z) = σ (var-inr (var-inr z))
-
-  temp5 : ∀ {Θ Γ Δ Ξ Λ} → (Θ ⊕ Γ ⇒ˢ (Δ ,, (Ξ ,, Λ))) → (Θ ⊕ Γ ⇒ˢ (Δ ,, Ξ ,, Λ))
-  temp5 σ var-slot = term-reassoc (σ var-slot)
-  temp5 σ (var-inl x) = term-reassoc (σ (var-inl x))
-  temp5 σ (var-inr y) = term-reassoc (σ (var-inr y))
-
-  ext-ext≈ˢext : ∀ {Θ Γ Δ Ξ Λ} {σ : Θ ⊕ Γ ⇒ˢ Δ}
-               → ⇑ˢ {Ξ = Λ} ( ⇑ˢ {Ξ = Ξ} σ ) ≈ˢ temp5 (temp4 (⇑ˢ {Ξ = Ξ ,, Λ} σ))
-  ext-ext≈ˢext {σ = σ} (var-inl (var-inl x)) = {!!}
-  ext-ext≈ˢext (var-inl (var-inr y)) = ≈-refl
-  ext-ext≈ˢext (var-inr y) = ≈-refl
-
-  temp2 : ∀ {Θ Γ Δ A} {ρ : Γ ⇒ʳ Δ} (t : Term Θ Γ A)
-        → [ ρ ]ʳ t ≈ [ ρ ʳ⃗ˢ ]ˢ t
-  temp2 (tm-var x) = ≈-refl
-  temp2 (tm-meta M ts) = ≈-meta (λ i → temp2 (ts i))
-  temp2 (tm-oper f es) = ≈-oper (λ i → temp2-aux (es i))
-    where
-    temp2-aux : ∀ {Θ Γ Δ Ξ A} {ρ : Γ ⇒ʳ Δ} (t : Term Θ (Γ ,, Ξ) A)
-              → [ extendʳ ρ ]ʳ t ≈ [ ⇑ˢ (ρ ʳ⃗ˢ) ]ˢ t
-    temp2-aux (tm-var (var-inl x)) = ≈-refl
-    temp2-aux (tm-var (var-inr y)) = ≈-refl
-    temp2-aux (tm-meta M ts) = ≈-meta (λ i → temp2-aux (ts i))
-    temp2-aux (tm-oper f es) = ≈-oper (λ i → {!!})
-
-  unique+2 : ∀ {Θ Γ Γ' Δ Δ'} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Γ' ⇒ˢ Δ'} {μ : Θ ⊕ (Γ ,, Γ') ⇒ˢ (Δ ,, Δ')}
-    → μ ∘ˢ inlˢ ≈ˢ inlˢ ∘ˢ σ
-    → μ ∘ˢ inrˢ ≈ˢ inrˢ ∘ˢ τ
-    → μ ≈ˢ σ +ˢ τ
-  unique+2 eq1 eq2 (var-inl x) = {!!}
-  unique+2 eq1 eq2 (var-inr y) = {!!}
-
-  -- uniqueness of sum of substitutions giving the structure of coproducts
-  unique+ˢ : ∀ {Θ Γ Γ' Δ Δ' Ξ Λ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Γ' ⇒ˢ Δ'} {μ : Θ ⊕ Ξ ⇒ˢ Λ}
-    → (α₁ : Θ ⊕ Γ ⇒ˢ Ξ) → (α₂ : Θ ⊕ Δ ⇒ˢ Λ) → (μ ∘ˢ α₁) ≈ˢ (α₂ ∘ˢ σ)
-    → (β₁ : Θ ⊕ Γ' ⇒ˢ Ξ) → (β₂ : Θ ⊕ Δ' ⇒ˢ Λ) → (μ ∘ˢ β₁) ≈ˢ (β₂ ∘ˢ τ)
-    → μ ∘ˢ (α₁ ⋈ˢ β₁) ≈ˢ (α₂ ⋈ˢ β₂) ∘ˢ (σ +ˢ τ)
-  unique+ˢ α₁ α₂ eq1 β₁ β₂ eq2 (var-inl x) = {!!}
-  unique+ˢ α₁ α₂ eq1 β₁ β₂ eq2 (var-inr y) = {!!}
-
+  -- Sums of substitutions have the structure of coproducts
+  unique+ˢ : ∀ {Θ Γ Γ' Δ Δ'} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Γ' ⇒ˢ Δ'} {μ ν : Θ ⊕ (Γ ,, Γ') ⇒ˢ (Δ ,, Δ')}
+    → μ ∘ˢ inlˢ ≈ˢ inlˢ ∘ˢ σ → μ ∘ˢ inrˢ ≈ˢ inrˢ ∘ˢ τ
+    → ν ∘ˢ inlˢ ≈ˢ inlˢ ∘ˢ σ → ν ∘ˢ inrˢ ≈ˢ inrˢ ∘ˢ τ
+    → μ ≈ˢ ν
+  unique+ˢ {σ = σ} {τ = τ} {μ = μ} {ν = ν} eq_lft1 eq_rgt1 eq_lft2 eq_rgt2 =
+    unique-cotuple {σ = inlˢ ∘ˢ σ} {τ = inrˢ ∘ˢ τ} {μ = μ} {ν = ν} eq_lft1 eq_rgt1 eq_lft2 eq_rgt2
 
   -- (1) the weakening of to equal substitutions are equal
   ≈ˢextendˢ : ∀ {Θ Γ Δ Ξ} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
         → σ ≈ˢ τ → ⇑ˢ {Ξ = Ξ} σ ≈ˢ ⇑ˢ τ
   ≈ˢextendˢ p (var-inl x) = ≈-tm-ʳ (p x)
   ≈ˢextendˢ p (var-inr x) = ≈-≡ refl
+
+  --------------------------------------------------------------------------------------------------
 
   -- (2) two equal substitution have the same action
   ≈ˢ[]ˢ : ∀ {Θ Γ Δ A} {t : Term Θ Γ A} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
@@ -193,7 +189,7 @@ module SecondOrder.Substitution
     ˢ∘ʳtm-≈-aux σ ρ (tm-var x) = ≈-≡ {!!}
     ˢ∘ʳtm-≈-aux σ ρ (tm-meta M ts) = {!!}
     ˢ∘ʳtm-≈-aux σ ρ (tm-oper f es) = {!!}
-  ˢ∘ʳtm-≈ σ ρ (SecondOrder.Term.tm-oper f es) = ≈-oper (λ i → {!!})
+  -- ˢ∘ʳtm-≈ σ ρ (SecondOrder.Term.tm-oper f es) = ≈-oper (λ i → {!!})
 
   -- interactions between extension and weakening
   extendʳ⇑ˢ : ∀ {Θ Γ Δ Ξ Λ A} (t : Term Θ (Γ ,, Λ) A) (σ : Θ ⊕ Γ ⇒ˢ Δ)
@@ -275,3 +271,37 @@ module SecondOrder.Substitution
   temp {σ = σ} {τ = τ} (tm-var (var-inr y)) = (inrˢ ∘ˢ τ) y
   temp {σ = σ} {τ = τ} (tm-meta M ts) = tm-meta M (λ i → temp {σ = σ} {τ = τ} (ts i))
   temp {σ = σ} {τ = τ} (tm-oper f es) = {!!}
+
+  temp3 : ∀ {Θ Γ Δ Ξ Λ} → (Θ ⊕ (Γ ,, Δ ,, Ξ) ⇒ˢ Λ) → (Θ ⊕ (Γ ,, (Δ ,, Ξ)) ⇒ˢ Λ)
+  temp3 σ (var-inl x) = σ (var-inl (var-inl x))
+  temp3 σ (var-inr (var-inl y)) = σ (var-inl (var-inr y))
+  temp3 σ (var-inr (var-inr z)) = σ (var-inr z)
+
+  temp4 : ∀ {Θ Γ Δ Ξ Λ} → (Θ ⊕ (Γ ,, (Δ ,, Ξ)) ⇒ˢ Λ) → (Θ ⊕ ((Γ ,, Δ) ,, Ξ) ⇒ˢ Λ)
+  temp4 σ (var-inl (var-inl x)) = σ (var-inl x)
+  temp4 σ (var-inl (var-inr y)) = σ (var-inr (var-inl y))
+  temp4 σ (var-inr z) = σ (var-inr (var-inr z))
+
+  temp5 : ∀ {Θ Γ Δ Ξ Λ} → (Θ ⊕ Γ ⇒ˢ (Δ ,, (Ξ ,, Λ))) → (Θ ⊕ Γ ⇒ˢ (Δ ,, Ξ ,, Λ))
+  temp5 σ var-slot = term-reassoc (σ var-slot)
+  temp5 σ (var-inl x) = term-reassoc (σ (var-inl x))
+  temp5 σ (var-inr y) = term-reassoc (σ (var-inr y))
+
+  ext-ext≈ˢext : ∀ {Θ Γ Δ Ξ Λ} {σ : Θ ⊕ Γ ⇒ˢ Δ}
+               → ⇑ˢ {Ξ = Λ} ( ⇑ˢ {Ξ = Ξ} σ ) ≈ˢ temp5 (temp4 (⇑ˢ {Ξ = Ξ ,, Λ} σ))
+  ext-ext≈ˢext {σ = σ} (var-inl (var-inl x)) = {!!}
+  ext-ext≈ˢext (var-inl (var-inr y)) = ≈-refl
+  ext-ext≈ˢext (var-inr y) = ≈-refl
+
+  temp2 : ∀ {Θ Γ Δ A} {ρ : Γ ⇒ʳ Δ} (t : Term Θ Γ A)
+        → [ ρ ]ʳ t ≈ [ ρ ʳ⃗ˢ ]ˢ t
+  temp2 (tm-var x) = ≈-refl
+  temp2 (tm-meta M ts) = ≈-meta (λ i → temp2 (ts i))
+  temp2 (tm-oper f es) = ≈-oper (λ i → temp2-aux (es i))
+    where
+    temp2-aux : ∀ {Θ Γ Δ Ξ A} {ρ : Γ ⇒ʳ Δ} (t : Term Θ (Γ ,, Ξ) A)
+              → [ extendʳ ρ ]ʳ t ≈ [ ⇑ˢ (ρ ʳ⃗ˢ) ]ˢ t
+    temp2-aux (tm-var (var-inl x)) = ≈-refl
+    temp2-aux (tm-var (var-inr y)) = ≈-refl
+    temp2-aux (tm-meta M ts) = ≈-meta (λ i → temp2-aux (ts i))
+    temp2-aux (tm-oper f es) = ≈-oper (λ i → {!!})
