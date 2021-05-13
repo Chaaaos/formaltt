@@ -52,10 +52,15 @@ module SecondOrder.Renaming
 
   -- the reassociation renaming
 
-  rename-assoc : ∀ {Γ Δ Ξ} → Γ ,, (Δ ,, Ξ) ⇒ʳ (Γ ,, Δ) ,, Ξ
-  rename-assoc (var-inl x) = var-inl (var-inl x)
-  rename-assoc (var-inr (var-inl y)) = var-inl (var-inr y)
-  rename-assoc (var-inr (var-inr z)) = var-inr z
+  rename-assocʳ : ∀ {Γ Δ Ξ} → Γ ,, (Δ ,, Ξ) ⇒ʳ (Γ ,, Δ) ,, Ξ
+  rename-assocʳ (var-inl x) = var-inl (var-inl x)
+  rename-assocʳ (var-inr (var-inl y)) = var-inl (var-inr y)
+  rename-assocʳ (var-inr (var-inr z)) = var-inr z
+
+  rename-assocˡ : ∀ {Γ Δ Ξ} → Γ ,, Δ ,, Ξ ⇒ʳ Γ ,, (Δ ,, Ξ)
+  rename-assocˡ (var-inl (var-inl x)) = {!!}
+  rename-assocˡ (var-inl (var-inr x)) = {!!}
+  rename-assocˡ (var-inr y) = {!!}
 
   -- the empty context is the right unit
 
@@ -85,7 +90,7 @@ module SecondOrder.Renaming
     term-reassoc : ∀ {Δ Γ Ξ A}
       → Term Θ (Δ ,, (Γ ,, Ξ)) A
       → Term Θ ((Δ ,, Γ) ,, Ξ) A
-    term-reassoc = [ rename-assoc ]ʳ_
+    term-reassoc = [ rename-assocʳ ]ʳ_
 
     -- weakening
     ⇑ʳ : ∀ {Γ Δ A} → Term Θ Γ A → Term Θ (Γ ,, Δ) A
@@ -120,7 +125,7 @@ module SecondOrder.Renaming
 --========================================================================================
 
   -------------------------------------------
-  --          Lemmas about sums           --
+  --          Lemmas about joins           --
   -------------------------------------------
 
   -- We want to show that sums of renamings form a coproduct of morphisms
@@ -130,12 +135,16 @@ module SecondOrder.Renaming
   -- The join of two renamings gives us the renaming prophesied by the
   -- universal property of coproducts.
   -- Now we just need to show uniqueness:
-  unique⋈ : ∀ {Γ Δ Ξ} {σ : Γ ⇒ʳ Ξ} {ν : Δ ⇒ʳ Ξ} {δ : Γ ,, Δ ⇒ʳ Ξ}
-          → (δ ∘ʳ inlʳ) ≡ʳ σ
+  unique⋈ʳ : ∀ {Γ Δ Ξ} {ρ : Γ ⇒ʳ Ξ} {ν : Δ ⇒ʳ Ξ} {δ : Γ ,, Δ ⇒ʳ Ξ}
+          → (δ ∘ʳ inlʳ) ≡ʳ ρ
           → (δ ∘ʳ inrʳ) ≡ʳ ν
-          → δ ≡ʳ (σ ⋈ʳ ν)
-  unique⋈ eq1 eq2 (var-inl x) = eq1 x
-  unique⋈ eq1 eq2 (var-inr y) = eq2 y
+          → δ ≡ʳ (ρ ⋈ʳ ν)
+  unique⋈ʳ eq1 eq2 (var-inl x) = eq1 x
+  unique⋈ʳ eq1 eq2 (var-inr y) = eq2 y
+
+  -------------------------------------------
+  --          Lemmas about sums            --
+  -------------------------------------------
 
   -- We have existance of coproducts of renamings with the sum
   -- once again, what about uniqueness?
