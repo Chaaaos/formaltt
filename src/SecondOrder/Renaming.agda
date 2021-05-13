@@ -1,4 +1,4 @@
-{-# OPTIONS --allow-unsolved-metas #-}
+-- {-# OPTIONS --allow-unsolved-metas #-}
 
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subst)
@@ -62,6 +62,12 @@ module SecondOrder.Renaming
   rename-assocˡ (var-inl (var-inr x)) = {!!}
   rename-assocˡ (var-inr y) = {!!}
 
+  -- the inverse of the reassociation renaming
+  rename-unassoc : ∀ {Γ Δ Ξ} → (Γ ,, Δ) ,, Ξ ⇒ʳ Γ ,, (Δ ,, Ξ)
+  rename-unassoc (var-inl (var-inl x)) = var-inl x
+  rename-unassoc (var-inl (var-inr x)) = var-inr (var-inl x)
+  rename-unassoc (var-inr x) = var-inr (var-inr x)
+
   -- the empty context is the right unit
 
   ctx-empty-right-unit : ∀ {Γ} → Γ ,, ctx-empty ⇒ʳ Γ
@@ -103,11 +109,9 @@ module SecondOrder.Renaming
   _⋈ʳ_ : ∀ {Γ Δ Ξ} → Γ ⇒ʳ Ξ → Δ ⇒ʳ Ξ → Γ ,, Δ ⇒ʳ Ξ
   (σ ⋈ʳ τ) (var-inl x) = σ x
   (σ ⋈ʳ τ) (var-inr y) = τ y
-                           
+
   -- the sum of renamings
-                
   infixl 8 _+ʳ_
-           
   _+ʳ_ : ∀ {Γ Γ' Δ Δ'} → Γ ⇒ʳ Δ → Γ' ⇒ʳ Δ' → (Γ ,, Γ') ⇒ʳ Δ ,, Δ'
   σ +ʳ τ = (λ x → var-inl (σ x)) ⋈ʳ (λ y → var-inr (τ y))
 
@@ -116,7 +120,7 @@ module SecondOrder.Renaming
   _≡ʳ_ {Γ} σ τ = ∀ {A} (x : A ∈ Γ) → σ x ≡ τ x
 
   infixl 3 _≡ʳ_
-  
+
 
 --========================================================================================
 --∥                              ========================                                ∥
@@ -156,7 +160,7 @@ module SecondOrder.Renaming
     → δ ∘ʳ (α₁ ⋈ʳ β₁) ≡ʳ (α₂ ⋈ʳ β₂) ∘ʳ (ρ +ʳ ν)
   unique+ α₁ α₂ eq1 β₁ β₂ eq2 (var-inl x) = eq1 x
   unique+ α₁ α₂ eq1 β₁ β₂ eq2 (var-inr y) = eq2 y
-  
+
   -- Lemma: The extension of a renaming is equal to summing with the identity renaming
   extendʳ≡+id : ∀ {Γ Δ Ξ} {ρ : Γ ⇒ʳ Δ}
              → (extendʳ ρ {Ξ}) ≡ʳ (ρ +ʳ idʳ)
@@ -221,3 +225,35 @@ module SecondOrder.Renaming
   ≈-tm-ʳ (≈-≡ refl) = ≈-≡ refl
   ≈-tm-ʳ (≈-meta ξ) = ≈-meta (λ i → ≈-tm-ʳ (ξ i))
   ≈-tm-ʳ (≈-oper ξ) = ≈-oper (λ i → ≈-tm-ʳ (ξ i))
+
+
+  -- the reassociation renaming and "unassociation" renaming are inverse
+  unassoc-reassoc : ∀ {Γ Δ Ξ} → (rename-unassoc {Δ} {Γ} {Ξ}) ∘ʳ rename-assoc ≡ʳ idʳ
+  unassoc-reassoc (var-inl x) = refl
+  unassoc-reassoc (var-inr (var-inl x)) = refl
+  unassoc-reassoc (var-inr (var-inr x)) = refl
+
+  -- "reassociating" and then "unassociating" a term acts like the identity
+
+  unassoc-reassoc-tm : ∀ {Θ Γ Δ Ξ A} (t : Term Θ (Γ ,, (Δ ,, Ξ)) A) → [ rename-unassoc ]ʳ (term-reassoc t) ≈ t
+  unassoc-reassoc-tm t = ≈-trans
+                           (≈-trans
+                             (≈-sym (∘r-≈ t rename-assoc rename-unassoc))
+                             (≈ʳ[]ʳ unassoc-reassoc))
+                           ([]ʳidʳ t)
+
+  -- term-reassociation preserves syntactical equality of terms
+  ≈-tm-reassoc : ∀ {Θ Γ Δ Ξ A} {s t : Term Θ (Γ ,, (Δ ,, Ξ)) A}
+                 → term-reassoc s ≈ term-reassoc t → s ≈ t
+  ≈-tm-reassoc {s = s} {t = t} p = ≈-trans
+                                     (≈-sym (unassoc-reassoc-tm s))
+                                     (≈-sym (≈-trans
+                                       (≈-sym (unassoc-reassoc-tm t))
+                                       (≈-tm-ʳ (≈-sym p))))
+
+  -- extending two times is like extending one time and reassociating
+  extendʳ² : ∀ {Γ Δ Ξ Λ Ω} (ρ : Γ ,, Δ ⇒ʳ Ω)
+             → (rename-unassoc {Δ = Ξ} {Ξ = Λ}) ∘ʳ (extendʳ  (extendʳ ρ)) ≡ʳ (extendʳ ρ) ∘ʳ rename-unassoc
+  extendʳ² ρ (var-inl (var-inl x)) = refl
+  extendʳ² ρ (var-inl (var-inr x)) = refl
+  extendʳ² ρ (var-inr x) = refl

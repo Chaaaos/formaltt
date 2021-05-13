@@ -193,6 +193,7 @@ module SecondOrder.Substitution
     ˢ∘ʳtm-≈-aux σ ρ (tm-var x) = ≈-≡ {!!}
     ˢ∘ʳtm-≈-aux σ ρ (tm-meta M ts) = {!!}
     ˢ∘ʳtm-≈-aux σ ρ (tm-oper f es) = {!!}
+  ˢ∘ʳtm-≈ σ ρ (SecondOrder.Term.tm-oper f es) = ≈-oper (λ i → {!!})
 
   -- interactions between extension and weakening
   extendʳ⇑ˢ : ∀ {Θ Γ Δ Ξ Λ A} (t : Term Θ (Γ ,, Λ) A) (σ : Θ ⊕ Γ ⇒ˢ Δ)
