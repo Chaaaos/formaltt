@@ -64,6 +64,7 @@ module SecondOrder.Renaming
   rename-unassoc (var-inl (var-inr x)) = var-inr (var-inl x)
   rename-unassoc (var-inr x) = var-inr (var-inr x)
 
+
   -- the empty context is the right unit
 
   ctx-empty-right-unit : ∀ {Γ} → Γ ,, ctx-empty ⇒ʳ Γ
@@ -151,6 +152,18 @@ module SecondOrder.Renaming
 --∥                              ∥  ** METATHEOREMS **  ∥                                ∥
 --∥                              ========================                                ∥
 --========================================================================================
+
+  -- association and unassociation renamings are inverses of each other
+  rename-assoc-inv : ∀ {Γ Δ Ξ} → rename-assoc {Γ} {Δ} {Ξ} ∘ʳ rename-unassoc ≡ʳ idʳ
+  rename-assoc-inv (var-inl (var-inl x)) = refl
+  rename-assoc-inv (var-inl (var-inr y)) = refl
+  rename-assoc-inv (var-inr z) = refl
+
+  rename-unassoc-inv : ∀ {Γ Δ Ξ} → rename-unassoc {Γ} {Δ} {Ξ} ∘ʳ rename-assoc ≡ʳ idʳ
+  rename-unassoc-inv (var-inl x) = refl
+  rename-unassoc-inv (var-inr (var-inl y)) = refl
+  rename-unassoc-inv (var-inr (var-inr z)) = refl
+
 
   -------------------------------------------
   --          Lemmas about joins           --
