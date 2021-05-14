@@ -83,7 +83,10 @@ module SecondOrder.Instantiation
   -- auxiliary function for (2), to deal with extensions in the oper case
   ∘ⁱ-≈-oper : ∀ {Θ Ω ψ Γ Δ Ξ Λ A} (t : Term Θ (Ξ ,, Λ) A) (I : Ω ⇒ⁱ ψ ⊕ Δ) (J : Θ ⇒ⁱ Ω ⊕ Γ)
               → term-reassoc ([ I ∘ⁱ J ]ⁱ t) ≈ [ extendʳ rename-assoc ]ʳ term-reassoc ([ I ]ⁱ term-reassoc ([ J ]ⁱ t))
-  ∘ⁱ-≈-oper t I J = {!!}
+  ∘ⁱ-≈-oper (SecondOrder.Term.tm-var (var-inl x)) I J = ≈-refl
+  ∘ⁱ-≈-oper (SecondOrder.Term.tm-var (var-inr x)) I J = ≈-refl
+  ∘ⁱ-≈-oper (tm-meta M ts) I J = {!!}
+  ∘ⁱ-≈-oper (tm-oper f es) I J = {!!}
 
   -- proof of (2)
   ∘ⁱ-≈ (tm-var x) I J = ≈-≡ refl
@@ -95,15 +98,19 @@ module SecondOrder.Instantiation
   -- auxiliary function for (3), to deal with extensions in the oper case
   []ⁱidⁱ-oper : ∀ {Θ Γ Ξ A} (t : Term Θ (Γ ,, Ξ) A)
               → [ extendʳ ctx-empty-left-unit ]ʳ term-reassoc ([ idⁱ ]ⁱ t) ≈ t
-  []ⁱidⁱ-oper (SecondOrder.Term.tm-var (var-inl x)) = ≈-≡ refl
-  []ⁱidⁱ-oper (SecondOrder.Term.tm-var (var-inr x)) = ≈-≡ refl
-  []ⁱidⁱ-oper (SecondOrder.Term.tm-meta M ts) = ≈-meta λ i → {!!}
-  []ⁱidⁱ-oper (SecondOrder.Term.tm-oper f es) = ≈-oper (λ i → {!!}) -- problem with extensions of extensions of functions : should be avoided
+  []ⁱidⁱ-oper (tm-var (var-inl x)) = ≈-refl
+  []ⁱidⁱ-oper (tm-var (var-inr x)) = ≈-refl
+  []ⁱidⁱ-oper (tm-meta M ts) = ≈-meta λ i → {!!}
+  []ⁱidⁱ-oper (tm-oper f es) = ≈-oper (λ i → {![]ⁱidⁱ-oper-aux!})
+    where
+      []ⁱidⁱ-oper-aux : ∀ {Θ Γ Ξ Λ A} (t : Term Θ ((Γ ,, Ξ) ,, Λ) A)
+              → ([ extendʳ rename-assoc ]ʳ term-reassoc ([ idⁱ ]ⁱ t)) ≈ t -- problem with extensions of extensions of functions : should be avoided
+      []ⁱidⁱ-oper-aux = ?
 
   -- (3)
   []ⁱidⁱ : ∀ {Θ Γ A} (t : Term Θ Γ A)
            → [ ctx-empty-left-unit ]ʳ ([ idⁱ ]ⁱ t) ≈ t
-  []ⁱidⁱ (tm-var x) = ≈-≡ refl
+  []ⁱidⁱ (tm-var x) = ≈-refl
   []ⁱidⁱ (tm-meta M ts) = ≈-meta (λ i → []ⁱidⁱ (ts i))
   []ⁱidⁱ (tm-oper f es) = ≈-oper λ i → []ⁱidⁱ-oper (es i)
 
@@ -111,6 +118,6 @@ module SecondOrder.Instantiation
   -- (4) substitutions preserve syntactical equality of terms
   ≈-tm-ⁱ : ∀ {Θ Ω Γ Δ A} {s t : Term Θ Δ A} {I : Θ ⇒ⁱ Ω ⊕ Γ}
         → s ≈ t → [ I ]ⁱ s ≈ [ I ]ⁱ t
-  ≈-tm-ⁱ (≈-≡ refl) = ≈-≡ refl
+  ≈-tm-ⁱ (≈-≡ refl) = ≈-refl
   ≈-tm-ⁱ {t = tm-meta M ts} {I = I} (≈-meta ξ) = ≈ˢ[]ˢ {t = I M} (⋈ˢ-≈ˢ-r (λ x → ≈-tm-ⁱ (ξ x)))
   ≈-tm-ⁱ (≈-oper ξ) = ≈-oper λ i → ≈-tm-ʳ (≈-tm-ⁱ (ξ i))
