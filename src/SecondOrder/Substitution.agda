@@ -293,26 +293,52 @@ module SecondOrder.Substitution
   ʳ∘ˢtm-≈ ρ σ (tm-meta M ts) = ≈-meta λ i → ʳ∘ˢtm-≈ ρ σ (ts i)
   ʳ∘ˢtm-≈ ρ σ (tm-oper f es) = ≈-oper (λ i → ʳ∘ˢtm-≈-aux ρ σ (es i))
     where
-       ʳ∘ˢtm-≈-pre-aux : ∀ {Γ Δ Ξ Λ Θ} (ρ : Δ ⇒ʳ Ξ) (σ : Θ ⊕ Γ ⇒ˢ Δ)
+       ʳ∘ˢtm-≈-aux₁ : ∀ {Γ Δ Ξ} (ρ : Γ ⇒ʳ Δ) →  ((var-inl {Δ = Ξ}) ∘ʳ ρ) ≡ʳ (extendʳ ρ) ∘ʳ (var-inl)
+       ʳ∘ˢtm-≈-aux₁ ρ x = refl
+
+       ʳ∘ˢtm-≈-aux₂ : ∀ {Γ Δ Ξ Λ Θ} (ρ : Δ ⇒ʳ Ξ) (σ : Θ ⊕ Γ ⇒ˢ Δ)
                 → (λ {A} (x : A ∈ Γ) → (⇑ˢ {Ξ = Λ} (ρ ʳ∘ˢ σ)) (var-inl x)) ≈ˢ (λ {A} (x : A ∈ Γ) → [ extendʳ ρ ]ʳ (⇑ˢ σ (var-inl x)))
-       ʳ∘ˢtm-≈-pre-aux ρ σ var-slot = {!!}
-       ʳ∘ˢtm-≈-pre-aux ρ σ (var-inl x) = {!!}
-       ʳ∘ˢtm-≈-pre-aux ρ σ (var-inr x) = {!!}
+       ʳ∘ˢtm-≈-aux₂ ρ σ x = ≈-trans
+                            (≈-trans
+                              (≈-tm-ʳ ((ρ ʳ⃗ˢcorrect) (σ x)))
+                              (≈-trans
+                                (≈-sym (∘r-≈ (σ x) ρ var-inl))
+                                (≈ʳ[]ʳ (ʳ∘ˢtm-≈-aux₁ ρ))))
+                            (∘r-≈ (σ x) var-inl (extendʳ ρ))
+
+
+       ʳ∘ˢtm-≈-aux₃ : ∀ {Θ Γ Δ Ξ Λ} (ρ : Δ ⇒ʳ Ξ) (σ : Θ ⊕ Γ ⇒ˢ Δ)
+                      →   (λ {A} x → (_⋈ˢ_ {Γ = Γ} {Δ = Λ} (λ x₁ → [ var-inl ]ʳ (ρ ʳ∘ˢ σ) x₁) (λ y → tm-var (var-inr y))) x)
+                      ≈ˢ (λ {A} x → [ extendʳ ρ ʳ⃗ˢ ]ˢ ((λ x₁ → [ var-inl ]ʳ σ x₁) ⋈ˢ (λ y → tm-var (var-inr y))) x)
+       ʳ∘ˢtm-≈-aux₃ ρ σ (var-inl x) = ≈-trans
+                                      (≈-tm-ʳ ((ρ ʳ⃗ˢcorrect) (σ x)))
+                                      (≈-trans
+                                        (≈-sym (∘r-≈ (σ x) ρ var-inl))
+                                        (≈-trans
+                                          (≈ʳ[]ʳ (ʳ∘ˢtm-≈-aux₁ ρ))
+                                          (≈-trans
+                                            (≈-trans
+                                              (≈ʳ[]ʳ (ʳ∘ˢtm-≈-aux₁ ρ))
+                                              (∘r-≈ (σ x) var-inl (extendʳ ρ)))
+                                            (≈-sym ((extendʳ ρ ʳ⃗ˢcorrect) ([ var-inl ]ʳ σ x))))))
+       ʳ∘ˢtm-≈-aux₃ ρ σ (var-inr x) = ≈-refl
 
        ʳ∘ˢtm-≈-aux : ∀ {Θ Γ Δ Ξ Λ A} (ρ : Δ ⇒ʳ Ξ) (σ : Θ ⊕ Γ ⇒ˢ Δ) (t : Term Θ (Γ ,, Λ) A)
                 → [ ⇑ˢ (ρ ʳ∘ˢ σ) ]ˢ t ≈ [ extendʳ ρ ]ʳ ([ ⇑ˢ σ ]ˢ t)
-       ʳ∘ˢtm-≈-aux ρ σ (tm-var (var-inl x)) = ʳ∘ˢtm-≈-pre-aux ρ σ x
+       ʳ∘ˢtm-≈-aux ρ σ (tm-var (var-inl x)) = ʳ∘ˢtm-≈-aux₂ ρ σ x
        ʳ∘ˢtm-≈-aux ρ σ (tm-var (var-inr x)) = ≈-refl
        ʳ∘ˢtm-≈-aux ρ σ (tm-meta M ts) = ≈-meta λ i → ʳ∘ˢtm-≈-aux ρ σ (ts i)
-       ʳ∘ˢtm-≈-aux ρ σ (tm-oper f es) = ≈-oper (λ i → ≈-trans (≈ˢ[]ˢ {t = es i} (≈ˢextendˢ {!!}))  (ʳ∘ˢtm-≈-aux (extendʳ ρ) (⇑ˢ σ) (es i)))
--- (⇑ˢ (ρ ʳ∘ˢ σ))  (extendʳ ρ ʳ∘ˢ ⇑ˢ σ)
+       ʳ∘ˢtm-≈-aux ρ σ (tm-oper f es) = ≈-oper (λ i →
+                                        ≈-trans
+                                          (≈ˢ[]ˢ {t = es i} (≈ˢextendˢ (ʳ∘ˢtm-≈-aux₃ ρ σ)))
+                                          (ʳ∘ˢtm-≈-aux (extendʳ ρ) (⇑ˢ σ) (es i)))
 
   -- interactions between extension and weakening
   extendʳ⇑ˢ : ∀ {Θ Γ Δ Ξ Λ A} (t : Term Θ (Γ ,, Λ) A) (σ : Θ ⊕ Γ ⇒ˢ Δ)
             → [ extendʳ (var-inl {Δ = Ξ}) ]ʳ ([ ⇑ˢ σ ]ˢ t)
              ≈ [ ⇑ˢ ((λ y → [ var-inl ]ʳ σ y) ⋈ˢ (λ y → tm-var (var-inr y))) ]ˢ ([ extendʳ var-inl ]ʳ t)
   extendʳ⇑ˢ {Δ = Δ} {Ξ = Ξ} t σ = ≈-trans
-                                  (≈-sym (≈ˢ[]ˢ {!ʳ∘ˢtm-≈-aux-mieux!})) -- define the action of a renaming on a substitutions, show things on this
+                                  (≈-sym (≈ˢ[]ˢ {!!})) -- define the action of a renaming on a substitutions, show things on this
                                   (≈-trans
                                     {!!}
                                     (ˢ∘ʳtm-≈ ( ⇑ˢ ((λ y → [ var-inl ]ʳ σ y) ⋈ˢ (λ y → tm-var (var-inr y)))) (extendʳ var-inl) t))
