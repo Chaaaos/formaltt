@@ -51,6 +51,7 @@ module SecondOrder.Renaming
   infix 7 _∘ʳ_
 
   -- the reassociation renaming
+
   rename-assoc : ∀ {Γ Δ Ξ} → Γ ,, (Δ ,, Ξ) ⇒ʳ (Γ ,, Δ) ,, Ξ
   rename-assoc (var-inl x) = var-inl (var-inl x)
   rename-assoc (var-inr (var-inl y)) = var-inl (var-inr y)
@@ -116,7 +117,6 @@ module SecondOrder.Renaming
   infixl 3 _≡ʳ_
 
 
-
 --========================================================================================
 --∥                              ========================                                ∥
 --∥                              ∥  ** METATHEOREMS **  ∥                                ∥
@@ -124,7 +124,7 @@ module SecondOrder.Renaming
 --========================================================================================
 
   -------------------------------------------
-  --          Lemmas about sums           --
+  --          Lemmas about joins           --
   -------------------------------------------
 
   -- We want to show that sums of renamings form a coproduct of morphisms
@@ -134,24 +134,29 @@ module SecondOrder.Renaming
   -- The join of two renamings gives us the renaming prophesied by the
   -- universal property of coproducts.
   -- Now we just need to show uniqueness:
-  unique⋈ : ∀ {Γ Δ Ξ} {σ : Γ ⇒ʳ Ξ} {τ : Δ ⇒ʳ Ξ} {ρ : Γ ,, Δ ⇒ʳ Ξ}
-          → (ρ ∘ʳ inlʳ) ≡ʳ σ
-          → (ρ ∘ʳ inrʳ) ≡ʳ τ
-          → ρ ≡ʳ (σ ⋈ʳ τ)
-  unique⋈ eq1 eq2 (var-inl x) = eq1 x
-  unique⋈ eq1 eq2 (var-inr y) = eq2 y
+  unique⋈ʳ : ∀ {Γ Δ Ξ} {ρ : Γ ⇒ʳ Ξ} {ν : Δ ⇒ʳ Ξ} {δ : Γ ,, Δ ⇒ʳ Ξ}
+          → (δ ∘ʳ inlʳ) ≡ʳ ρ
+          → (δ ∘ʳ inrʳ) ≡ʳ ν
+          → δ ≡ʳ (ρ ⋈ʳ ν)
+  unique⋈ʳ eq1 eq2 (var-inl x) = eq1 x
+  unique⋈ʳ eq1 eq2 (var-inr y) = eq2 y
+
+  -------------------------------------------
+  --          Lemmas about sums            --
+  -------------------------------------------
 
   -- We have existance of coproducts of renamings with the sum
   -- once again, what about uniqueness?
   -- For any renaming ρ : Γ ,, Γ' → Δ ,, Δ' that makes the corresponding
   -- squares commute, we have ρ ≡ʳ σ +ʳ τ
-  unique+ : ∀ {Γ Γ' Δ Δ' Ξ Λ} {σ : Γ ⇒ʳ Δ} {τ : Γ' ⇒ʳ Δ'} {ρ : Ξ ⇒ʳ Λ}
-    → (α₁ : Γ ⇒ʳ Ξ) → (α₂ : Δ ⇒ʳ Λ) → (ρ ∘ʳ α₁) ≡ʳ (α₂ ∘ʳ σ)
-    → (β₁ : Γ' ⇒ʳ Ξ) → (β₂ : Δ' ⇒ʳ Λ) → (ρ ∘ʳ β₁) ≡ʳ (β₂ ∘ʳ τ)
-    → ρ ∘ʳ (α₁ ⋈ʳ β₁) ≡ʳ (α₂ ⋈ʳ β₂) ∘ʳ (σ +ʳ τ)
+  unique+ : ∀ {Γ Γ' Δ Δ' Ξ Λ} {ρ : Γ ⇒ʳ Δ} {ν : Γ' ⇒ʳ Δ'} {δ : Ξ ⇒ʳ Λ}
+    → (α₁ : Γ ⇒ʳ Ξ) → (α₂ : Δ ⇒ʳ Λ) → (δ ∘ʳ α₁) ≡ʳ (α₂ ∘ʳ ρ)
+    → (β₁ : Γ' ⇒ʳ Ξ) → (β₂ : Δ' ⇒ʳ Λ) → (δ ∘ʳ β₁) ≡ʳ (β₂ ∘ʳ ν)
+    → δ ∘ʳ (α₁ ⋈ʳ β₁) ≡ʳ (α₂ ⋈ʳ β₂) ∘ʳ (ρ +ʳ ν)
   unique+ α₁ α₂ eq1 β₁ β₂ eq2 (var-inl x) = eq1 x
   unique+ α₁ α₂ eq1 β₁ β₂ eq2 (var-inr y) = eq2 y
 
+  
   -- Lemma: The extension of a renaming is equal to summing with the identity renaming
   extendʳ≡+id : ∀ {Γ Δ Ξ} {ρ : Γ ⇒ʳ Δ}
              → (extendʳ ρ {Ξ}) ≡ʳ (ρ +ʳ idʳ)

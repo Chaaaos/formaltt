@@ -101,57 +101,114 @@ module SecondOrder.MetaTheoremS {ℓ ℓs ℓo ℓa : Level}
   subst-congr-aux : ∀ {Θ Γ Δ Ξ A} {t : Term Θ (Γ ,, Ξ) A} {σ τ : Θ ⊕ Δ ⇒ˢ Γ}
     → σ ≈ˢ τ → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ t [ ⇑ˢ σ ]ˢ ≈  t [ ⇑ˢ τ ]ˢ ⦂ A
 
-  -- extension of substitutions preserve composition
-  ∘ˢ-extendˡ : ∀ {Θ Γ Δ Ξ Λ} {σ : Θ ⊕ Δ ⇒ˢ Ξ} {τ : Θ ⊕ Γ ⇒ˢ Δ}
-    → ((⇑ˢ {Γ = Δ} {Δ = Ξ} {Ξ = Λ} σ) ∘ˢ (⇑ˢ τ)) ≈ˢ ⇑ˢ {Γ = Γ} {Δ = Ξ} {Ξ = Λ} (σ ∘ˢ τ)
+  -- interactions between extensions
+  extend-var-inl : ∀ {Γ Δ Ξ Λ Θ A} (t : Term Θ (Λ ,, Ξ) A) (τ : Θ ⊕ Γ ⇒s Λ)
+    → ⊢ Θ ⊕ ((Γ ,, Δ) ,, Ξ) ∥
+        (([ (extend-r {Θ = Θ} var-inl) ]r t) [ extend-sˡ (extend-sˡ τ) ]s)
+      ≈ ([ (extend-r {Θ = Θ} var-inl) ]r (t [ extend-sˡ τ ]s)) ⦂ A
+  extend-var-inl {Γ} {Δ} {Ξ} {Λ} {Θ} {A} (tm-var (var-inl x)) τ =
+    let open SetoidR (eq-setoid (Γ ,, Δ ,, Ξ) Θ A) in
+      {!!}
+  extend-var-inl (tm-var (var-inr y)) τ = {!!}
+  extend-var-inl (tm-meta M ts) τ = {!!}
+  extend-var-inl (tm-oper f es) τ = {!!}
 
-  ∘ˢ-extendˡ-aux : ∀ {Θ Γ Δ Ξ A} {τ : Θ ⊕ Δ ⇒ˢ Γ} {t : Term Θ Γ A}
-    → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ ([ var-inl ]ʳ t) [ ⇑ˢ τ ]ˢ ≈ [ var-inl ]ʳ (t [ τ ]ˢ) ⦂ A
+  -- extension of substitutions preserve composition
+  ∘s-extendˡ : ∀ {Θ Γ Δ Ξ Λ} {σ : Θ ⊕ Δ ⇒s Ξ} {τ : Θ ⊕ Γ ⇒s Δ}
+    → ((extend-sˡ {Γ = Δ} {Δ = Ξ} {Ξ = Λ} σ) ∘s (extend-sˡ τ)) ≈s extend-sˡ {Γ = Γ} {Δ = Ξ} {Ξ = Λ} (σ ∘s τ)
+  ∘s-extendˡ (var-inr x) = eq-refl
+  ∘s-extendˡ {Γ = Γ} {Δ = Δ} {Ξ = Ξ} {σ = σ} (var-inl x)  = ∘s-extendˡ-aux {Γ = Δ} {Δ = Γ} {t = σ x}
+    where
+      ∘s-extendˡ-aux : ∀ {Θ Γ Δ Ξ A} {τ : Θ ⊕ Δ ⇒s Γ} {t : Term Θ Γ A}
+        → ⊢ Θ ⊕ (Δ ,, Ξ) ∥ ([ var-inl ]r t) [ extend-sˡ τ ]s ≈ [ var-inl ]r (t [ τ ]s) ⦂ A
+      ∘s-extendˡ-aux {t = tm-var x} = eq-refl
+      ∘s-extendˡ-aux {t = tm-meta M ts} = eq-congr-mv λ i → ∘s-extendˡ-aux {t = ts i}
+      ∘s-extendˡ-aux {τ = τ} {t = tm-oper f es} = eq-congr λ i → extend-var-inl (es i) τ
 
   ∘ˢ-≈aux :  ∀ {Θ Γ Δ Ξ Λ A} {t : Term Θ (Γ ,, Λ) A} {σ : Θ ⊕ Δ ⇒ˢ Γ} {τ : Θ ⊕ Ξ ⇒ˢ Δ}
     → ⊢ Θ ⊕ (Ξ ,, Λ) ∥ (t [ ⇑ˢ σ ]ˢ) [ ⇑ˢ τ ]ˢ ≈ (t [ (⇑ˢ σ) ∘ˢ (⇑ˢ τ) ]ˢ) ⦂ A
 
   -- extension of substitutions preserves equality of substitutions
-  ≈ˢ-⇑ˢ : ∀ {Θ Γ Δ Ξ} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
-    → σ ≈ˢ τ
-    → ⇑ˢ {Θ} {Γ} {Δ} {Ξ} σ ≈ˢ ⇑ˢ {Θ} {Γ} {Δ} {Ξ} τ
+  ≈s-extend-sˡ : ∀ {Θ Γ Δ Ξ} {σ τ : Θ ⊕ Γ ⇒s Δ}
+    → σ ≈s τ
+    → extend-sˡ {Θ} {Γ} {Δ} {Ξ} σ ≈s extend-sˡ {Θ} {Γ} {Δ} {Ξ} τ
+
+  -- composition of substitutions preserves equality of substitutions
+  ∘s-≈s : ∀ {Θ Γ Δ Ξ} {δ : Θ ⊕ Δ ⇒s Γ} {σ τ : Θ ⊕ Ξ ⇒s Δ}
+    → σ ≈s τ
+    → (δ ∘s σ) ≈s (δ ∘s τ)
+  ∘s-≈s {δ = δ} eq x = subst-congr {t = δ x} eq
+
+  -- equality of substitutions is commutative
+  ≈s-comm : ∀ {Θ Γ Δ} {σ τ : Θ ⊕ Δ ⇒s Γ}
+    → σ ≈s τ
+    → τ ≈s σ
+  ≈s-comm eq x = eq-symm (eq x)
+
+  -- composition of a substitution and a renaming is a substitution
+  s∘r≈s : ∀ {Θ Γ Δ Ξ} {ρ : Θ ⊕ Δ ⇒r Ξ} {σ : Θ ⊕ Δ ⇒s Γ}
+    → (σ s∘r ρ) ≈s (σ ∘s (r-to-subst ρ))
+  s∘r≈s x = r-to-subst-≈
+
+  -- composition of a renaming and a substitition is also a substitution
+  r∘s≈s : ∀ {Θ Γ Δ Ξ} {ρ : Θ ⊕ Γ ⇒r Δ} {σ : Θ ⊕ Ξ ⇒s Δ}
+    → ((r-to-subst ρ) ∘s σ) ≈s (ρ r∘s σ)
+  r∘s≈s x = eq-refl
 
 
-  -- temp2 : ∀ {Θ Γ Δ Ξ Ψ} {ρ : _⇒ʳ_ {Θ} Γ Δ} {σ : _⇒ˢ_ {Θ} Ξ Δ}
-  --   → ((⇑ˢ {Θ} {Ξ} {Δ} {Ψ} σ) ˢ∘ʳ (extendʳ {Θ} {Γ} {Δ} ρ {Ψ})) ≈ˢ ⇑ˢ (σ ˢ∘ʳ ρ)
-  -- temp2 (var-inl x) = eq-refl
-  -- temp2 (var-inr y) = eq-refl
-
-  -- temp : ∀ {Θ Γ Δ Ξ Ψ A} (ρ : _⇒ʳ_ {Θ} Γ Δ)  (σ : _⇒ˢ_ {Θ} Ξ Δ) (t : Term Θ (Γ ,, Ψ) A)
-  --   → ⊢ Θ ⊕ (Ξ ,, Ψ) ∥ t [ (λ x → (⇑ˢ σ) ((extendʳ {Θ} {Γ} {Δ} ρ {Ψ}) x)) ]ˢ ≈ t [ ⇑ˢ (λ x → σ (ρ x)) ]ˢ ⦂ A
-  -- temp {Θ} {Γ} {Δ} {Ξ} {Ψ} {A} ρ σ t = subst-congr temp2
-
-
-  temp3 : ∀ {Θ Γ Δ Ξ} (ρ : Θ ⊕ Δ ⇒ʳ Ξ) (σ : Θ ⊕ Δ ⇒ˢ Γ)
-    → (σ ˢ∘ʳ ρ) ≈ˢ (σ ∘ˢ (r-to-subst ρ))
-  temp3 ρ σ x = r-to-subst-≈
-
-  -- substitution commutes with renamings
-  s-comm-r : ∀ {Θ Γ Δ Ξ A} {ρ : Θ ⊕ Γ ⇒ʳ Δ} {σ : Θ ⊕ Ξ ⇒ˢ Δ} (t : Term Θ Γ A)
-    → ⊢ Θ ⊕ Ξ ∥ ([ ρ ]ʳ t) [ σ ]ˢ ≈ t [ ρ ʳ⃗ˢ ∘ˢ σ ]ˢ ⦂ A
-  s-comm-r {Θ} {Γ} {Δ} {Ξ} {A} {ρ = ρ} {σ = σ} t = {!!}
-
-  -- s-comm-r (tm-var x) = eq-refl
-  -- s-comm-r (tm-meta M ts) = eq-meta (λ i → s-comm-r (ts i))
-  -- s-comm-r {Θ} {Γ} {Δ} {Ξ} {A} {ρ = ρ} {σ = σ} (tm-oper f es) = eq-oper λ i → {!tm-oper f es!}
-
-  -- s-comm-r {Θ} {Γ} {Δ} {Ξ} {A} {ρ = ρ} {σ = σ} (tm-oper f es) =
-  --   eq-oper λ i → temp {Θ} {Γ} {Δ} {Ξ} {(arg-bind f i)} {(arg-sort f i)} ρ σ {!es i!}
-
-  -- renaming commutes with substitution
-  -- r-comm-s : ∀ {Θ Γ Δ Ξ A} (σ : _⇒ˢ_ {Θ} Ξ Δ) (ρ : _⇒ʳ_ {Θ} Γ Δ) (t : Term Θ Γ A)
-  --   → ⊢ Θ ⊕ Ξ ∥ (t [ σ ]ˢ) [ ρ ]ʳ ≈ t [ σ ˢ∘ʳ ρ ]ˢ ⦂ A
-  -- r-comm-s σ ρ (tm-var x) = eq-refl
-  -- r-comm-s σ ρ (tm-meta M ts) = eq-meta (λ i → r-comm-s σ ρ (ts i))
-  -- r-comm-s σ ρ (tm-oper f es) = eq-oper (λ i → r-comm-s (⇑ˢ σ) (extendʳ ρ) {!es i!})
-
-
-
+  -- substitution commutes with renamings when acting on terms
+  s-comm-r : ∀ {Θ Γ Δ Ξ A} {ρ : Θ ⊕ Γ ⇒r Δ} {σ : Θ ⊕ Ξ ⇒s Δ} (t : Term Θ Γ A)
+             → ⊢ Θ ⊕ Ξ ∥ ([ ρ ]r t) [ σ ]s ≈ t [ ρ r∘s σ ]s ⦂ A
+  s-comm-r (tm-var x) = eq-refl
+  s-comm-r (tm-meta M ts) = eq-congr-mv λ i → s-comm-r (ts i)
+  s-comm-r (tm-oper f es) = eq-congr λ i → s-comm-r-aux (es i)
+    module Extras where
+      s-comm-r-aux : ∀ {Θ Γ Δ Ξ Λ A} {ρ : Θ ⊕ Γ ⇒r Δ} {σ : Θ ⊕ Ξ ⇒s Δ} (t : Term Θ (Γ ,, Λ) A)
+        → ⊢ Θ ⊕ (Ξ ,, Λ) ∥ ([ extend-r {Θ = Θ} ρ ]r t) [ extend-sˡ σ ]s ≈ t [ extend-sˡ (ρ r∘s σ) ]s ⦂ A
+      s-comm-r-aux {Θ} {Γ} {Δ} {Ξ} {Λ} {A} {ρ} {σ} t =
+        let open SetoidR (eq-setoid (Ξ ,, Λ) Θ A) in
+          begin
+            ([ extend-r ρ ]r t) [ extend-sˡ σ ]s ≈⟨ ≈tm-subst {s = [ extend-r ρ ]r t} r-to-subst-≈ ⟩
+            ((t [ r-to-subst (extend-r ρ) ]s) [ extend-sˡ σ ]s) ≈⟨ ∘s-≈ {t = t} ⟩
+            (t [ (r-to-subst (extend-r ρ)) ∘s extend-sˡ σ ]s) ≈⟨ (subst-congr {t = t}) (λ _ → eq-refl) ⟩
+            (t [ (extend-r ρ) r∘s extend-sˡ σ ]s) ≈⟨ subst-congr {t = t} ext-r-ext-s≈ext-s ⟩
+            (t [ extend-sˡ (ρ r∘s σ) ]s)
+          ∎
+        where
+        ext-r-ext-s≈ext-s : ∀ {Θ Γ Δ Ξ Λ} {ρ : Θ ⊕ Γ ⇒r Δ} {σ : Θ ⊕ Ξ ⇒s Δ}
+          → ((extend-r {Θ = Θ} ρ {Λ}) r∘s (extend-sˡ σ)) ≈s (extend-sˡ (ρ r∘s σ))
+        ext-r-ext-s≈ext-s (var-inl x) = eq-refl
+        ext-r-ext-s≈ext-s (var-inr y) = eq-refl
+          
+  -- renaming commutes with substitution when acting on terms
+  r-comm-s : ∀ {Θ Γ Δ Ξ A} (σ : Θ ⊕ Δ ⇒s Γ) (ρ : Θ ⊕ Δ ⇒r Ξ) (t : Term Θ Γ A)
+    → ⊢ Θ ⊕ Ξ ∥ [ ρ ]r (t [ σ ]s) ≈ t [ σ s∘r ρ ]s ⦂ A
+  r-comm-s σ ρ (tm-var x) = eq-refl
+  r-comm-s σ ρ (tm-meta M ts) = eq-congr-mv (λ i → r-comm-s σ ρ (ts i))
+  r-comm-s σ ρ (tm-oper f es) = eq-congr (λ i → r-comm-s-aux (es i))
+    where
+      r-comm-s-aux : ∀ {Θ Γ Δ Ξ Λ A} {σ : Θ ⊕ Δ ⇒s Γ} {ρ : Θ ⊕ Δ ⇒r Ξ} (t : Term Θ (Γ ,, Λ) A)
+        → ⊢ Θ ⊕ (Ξ ,, Λ) ∥ ([ extend-r {Θ} ρ ]r (t [ extend-sˡ σ ]s)) ≈ t [ extend-sˡ (σ s∘r ρ) ]s ⦂ A
+      r-comm-s-aux {Θ} {Γ} {Δ} {Ξ} {Λ} {A} {σ} {ρ} t =
+        let open SetoidR (eq-setoid (Ξ ,, Λ) Θ A) in
+          begin
+            (([ extend-r {Θ} ρ ]r (t [ extend-sˡ σ ]s)))
+              ≈⟨ r-to-subst-≈ ⟩
+            ((t [ extend-sˡ σ ]s) [ r-to-subst (extend-r {Θ} ρ) ]s)
+              ≈⟨ ∘s-≈ {t = t} ⟩
+            (t [ ( extend-sˡ σ) ∘s (r-to-subst (extend-r {Θ} ρ)) ]s )
+              ≈⟨ subst-congr {t = t} (∘s-≈s {δ = ( extend-sˡ σ)}  r-to-subst-comm-ext) ⟩
+            (t [ ( extend-sˡ σ) ∘s (extend-sˡ (r-to-subst ρ)) ]s )
+              ≈⟨ subst-congr {t = t} ∘s-extendˡ ⟩  -- ∘s-extendˡ
+            (t [ extend-sˡ (σ ∘s (r-to-subst ρ)) ]s)
+              ≈⟨ subst-congr {t = t} (≈s-extend-sˡ (≈s-comm (s∘r≈s {ρ = ρ} {σ = σ}))) ⟩
+            (t [ extend-sˡ (σ s∘r ρ) ]s)
+          ∎
+        where
+        r-to-subst-comm-ext : ∀ {Θ Γ Δ Ξ} {ρ : Θ ⊕ Γ ⇒r Δ}
+          → (r-to-subst {Θ} (extend-r {Θ} ρ {Ξ})) ≈s (extend-sˡ (r-to-subst ρ))
+        r-to-subst-comm-ext (var-inl x) = eq-refl
+        r-to-subst-comm-ext (var-inr y) = eq-refl
 
 
 

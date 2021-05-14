@@ -8,6 +8,7 @@ open import Function.Base
 open import Relation.Binary using (Setoid)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst)
 open import SecondOrder.Arity
+import Relation.Binary.Reasoning.Setoid as SetoidR
 
 import SecondOrder.Substitution
 import SecondOrder.SecondOrderSignature as SecondOrderSignature
@@ -85,6 +86,55 @@ module SecondOrder.MetaTheoremR {ℓ ℓs ℓo ℓa : Level}
          tm-var (extendʳ {Θ} {Γ} {Γ} (idʳ {Θ = Θ} {Γ = Γ}) {Ξ} a)
        ≈ tm-var (idʳ {Θ = Θ} {Γ = Γ ,, Ξ} a) ⦂ A
 
+
+  extend-r² : ∀ {Θ Γ Δ Ξ Λ A} {t : Term Θ (Γ ,, Ξ ,, Λ) A} {ρ : Θ ⊕ Γ ⇒r Δ }
+              → ⊢ Θ ⊕ (Δ ,, Ξ ,, Λ) ∥ [ extend-r {Θ = Θ} (extend-r {Θ = Θ} ρ) ]r t ≈ term-reassoc ([ extend-r {Θ = Θ} {Γ = Γ} ρ ]r ([ rename-assoc-r {Θ = Θ} ]r t)) ⦂ A
+  extend-r² = {!!}
+
+
+  -- Lemma
+  empty-ctx-rename-invˡ : ∀ {Θ Γ A} {t : Term Θ (Γ ,, ctx-empty) A}
+                           → ⊢ Θ ⊕ (Γ ,, ctx-empty) ∥ [ rename-ctx-empty-inv {Θ = Θ} ]r ([ rename-ctx-empty-r {Θ = Θ} ]r t) ≈ t ⦂ A
+
+  -- Lemma
+  extend-empty-ctx-renameˡ : ∀ {Θ Γ Δ A} {t : Term Θ ((Γ ,, ctx-empty) ,, Δ) A}
+    → ⊢ Θ ⊕ ((Γ ,, ctx-empty) ,, Δ) ∥
+      ([ extend-r {Θ = Θ} (rename-ctx-empty-inv {Θ = Θ}) ]r ([ extend-r {Θ = Θ} (rename-ctx-empty-r {Θ = Θ})]r t)) ≈ t ⦂ A
+
+  -- Proof
+  extend-empty-ctx-renameˡ {Θ = Θ} {Γ = Γ} {Δ = Δ} {A} {t = tm-var (var-inl x)} =
+    let open SetoidR (eq-setoid (((Γ ,, ctx-empty) ,, Δ)) Θ A) in
+      begin
+        ([ extend-r {Θ} (rename-ctx-empty-inv {Θ = Θ}) ]r ([ extend-r {Θ} rename-ctx-empty-r ]r tm-var (var-inl x)))
+          ≈⟨ (extend-∘r {t = tm-var x} {ρ = rename-ctx-empty-r} {ν = rename-ctx-empty-inv {Θ = Θ}}) ⟩
+        ([ extend-r {Θ} (_∘r_ {Θ = Θ} var-inl rename-ctx-empty-r) ]r weakenˡ (tm-var x))
+          ≈⟨ ((extend-weaken {σ = _∘r_ {Θ = Θ} (rename-ctx-empty-inv {Θ = Θ}) (rename-ctx-empty-r {Θ = Θ})} {t = tm-var x})) ⟩
+        ([ var-inl ]r ([ rename-ctx-empty-inv {Θ}  ]r ([ rename-ctx-empty-r ]r tm-var x)))
+          ≈⟨ (≈tm-rename {t = tm-var x} {ρ = var-inl} empty-ctx-rename-invˡ) ⟩
+        (tm-var (var-inl x))
+      ∎
+
+  -- Proof
+  extend-empty-ctx-renameˡ {t = tm-var (var-inr x)} = eq-refl
+  extend-empty-ctx-renameˡ {t = tm-meta M ts} = eq-congr-mv λ i → extend-empty-ctx-renameˡ
+  extend-empty-ctx-renameˡ {Θ = Θ} {Γ = Γ} {Δ = Δ} {A} {t = tm-oper f es} =
+    eq-congr λ i → {!!}
+        
+                                                                 -- eq-trans
+                                                                 --   (≈tm-rename extend-r²)
+                                                                 --   (eq-trans
+                                                                 --     (r-congr λ x → extend-r²)
+                                                                 --     (eq-trans
+                                                                 --       {!!}
+                                                                 --       ({!!})))
+                                                         -- eq-trans (extend-∘r')
+                                                         -- (eq-trans
+                                                         --   (eq-symm (r-congr (≈r-extend-r λ x → (∘r-≈ {Θ = Θ} {σ = extend-r rename-ctx-empty-r} {τ = extend-r (rename-ctx-empty-inv {Θ = Θ})}))))
+                                                         --   (eq-trans {!extend-r²!} {!!}))
+
+  empty-ctx-rename-invˡ {t = tm-var (var-inl x)} = eq-refl
+  empty-ctx-rename-invˡ {t = tm-meta M ts} = eq-congr-mv λ i → empty-ctx-rename-invˡ
+  empty-ctx-rename-invˡ {t = tm-oper f es} = eq-congr λ i → extend-empty-ctx-renameˡ
 
 
   --==================================================================================================
