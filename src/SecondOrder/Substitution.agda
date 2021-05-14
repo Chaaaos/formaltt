@@ -95,26 +95,26 @@ module SecondOrder.Substitution
           → σ ≈ˢ σ
   ≈ˢ-refl x = ≈-refl
             
-  ≈ˢ-symm : ∀ {Θ Γ Δ} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
+  ≈ˢ-sym : ∀ {Θ Γ Δ} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
           → σ ≈ˢ τ
           → τ ≈ˢ σ
-  ≈ˢ-symm eq x = ≈-sym (eq x)
+  ≈ˢ-sym eq x = ≈-sym (eq x)
                            
   ≈ˢ-trans : ∀ {Θ Γ Δ} {σ τ μ : Θ ⊕ Γ ⇒ˢ Δ}
            → σ ≈ˢ τ → τ ≈ˢ μ
            → σ ≈ˢ μ
   ≈ˢ-trans eq1 eq2 x = ≈-trans (eq1 x) (eq2 x)
     
-    -- substitutions form a setoid
-  eq-setoid : ∀ (Γ Δ : Context) (Θ : MetaContext) → Setoid (lsuc ℓs ⊔ lsuc ℓo) (lsuc ℓs ⊔ lsuc ℓo)
-  eq-setoid Γ Δ Θ =
+  -- substitutions form a setoid
+  substitution-setoid : ∀ (Γ Δ : Context) (Θ : MetaContext) → Setoid (lsuc ℓs ⊔ lsuc ℓo) (lsuc ℓs ⊔ lsuc ℓo)
+  substitution-setoid Γ Δ Θ =
     record
       { Carrier = Θ ⊕ Γ ⇒ˢ Δ
       ;  _≈_ = λ σ τ → σ ≈ˢ τ
       ; isEquivalence =
                       record
-                        { refl = ≈ˢ-refl
-                        ; sym = ≈ˢ-symm
+                        { refl = λ {σ} x → ≈ˢ-refl {σ = σ} x
+                        ; sym = ≈ˢ-sym
                         ; trans = ≈ˢ-trans
                         }
       }
@@ -138,17 +138,18 @@ module SecondOrder.Substitution
   unique⋈ˢ eq1 eq2 (var-inl x) = eq1 x
   unique⋈ˢ eq1 eq2 (var-inr y) = eq2 y
 
+  unique-cotupleˢ : ∀ {Θ Γ Γ' Ξ} {σ : Θ ⊕ Γ ⇒ˢ Ξ} {τ : Θ ⊕ Γ' ⇒ˢ Ξ} {μ ν : Θ ⊕ Γ ,, Γ' ⇒ˢ Ξ}
+          → (μ ∘ˢ inlˢ) ≈ˢ σ → (μ ∘ˢ inrˢ) ≈ˢ τ
+          → (ν ∘ˢ inlˢ) ≈ˢ σ → (ν ∘ˢ inrˢ) ≈ˢ τ
+          → μ ≈ˢ ν
+  unique-cotupleˢ {μ = μ} {ν = ν} eq1 eq2 eq3 eq4 (var-inl x) = ≈ˢ-trans eq1 (≈ˢ-sym eq3) x
+  unique-cotupleˢ {μ = μ} {ν = ν} eq1 eq2 eq3 eq4 (var-inr y) = ≈ˢ-trans eq2 (≈ˢ-sym eq4) y
+
+
   --------------------------------------------------------------------------------------------------
   -------------------------------------------
   --          Lemmas about sums            --
   -------------------------------------------
-
-  unique-cotuple : ∀ {Θ Γ Γ' Ξ} {σ : Θ ⊕ Γ ⇒ˢ Ξ} {τ : Θ ⊕ Γ' ⇒ˢ Ξ} {μ ν : Θ ⊕ Γ ,, Γ' ⇒ˢ Ξ}
-          → (μ ∘ˢ inlˢ) ≈ˢ σ → (μ ∘ˢ inrˢ) ≈ˢ τ
-          → (ν ∘ˢ inlˢ) ≈ˢ σ → (ν ∘ˢ inrˢ) ≈ˢ τ
-          → μ ≈ˢ ν
-  unique-cotuple {μ = μ} {ν = ν} eq1 eq2 eq3 eq4 (var-inl x) = ≈ˢ-trans eq1 (≈ˢ-symm eq3) x
-  unique-cotuple {μ = μ} {ν = ν} eq1 eq2 eq3 eq4 (var-inr y) = ≈ˢ-trans eq2 (≈ˢ-symm eq4) y
 
   -- Sums of substitutions have the structure of coproducts
   unique+ˢ : ∀ {Θ Γ Γ' Δ Δ'} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Γ' ⇒ˢ Δ'} {μ ν : Θ ⊕ (Γ ,, Γ') ⇒ˢ (Δ ,, Δ')}
@@ -156,9 +157,12 @@ module SecondOrder.Substitution
     → ν ∘ˢ inlˢ ≈ˢ inlˢ ∘ˢ σ → ν ∘ˢ inrˢ ≈ˢ inrˢ ∘ˢ τ
     → μ ≈ˢ ν
   unique+ˢ {σ = σ} {τ = τ} {μ = μ} {ν = ν} eq_lft1 eq_rgt1 eq_lft2 eq_rgt2 =
-    unique-cotuple {σ = inlˢ ∘ˢ σ} {τ = inrˢ ∘ˢ τ} {μ = μ} {ν = ν} eq_lft1 eq_rgt1 eq_lft2 eq_rgt2
+    unique-cotupleˢ {σ = inlˢ ∘ˢ σ} {τ = inrˢ ∘ˢ τ} {μ = μ} {ν = ν} eq_lft1 eq_rgt1 eq_lft2 eq_rgt2
 
-  -- (1) the weakening of to equal substitutions are equal
+  -- sum of substitutions is associative
+  +ˢ-assoc : ∀ {Θ Γ Γ' Δ Δ' Ξ Ξ'} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Γ' ⇒ˢ Δ'} {μ ν : Θ ⊕ (Γ ,, Γ') ⇒ˢ (Δ ,, Δ')}
+
+  -- (1) the weakening of equal substitutions are equal
   ≈ˢextendˢ : ∀ {Θ Γ Δ Ξ} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
         → σ ≈ˢ τ → ⇑ˢ {Ξ = Ξ} σ ≈ˢ ⇑ˢ τ
   ≈ˢextendˢ p (var-inl x) = ≈-tm-ʳ (p x)
