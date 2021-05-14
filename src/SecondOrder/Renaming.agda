@@ -156,7 +156,7 @@ module SecondOrder.Renaming
   unique+ α₁ α₂ eq1 β₁ β₂ eq2 (var-inl x) = eq1 x
   unique+ α₁ α₂ eq1 β₁ β₂ eq2 (var-inr y) = eq2 y
 
-  
+
   -- Lemma: The extension of a renaming is equal to summing with the identity renaming
   extendʳ≡+id : ∀ {Γ Δ Ξ} {ρ : Γ ⇒ʳ Δ}
              → (extendʳ ρ {Ξ}) ≡ʳ (ρ +ʳ idʳ)
@@ -192,7 +192,7 @@ module SecondOrder.Renaming
   -- (4) composition of renamings commutes with equality
   ∘r-≈ : ∀ {Θ Γ Δ Ξ A} (t : Term Θ Γ A) (ρ : Γ ⇒ʳ Δ) (ν : Δ ⇒ʳ Ξ)
         → [ ν ∘ʳ ρ ]ʳ t ≈ [ ν ]ʳ ([ ρ ]ʳ t)
-  ∘r-≈ (tm-var x) ρ ν = ≈-≡ refl
+  ∘r-≈ (tm-var x) ρ ν = ≈-refl
   ∘r-≈ (tm-meta M ts) ρ ν = ≈-meta (λ i → ∘r-≈ (ts i) ρ ν)
   ∘r-≈ (tm-oper f es) ρ ν = ≈-oper λ i → ≈-trans
                                            (≈ʳ[]ʳ (∘r-≈-extendʳ ρ ν))
@@ -223,6 +223,8 @@ module SecondOrder.Renaming
   ≈-tm-ʳ (≈-oper ξ) = ≈-oper (λ i → ≈-tm-ʳ (ξ i))
 
 
+  -- interactions between "reassociation" and "unassociation"
+  -- (the functions that change the way the concatenation of context is associated)
   -- the reassociation renaming and "unassociation" renaming are inverse
   unassoc-reassoc : ∀ {Γ Δ Ξ} → (rename-unassoc {Δ} {Γ} {Ξ}) ∘ʳ rename-assoc ≡ʳ idʳ
   unassoc-reassoc (var-inl x) = refl
@@ -230,7 +232,6 @@ module SecondOrder.Renaming
   unassoc-reassoc (var-inr (var-inr x)) = refl
 
   -- "reassociating" and then "unassociating" a term acts like the identity
-
   unassoc-reassoc-tm : ∀ {Θ Γ Δ Ξ A} (t : Term Θ (Γ ,, (Δ ,, Ξ)) A) → [ rename-unassoc ]ʳ (term-reassoc t) ≈ t
   unassoc-reassoc-tm t = ≈-trans
                            (≈-trans
@@ -247,7 +248,7 @@ module SecondOrder.Renaming
                                        (≈-sym (unassoc-reassoc-tm t))
                                        (≈-tm-ʳ (≈-sym p))))
 
-  -- extending two times is like extending one time and reassociating
+  -- extending two times is like extending one time and unassociating
   extendʳ² : ∀ {Γ Δ Ξ Λ Ω} (ρ : Γ ,, Δ ⇒ʳ Ω)
              → (rename-unassoc {Δ = Ξ} {Ξ = Λ}) ∘ʳ (extendʳ  (extendʳ ρ)) ≡ʳ (extendʳ ρ) ∘ʳ rename-unassoc
   extendʳ² ρ (var-inl (var-inl x)) = refl
