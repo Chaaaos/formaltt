@@ -446,12 +446,32 @@ module SecondOrder.Substitution
            → (σ +ˢ (τ +ˢ γ)) ≈ˢ (rename-unassoc ʳ⃗ˢ) ∘ˢ (σ +ˢ τ) +ˢ γ ∘ˢ (rename-assoc ʳ⃗ˢ)
   +ˢ-assoc-l {σ = σ} {τ = τ} {γ = γ} = ≈ˢ-sym (
     unique+ˢ-aux {σ = σ} {τ = τ +ˢ γ} {μ = (rename-unassoc ʳ⃗ˢ) ∘ˢ (σ +ˢ τ) +ˢ γ ∘ˢ (rename-assoc ʳ⃗ˢ)}
-      {!!} {!!})
+      (λ x →
+        ≈-trans
+          (≈-tm-ˢ {s = [ var-inl ]ʳ ([ var-inl ]ʳ σ x)} (≈-sym (∘r-≈ (σ x) var-inl var-inl)))
+          (≈-trans ((rename-unassoc  ʳ⃗ˢcorrect) ([ var-inl ∘ʳ var-inl ]ʳ σ x))
+            (≈-trans
+              (≈-trans
+                (≈-sym (∘r-≈ (σ x) (var-inl ∘ʳ var-inl) rename-unassoc))
+                (≈ʳ[]ʳ λ y → refl))
+              (≈-sym ((var-inl ʳ⃗ˢcorrect) (σ x))))))
+      λ x → ≈-trans
+        (≈-tm-ˢ
+          {s =  ((λ x₁ → [ var-inl ]ʳ  ((λ x₂ → [ var-inl ]ʳ σ x₂) ⋈ˢ (λ y → [ var-inr ]ʳ τ y)) x₁) ⋈ˢ (λ y → [ var-inr ]ʳ γ y)) (rename-assoc (var-inr x))}
+          {σ = (λ x₁ → tm-var (rename-unassoc x₁)) } {!!})
+        {!!})
 
   -- other direction
   +ˢ-assoc-r : ∀ {Θ Γ Γ' Γ'' Δ Δ' Δ''} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Γ' ⇒ˢ Δ'} {γ : Θ ⊕ Γ'' ⇒ˢ Δ''}
              → (σ +ˢ τ) +ˢ γ  ≈ˢ (rename-assoc ʳ⃗ˢ) ∘ˢ (σ +ˢ (τ +ˢ γ)) ∘ˢ (rename-unassoc ʳ⃗ˢ)
-  +ˢ-assoc-r {σ = σ} {τ = τ} {γ = γ} = {!!}
+  +ˢ-assoc-r {σ = σ} {τ = τ} {γ = γ} = ≈ˢ-sym
+             (unique+ˢ-aux {σ = σ +ˢ τ} {τ = γ} {μ = (rename-assoc ʳ⃗ˢ) ∘ˢ (σ +ˢ (τ +ˢ γ)) ∘ˢ (rename-unassoc ʳ⃗ˢ)}
+               {!!}
+               λ x → ≈-trans
+                 ((rename-assoc ʳ⃗ˢcorrect) ([ var-inr ]ʳ ([ var-inr ]ʳ γ x)))
+                 ((≈-trans
+                   (≈-sym (∘r-≈ ([ var-inr ]ʳ γ x) var-inr rename-assoc))
+                   (≈-trans
+                     (≈-sym (∘r-≈ (γ x) var-inr (rename-assoc ∘ʳ var-inr)))
+                     (≈-sym (((rename-assoc ∘ʳ (var-inr ∘ʳ var-inr)) ʳ⃗ˢcorrect) (γ x)))))))
   --------------------------------------------------------------------------------------------------
-
-
