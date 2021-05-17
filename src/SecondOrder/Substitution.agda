@@ -85,7 +85,7 @@ module SecondOrder.Substitution
     _ˢ∘ʳ_ : ∀ {Γ Δ Ξ} → Θ ⊕ Δ ⇒ˢ Ξ → Γ ⇒ʳ Δ → Θ ⊕ Γ ⇒ˢ Ξ
     σ ˢ∘ʳ ρ = σ ∘ˢ ρ ʳ⃗ˢ
 
-    -- action of a substitution on a renaming
+    -- action of a renaming on a substitution
     _ʳ∘ˢ_ : ∀ {Γ Δ Ξ} → Δ ⇒ʳ Ξ → Θ ⊕ Γ ⇒ˢ Δ → Θ ⊕ Γ ⇒ˢ Ξ
     ρ ʳ∘ˢ σ = (ρ ʳ⃗ˢ) ∘ˢ σ
 
@@ -98,17 +98,17 @@ module SecondOrder.Substitution
   ≈ˢ-refl : ∀ {Θ Γ Δ} {σ : Θ ⊕ Γ ⇒ˢ Δ}
           → σ ≈ˢ σ
   ≈ˢ-refl x = ≈-refl
-            
+
   ≈ˢ-sym : ∀ {Θ Γ Δ} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
           → σ ≈ˢ τ
           → τ ≈ˢ σ
   ≈ˢ-sym eq x = ≈-sym (eq x)
-                           
+
   ≈ˢ-trans : ∀ {Θ Γ Δ} {σ τ μ : Θ ⊕ Γ ⇒ˢ Δ}
            → σ ≈ˢ τ → τ ≈ˢ μ
            → σ ≈ˢ μ
   ≈ˢ-trans eq1 eq2 x = ≈-trans (eq1 x) (eq2 x)
-    
+
   -- substitutions form a setoid
   substitution-setoid : ∀ (Γ Δ : Context) (Θ : MetaContext) → Setoid (lsuc ℓs ⊔ lsuc ℓo) (lsuc ℓs ⊔ lsuc ℓo)
   substitution-setoid Γ Δ Θ =
@@ -180,7 +180,7 @@ module SecondOrder.Substitution
   ≈ˢextendˢ p (var-inl x) = ≈-tm-ʳ (p x)
   ≈ˢextendˢ p (var-inr x) = ≈-refl
 
- 
+
   -- (2) two equal substitution have the same action
   ≈ˢ[]ˢ : ∀ {Θ Γ Δ A} {t : Term Θ Γ A} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
         → σ ≈ˢ τ → [ σ ]ˢ t ≈ [ τ ]ˢ t
@@ -276,7 +276,7 @@ module SecondOrder.Substitution
   +ˢ-assoc-l {σ = σ} {τ = τ} {γ = γ} = ≈ˢ-sym (
     unique+ˢ-aux {σ = σ} {τ = τ +ˢ γ} {μ = (rename-unassoc ʳ⃗ˢ) ∘ˢ (σ +ˢ τ) +ˢ γ ∘ˢ (rename-assoc ʳ⃗ˢ)}
       {!!} {!!})
-  
+
   -- other direction
   +ˢ-assoc-r : ∀ {Θ Γ Γ' Γ'' Δ Δ' Δ''} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Γ' ⇒ˢ Δ'} {γ : Θ ⊕ Γ'' ⇒ˢ Δ''}
              → (σ +ˢ τ) +ˢ γ  ≈ˢ (rename-assoc ʳ⃗ˢ) ∘ˢ (σ +ˢ (τ +ˢ γ)) ∘ˢ (rename-unassoc ʳ⃗ˢ)
@@ -338,14 +338,27 @@ module SecondOrder.Substitution
             → [ extendʳ (var-inl {Δ = Ξ}) ]ʳ ([ ⇑ˢ σ ]ˢ t)
              ≈ [ ⇑ˢ ((λ y → [ var-inl ]ʳ σ y) ⋈ˢ (λ y → tm-var (var-inr y))) ]ˢ ([ extendʳ var-inl ]ʳ t)
   extendʳ⇑ˢ {Δ = Δ} {Ξ = Ξ} t σ = ≈-trans
-                                  (≈-sym (≈ˢ[]ˢ {!!})) -- define the action of a renaming on a substitutions, show things on this
+                                  (≈-sym (ʳ∘ˢtm-≈ (extendʳ (var-inl {Δ = Ξ})) ( ⇑ˢ σ) t))
                                   (≈-trans
-                                    {!!}
-                                    (ˢ∘ʳtm-≈ ( ⇑ˢ ((λ y → [ var-inl ]ʳ σ y) ⋈ˢ (λ y → tm-var (var-inr y)))) (extendʳ var-inl) t))
-
+                                    (≈ˢ[]ˢ
+                                      {t = t}
+                                      {σ = extendʳ var-inl ʳ∘ˢ ⇑ˢ σ}
+                                      {τ = ⇑ˢ ((λ y → [ var-inl ]ʳ σ y) ⋈ˢ (λ y → tm-var (var-inr y))) ˢ∘ʳ extendʳ var-inl}
+                                      (extendʳ⇑ˢ-aux σ))
+                                    (ˢ∘ʳtm-≈ (⇑ˢ ((λ y → [ var-inl ]ʳ σ y) ⋈ˢ (λ y → tm-var (var-inr y)))) (extendʳ var-inl) t))
+            where
+              extendʳ⇑ˢ-aux : ∀ {Θ Γ Δ Ξ Λ} (σ : Θ ⊕ Γ ⇒ˢ Δ)
+                             → (extendʳ (var-inl {Δ = Ξ}) {Ξ = Λ} ʳ∘ˢ ⇑ˢ σ) ≈ˢ (⇑ˢ ((λ y → [ var-inl ]ʳ σ y) ⋈ˢ (λ y → tm-var (var-inr y))) ˢ∘ʳ extendʳ var-inl)
+              extendʳ⇑ˢ-aux σ (var-inl x) =
+                                          ≈-trans
+                                           (≈-trans
+                                             ((extendʳ var-inl ʳ⃗ˢcorrect) ([ var-inl ]ʳ σ x))
+                                             (≈-sym (∘r-≈ (σ x) var-inl (extendʳ var-inl))))
+                                          (∘r-≈ (σ x) var-inl var-inl)
+              extendʳ⇑ˢ-aux σ (var-inr x) = ≈-refl
 
   -- The extension of a composition is equal to the composition of extensions
-  -- We need this lemma to show substitutions act functorially on terms
+  -- We need this lemma to show that the action of substitutions is functorial
   ∘ˢ-≈-extendˢ : ∀ {Θ Γ Δ Λ Ξ} (τ : Θ ⊕ Γ ⇒ˢ Δ) (σ : Θ ⊕ Δ ⇒ˢ Λ)
         →  ⇑ˢ {Ξ = Ξ} (σ ∘ˢ τ) ≈ˢ ((⇑ˢ σ) ∘ˢ (⇑ˢ τ))
   ∘ˢ-≈-extendˢ τ σ (var-inl x) = ∘ˢ-≈-extendˢ-aux (τ x) σ
@@ -359,7 +372,7 @@ module SecondOrder.Substitution
   ∘ˢ-≈-extendˢ τ σ (var-inr x) = ≈-≡ refl
 
 
-  -- (3) Substitutions act functorially on terms
+  -- (3) Action of substitution is functorial
   ∘ˢ-≈ : ∀ {Θ Γ Δ Ξ A} (t : Term Θ Γ A) (σ : Θ ⊕ Γ ⇒ˢ Δ) (τ : Θ ⊕ Δ ⇒ˢ Ξ)
         → [ τ ∘ˢ σ ]ˢ t ≈ [ τ ]ˢ ([ σ ]ˢ t)
   ∘ˢ-≈ (tm-var x) σ τ = ≈-refl
