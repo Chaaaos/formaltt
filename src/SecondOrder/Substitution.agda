@@ -129,9 +129,11 @@ module SecondOrder.Substitution
 --∥                              ========================                                ∥
 --========================================================================================
 
-  -- Action of inl substitution is the same as induced action of inl renaming
-  inlʳ⃗ˢ≈ˢinlˢ : ∀ {Θ Γ Δ} → inlˢ {Θ} {Γ} {Δ} ≈ˢ ( inlʳ ʳ⃗ˢ )
-  inlʳ⃗ˢ≈ˢinlˢ x = ≈-refl
+
+  --------------------------------------------------------------------------------------------------
+  ---------------------------------------------------------
+  --          Basic lemmas about substitutions           --
+  ---------------------------------------------------------
 
   -- the composition of the substitutions induced by the association renamings
   -- are inverses of each other
@@ -142,6 +144,225 @@ module SecondOrder.Substitution
   unassocˢ∘ˢassocˢ≈ˢid x = ≈-≡ (cong tm-var (rename-unassoc-inv x))
 
 
+
+  -- the weakening of equal substitutions are equal
+  ≈ˢextendˢ : ∀ {Θ Γ Δ Ξ} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
+        → σ ≈ˢ τ → ⇑ˢ {Ξ = Ξ} σ ≈ˢ ⇑ˢ τ
+  ≈ˢextendˢ p (var-inl x) = ≈-tm-ʳ (p x)
+  ≈ˢextendˢ p (var-inr x) = ≈-refl
+
+  -- extending a renaming then changing it into a substitution is like
+  -- changing it into a substitution and then weaken the result
+  extend-weaken : ∀ {Θ Γ Δ Ξ} (ρ : Γ ⇒ʳ Δ) → _≈ˢ_ {Θ = Θ} ((extendʳ ρ) ʳ⃗ˢ) (⇑ˢ {Ξ = Ξ} (ρ ʳ⃗ˢ))
+  extend-weaken ρ (var-inl x) = ≈-refl
+  extend-weaken ρ (var-inr x) = ≈-refl
+
+
+
+  --------------------------------------------------------------------------------------------------
+  --------------------------------------------------------------
+  --          Lemmas about actions of substitutions           --
+  --------------------------------------------------------------
+
+  -- (the main lemmas are marked with **_**, the others are mostly
+  -- auxiliary lemmas used to prove the main ones)
+
+  -- ** Two equal substitution have the same action **
+  ≈ˢ[]ˢ : ∀ {Θ Γ Δ A} {t : Term Θ Γ A} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
+        → σ ≈ˢ τ → [ σ ]ˢ t ≈ [ τ ]ˢ t
+  ≈ˢ[]ˢ {t = tm-var x} p = p x
+  ≈ˢ[]ˢ {t = tm-meta M ts} p = ≈-meta λ i → ≈ˢ[]ˢ {t = ts i} p
+  ≈ˢ[]ˢ {t = tm-oper f es} p = ≈-oper λ i → ≈ˢ[]ˢ {t = es i} (≈ˢextendˢ p)
+
+
+
+  -- ** The action of the induced substitution of a renaming is the action of the renaming **
+  _ʳ⃗ˢcorrect : ∀ {Θ Γ Δ A} (ρ : Γ ⇒ʳ Δ) (t : Term Θ Γ A) → [ ρ ʳ⃗ˢ ]ˢ t ≈ [ ρ ]ʳ t
+  (ρ ʳ⃗ˢcorrect) (tm-var x) = ≈-≡ refl
+  (ρ ʳ⃗ˢcorrect) (tm-meta M ts) = ≈-meta λ i → (ρ ʳ⃗ˢcorrect) (ts i)
+  (ρ ʳ⃗ˢcorrect) (tm-oper f es) = ≈-oper (λ i → ≈-sym
+                                                (≈-trans
+                                                  (≈-sym (((extendʳ ρ) ʳ⃗ˢcorrect) (es i)))
+                                                  (≈ˢ[]ˢ {t = es i} (extend-weaken ρ))))
+
+  -- action of inl substitution is the same as induced action of inl renaming
+  -- (useful particula case of the lemma above)
+  inlʳ⃗ˢ≈ˢinlˢ : ∀ {Θ Γ Δ} → inlˢ {Θ} {Γ} {Δ} ≈ˢ ( inlʳ ʳ⃗ˢ )
+  inlʳ⃗ˢ≈ˢinlˢ x = ≈-refl
+
+
+
+  -- the action of the substitution induced by the inl renaming is the same
+  -- as the action of the inl substitution
+  -- (useful particular case of the lemma above)
+  inl-invariance : ∀ {Θ Γ Δ A} (t : Term Θ Γ A) → [ inlˢ {Θ} {Γ} {Δ} ]ˢ t ≈ [ var-inl ]ʳ t
+  inl-invariance = inlʳ ʳ⃗ˢcorrect
+
+  -- same for inr
+  inr-invariance : ∀ {Θ Γ Δ A} (t : Term Θ Δ A) → [ inrˢ {Θ} {Γ} {Δ} ]ˢ t ≈ [ var-inr ]ʳ t
+  inr-invariance = inrʳ ʳ⃗ˢcorrect
+
+
+  -- the join "preserves" composition of substitutions
+  extend-⋈ˢ : ∀ {Θ Γ Δ Ξ Λ A} (σ : Θ ⊕ Δ ⇒ˢ Ξ) (ρ : Γ ⇒ʳ Δ) (x : A ∈ (Γ ,, Λ))
+              → ((λ y → [ var-inl ]ʳ (σ ˢ∘ʳ ρ) y) ⋈ˢ (λ y → tm-var (var-inr y))) x
+                 ≈ ((λ y → [ var-inl ]ʳ σ y) ⋈ˢ (λ y → tm-var (var-inr y))) (extendʳ ρ x)
+  extend-⋈ˢ σ ρ (var-inl x) = ≈-≡ refl
+  extend-⋈ˢ σ ρ (var-inr x) = ≈-≡ refl
+
+
+  -- ** Composition of a renaming and a substitution extended to terms **
+  -- is like composing the actions of the renaming and the substitution
+  ˢ∘ʳtm-≈ : ∀ {Θ Γ Δ Ξ A} (σ : Θ ⊕ Δ ⇒ˢ Ξ) (ρ : Γ ⇒ʳ Δ) (t : Term Θ Γ A)
+    → [ σ ˢ∘ʳ ρ ]ˢ  t ≈ [ σ ]ˢ ([ ρ ]ʳ t)
+  ˢ∘ʳtm-≈ σ ρ (tm-var x) = ≈-≡ refl
+  ˢ∘ʳtm-≈ σ ρ (tm-meta M ts) = ≈-meta λ i → ˢ∘ʳtm-≈ σ ρ (ts i)
+  ˢ∘ʳtm-≈ σ ρ (tm-oper f es) = ≈-oper (λ i → ˢ∘ʳtm-≈-aux σ ρ (es i))
+    where
+    ˢ∘ʳtm-≈-aux : ∀ {Θ Γ Δ Ξ Λ A} (σ : Θ ⊕ Δ ⇒ˢ Ξ) (ρ : Γ ⇒ʳ Δ) (t : Term Θ (Γ ,, Λ) A)
+                → [ ⇑ˢ (σ ˢ∘ʳ ρ) ]ˢ t ≈ [ ⇑ˢ σ ]ˢ ([ extendʳ ρ ]ʳ t)
+    ˢ∘ʳtm-≈-aux σ ρ (tm-var (var-inl x)) = ≈-refl
+    ˢ∘ʳtm-≈-aux σ ρ (tm-var (var-inr x)) = ≈-refl
+    ˢ∘ʳtm-≈-aux σ ρ (tm-meta M ts) = ≈-meta λ i → ˢ∘ʳtm-≈-aux σ ρ (ts i)
+    ˢ∘ʳtm-≈-aux σ ρ (tm-oper f es) = ≈-oper λ i → ≈-trans
+                                                   (≈ˢ[]ˢ {t = es i} (≈ˢextendˢ λ x → extend-⋈ˢ σ ρ x))
+                                                   (ˢ∘ʳtm-≈-aux (⇑ˢ σ) (extendʳ ρ) (es i))
+
+
+
+
+  -- ** Composition of a substitution and a renaming extended to terms **
+  -- is like composing the actions of the substitution and the renaming
+  ʳ∘ˢtm-≈ : ∀ {Θ Γ Δ Ξ A} (ρ : Δ ⇒ʳ Ξ) (σ : Θ ⊕ Γ ⇒ˢ Δ) (t : Term Θ Γ A)
+    → [ ρ ʳ∘ˢ σ ]ˢ  t ≈ [ ρ ]ʳ ([ σ ]ˢ t)
+  ʳ∘ˢtm-≈ ρ σ (tm-var var-slot) = (ρ ʳ⃗ˢcorrect) (σ var-slot)
+  ʳ∘ˢtm-≈ ρ σ (tm-var (var-inl x)) = (ρ ʳ⃗ˢcorrect) (σ (var-inl x))
+  ʳ∘ˢtm-≈ ρ σ (tm-var (var-inr x)) = (ρ ʳ⃗ˢcorrect) (σ (var-inr x))
+  ʳ∘ˢtm-≈ ρ σ (tm-meta M ts) = ≈-meta λ i → ʳ∘ˢtm-≈ ρ σ (ts i)
+  ʳ∘ˢtm-≈ ρ σ (tm-oper f es) = ≈-oper (λ i → ʳ∘ˢtm-≈-aux ρ σ (es i))
+    where
+       -- a lot of auxiliary functions that explain
+       -- why things behave well with extensions is this case
+       ʳ∘ˢtm-≈-aux₁ : ∀ {Γ Δ Ξ} (ρ : Γ ⇒ʳ Δ) →
+                    ((var-inl {Δ = Ξ}) ∘ʳ ρ) ≡ʳ (extendʳ ρ) ∘ʳ (var-inl)
+       ʳ∘ˢtm-≈-aux₁ ρ x = refl
+
+       ʳ∘ˢtm-≈-aux₂ : ∀ {Γ Δ Ξ Λ Θ} (ρ : Δ ⇒ʳ Ξ) (σ : Θ ⊕ Γ ⇒ˢ Δ)
+                    → (λ {A} (x : A ∈ Γ) → (⇑ˢ {Ξ = Λ} (ρ ʳ∘ˢ σ)) (var-inl x)) ≈ˢ (λ {A} (x : A ∈ Γ)
+                    → [ extendʳ ρ ]ʳ (⇑ˢ σ (var-inl x)))
+       ʳ∘ˢtm-≈-aux₂ ρ σ x = ≈-trans
+                            (≈-trans
+                              (≈-tm-ʳ ((ρ ʳ⃗ˢcorrect) (σ x)))
+                              (≈-trans
+                                (≈-sym (∘r-≈ (σ x) ρ var-inl))
+                                (≈ʳ[]ʳ (ʳ∘ˢtm-≈-aux₁ ρ))))
+                            (∘r-≈ (σ x) var-inl (extendʳ ρ))
+
+
+       ʳ∘ˢtm-≈-aux₃ : ∀ {Θ Γ Δ Ξ Λ} (ρ : Δ ⇒ʳ Ξ) (σ : Θ ⊕ Γ ⇒ˢ Δ)
+                      →   (λ {A} x → (_⋈ˢ_ {Γ = Γ} {Δ = Λ} (λ x₁ → [ var-inl ]ʳ (ρ ʳ∘ˢ σ) x₁) (λ y → tm-var (var-inr y))) x)
+                           ≈ˢ (λ {A} x → [ extendʳ ρ ʳ⃗ˢ ]ˢ ((λ x₁ → [ var-inl ]ʳ σ x₁) ⋈ˢ (λ y → tm-var (var-inr y))) x)
+       ʳ∘ˢtm-≈-aux₃ ρ σ (var-inl x) = ≈-trans
+                                      (≈-tm-ʳ ((ρ ʳ⃗ˢcorrect) (σ x)))
+                                      (≈-trans
+                                        (≈-sym (∘r-≈ (σ x) ρ var-inl))
+                                        (≈-trans
+                                          (≈ʳ[]ʳ (ʳ∘ˢtm-≈-aux₁ ρ))
+                                          (≈-trans
+                                            (≈-trans
+                                              (≈ʳ[]ʳ (ʳ∘ˢtm-≈-aux₁ ρ))
+                                              (∘r-≈ (σ x) var-inl (extendʳ ρ)))
+                                            (≈-sym ((extendʳ ρ ʳ⃗ˢcorrect) ([ var-inl ]ʳ σ x))))))
+       ʳ∘ˢtm-≈-aux₃ ρ σ (var-inr x) = ≈-refl
+
+       -- main auxiliary function here
+       ʳ∘ˢtm-≈-aux : ∀ {Θ Γ Δ Ξ Λ A} (ρ : Δ ⇒ʳ Ξ) (σ : Θ ⊕ Γ ⇒ˢ Δ) (t : Term Θ (Γ ,, Λ) A)
+                → [ ⇑ˢ (ρ ʳ∘ˢ σ) ]ˢ t ≈ [ extendʳ ρ ]ʳ ([ ⇑ˢ σ ]ˢ t)
+       ʳ∘ˢtm-≈-aux ρ σ (tm-var (var-inl x)) = ʳ∘ˢtm-≈-aux₂ ρ σ x
+       ʳ∘ˢtm-≈-aux ρ σ (tm-var (var-inr x)) = ≈-refl
+       ʳ∘ˢtm-≈-aux ρ σ (tm-meta M ts) = ≈-meta λ i → ʳ∘ˢtm-≈-aux ρ σ (ts i)
+       ʳ∘ˢtm-≈-aux ρ σ (tm-oper f es) = ≈-oper (λ i →
+                                        ≈-trans
+                                          (≈ˢ[]ˢ {t = es i} (≈ˢextendˢ (ʳ∘ˢtm-≈-aux₃ ρ σ)))
+                                          (ʳ∘ˢtm-≈-aux (extendʳ ρ) (⇑ˢ σ) (es i)))
+
+
+  -- interactions between extension and weakening
+  extendʳ⇑ˢ : ∀ {Θ Γ Δ Ξ Λ A} (t : Term Θ (Γ ,, Λ) A) (σ : Θ ⊕ Γ ⇒ˢ Δ)
+            → [ extendʳ (var-inl {Δ = Ξ}) ]ʳ ([ ⇑ˢ σ ]ˢ t)
+             ≈ [ ⇑ˢ ((λ y → [ var-inl ]ʳ σ y) ⋈ˢ (λ y → tm-var (var-inr y))) ]ˢ ([ extendʳ var-inl ]ʳ t)
+  extendʳ⇑ˢ {Δ = Δ} {Ξ = Ξ} t σ = ≈-trans
+                                  (≈-sym (ʳ∘ˢtm-≈ (extendʳ (var-inl {Δ = Ξ})) ( ⇑ˢ σ) t))
+                                  (≈-trans
+                                    (≈ˢ[]ˢ
+                                      {t = t}
+                                      {σ = extendʳ var-inl ʳ∘ˢ ⇑ˢ σ}
+                                      {τ = ⇑ˢ ((λ y → [ var-inl ]ʳ σ y) ⋈ˢ (λ y → tm-var (var-inr y))) ˢ∘ʳ extendʳ var-inl}
+                                      (extendʳ⇑ˢ-aux σ))
+                                    (ˢ∘ʳtm-≈ (⇑ˢ ((λ y → [ var-inl ]ʳ σ y) ⋈ˢ (λ y → tm-var (var-inr y)))) (extendʳ var-inl) t))
+            where
+              extendʳ⇑ˢ-aux : ∀ {Θ Γ Δ Ξ Λ} (σ : Θ ⊕ Γ ⇒ˢ Δ)
+                             → (extendʳ (var-inl {Δ = Ξ}) {Ξ = Λ} ʳ∘ˢ ⇑ˢ σ)
+                               ≈ˢ (⇑ˢ ((λ y → [ var-inl ]ʳ σ y) ⋈ˢ (λ y → tm-var (var-inr y))) ˢ∘ʳ extendʳ var-inl)
+              extendʳ⇑ˢ-aux σ (var-inl x) =
+                                          ≈-trans
+                                           (≈-trans
+                                             ((extendʳ var-inl ʳ⃗ˢcorrect) ([ var-inl ]ʳ σ x))
+                                             (≈-sym (∘r-≈ (σ x) var-inl (extendʳ var-inl))))
+                                          (∘r-≈ (σ x) var-inl var-inl)
+              extendʳ⇑ˢ-aux σ (var-inr x) = ≈-refl
+
+  -- ** The extension of a composition is equal to the composition of extensions **
+  -- we need this lemma to show that the action of substitutions is functorial
+  ∘ˢ-≈-extendˢ : ∀ {Θ Γ Δ Λ Ξ} (τ : Θ ⊕ Γ ⇒ˢ Δ) (σ : Θ ⊕ Δ ⇒ˢ Λ)
+        →  ⇑ˢ {Ξ = Ξ} (σ ∘ˢ τ) ≈ˢ ((⇑ˢ σ) ∘ˢ (⇑ˢ τ))
+  ∘ˢ-≈-extendˢ τ σ (var-inl x) = ∘ˢ-≈-extendˢ-aux (τ x) σ
+    where
+      ∘ˢ-≈-extendˢ-aux : ∀ {Θ Γ Δ Ξ A} (t : Term Θ Γ A) (σ : Θ ⊕ Γ ⇒ˢ Δ)
+        → [ var-inl {Δ = Ξ} ]ʳ ([ σ ]ˢ t)
+         ≈ [ (λ x → [ var-inl ]ʳ σ x) ⋈ˢ (λ y → tm-var (var-inr y)) ]ˢ ([ var-inl ]ʳ t)
+      ∘ˢ-≈-extendˢ-aux (tm-var x) σ = ≈-refl
+      ∘ˢ-≈-extendˢ-aux (tm-meta M ts) σ = ≈-meta λ i → ∘ˢ-≈-extendˢ-aux (ts i) σ
+      ∘ˢ-≈-extendˢ-aux (tm-oper f es) σ = ≈-oper (λ i → extendʳ⇑ˢ (es i) σ)
+  ∘ˢ-≈-extendˢ τ σ (var-inr x) = ≈-≡ refl
+
+
+  -- ** Action of substitution is functorial **
+  ∘ˢ-≈ : ∀ {Θ Γ Δ Ξ A} (t : Term Θ Γ A) (σ : Θ ⊕ Γ ⇒ˢ Δ) (τ : Θ ⊕ Δ ⇒ˢ Ξ)
+        → [ τ ∘ˢ σ ]ˢ t ≈ [ τ ]ˢ ([ σ ]ˢ t)
+  ∘ˢ-≈ (tm-var x) σ τ = ≈-refl
+  ∘ˢ-≈ (tm-meta M ts) σ τ = ≈-meta (λ i → ∘ˢ-≈ (ts i) σ τ)
+  ∘ˢ-≈ (tm-oper f es) σ τ = ≈-oper λ i → ≈-trans
+                                           (≈ˢ[]ˢ  {t = es i} (∘ˢ-≈-extendˢ σ τ))
+                                           (∘ˢ-≈ (es i) (⇑ˢ σ) (⇑ˢ τ))
+
+
+  -- the extension of the identity substitution is the identity
+  idˢextendˢ : ∀ {Θ Γ Ξ} → _≈ˢ_ {Θ = Θ} (⇑ˢ  {Ξ = Ξ} (idˢ {Γ = Γ})) idˢ
+  idˢextendˢ (var-inl x) = ≈-refl
+  idˢextendˢ (var-inr x) = ≈-refl
+
+  -- ** The action of the identity substitution is the identity **
+  []ˢidˢ : ∀ {Θ Γ A} (t : Term Θ Γ A)
+          → [ idˢ ]ˢ t ≈ t
+  []ˢidˢ (tm-var x) = ≈-refl
+  []ˢidˢ (tm-meta M ts) = ≈-meta λ i → []ˢidˢ (ts i)
+  []ˢidˢ (tm-oper f es) = ≈-oper λ i → ≈-trans
+                                         (≈ˢ[]ˢ {t = es i} idˢextendˢ)
+                                         ([]ˢidˢ (es i))
+
+
+  -- ** Substitutions preserve syntactical equality of terms **
+  ≈-tm-ˢ : ∀ {Θ Γ Δ A} {s t : Term Θ Γ A} {σ : Θ ⊕ Γ ⇒ˢ Δ}
+        → s ≈ t → [ σ ]ˢ s ≈ [ σ ]ˢ t
+  ≈-tm-ˢ (≈-≡ refl) = ≈-≡ refl
+  ≈-tm-ˢ (≈-meta ξ) = ≈-meta (λ i → ≈-tm-ˢ (ξ i))
+  ≈-tm-ˢ (≈-oper ξ) = ≈-oper (λ i → ≈-tm-ˢ (ξ i))
+
+
+
+
+  --------------------------------------------------------------------------------------------------
   -------------------------------------------
   --          Lemmas about joins           --
   -------------------------------------------
@@ -153,7 +374,7 @@ module SecondOrder.Substitution
   exist⋈ˢ-l : ∀ {Θ Γ Δ Ξ} {σ : Θ ⊕ Γ ⇒ˢ Ξ} {τ : Θ ⊕ Δ ⇒ˢ Ξ}
           → (σ ⋈ˢ τ) ∘ˢ inlˢ ≈ˢ σ
   exist⋈ˢ-l x = ≈-refl
-  
+
   exist⋈ˢ-r : ∀ {Θ Γ Μ Ξ} {σ : Θ ⊕ Γ ⇒ˢ Ξ} {τ : Θ ⊕ Μ ⇒ˢ Ξ}
           → σ ⋈ˢ τ ∘ˢ inrˢ ≈ˢ τ
   exist⋈ˢ-r x = ≈-refl
@@ -174,70 +395,20 @@ module SecondOrder.Substitution
   unique-cotupleˢ {μ = μ} {ν = ν} eq1 eq2 eq3 eq4 (var-inr y) = ≈ˢ-trans eq2 (≈ˢ-sym eq4) y
 
 
-  -- (1) the weakening of equal substitutions are equal
-  ≈ˢextendˢ : ∀ {Θ Γ Δ Ξ} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
-        → σ ≈ˢ τ → ⇑ˢ {Ξ = Ξ} σ ≈ˢ ⇑ˢ τ
-  ≈ˢextendˢ p (var-inl x) = ≈-tm-ʳ (p x)
-  ≈ˢextendˢ p (var-inr x) = ≈-refl
+  -- (6) the join of two substitutions preserves equality of substitutions
+  ⋈ˢ-≈ˢ-r : ∀ {Θ Γ Δ Ξ} {σ : Θ ⊕ Γ ⇒ˢ Ξ} {τ₁ τ₂ : Θ ⊕ Δ ⇒ˢ Ξ}
+    → τ₁ ≈ˢ τ₂ → (σ ⋈ˢ τ₁) ≈ˢ (σ ⋈ˢ τ₂)
+  ⋈ˢ-≈ˢ-r p (var-inl x) = ≈-≡ refl
+  ⋈ˢ-≈ˢ-r p (var-inr x) = p x
 
+  ⋈ˢ-≈ˢ-l : ∀ {Θ Γ Δ Ξ} {σ₁ σ₂ : Θ ⊕ Γ ⇒ˢ Ξ} {τ : Θ ⊕ Δ ⇒ˢ Ξ}
+    → σ₁ ≈ˢ σ₂ → (σ₁ ⋈ˢ τ) ≈ˢ (σ₂ ⋈ˢ τ)
+  ⋈ˢ-≈ˢ-l p (var-inl x) = p x
+  ⋈ˢ-≈ˢ-l p (var-inr x) = ≈-≡ refl
 
-  -- (2) two equal substitution have the same action
-  ≈ˢ[]ˢ : ∀ {Θ Γ Δ A} {t : Term Θ Γ A} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
-        → σ ≈ˢ τ → [ σ ]ˢ t ≈ [ τ ]ˢ t
-  ≈ˢ[]ˢ {t = tm-var x} p = p x
-  ≈ˢ[]ˢ {t = tm-meta M ts} p = ≈-meta λ i → ≈ˢ[]ˢ {t = ts i} p
-  ≈ˢ[]ˢ {t = tm-oper f es} p = ≈-oper λ i → ≈ˢ[]ˢ {t = es i} (≈ˢextendˢ p)
-
-
-  -- (3) composition of substitutions commutes with equality
-  -- auxiliary functions :
-
-  extend-⋈ˢ : ∀ {Θ Γ Δ Ξ Λ A} (σ : Θ ⊕ Δ ⇒ˢ Ξ) (ρ : Γ ⇒ʳ Δ) (x : A ∈ (Γ ,, Λ))
-              → ((λ y → [ var-inl ]ʳ (σ ˢ∘ʳ ρ) y) ⋈ˢ (λ y → tm-var (var-inr y))) x
-                 ≈ ((λ y → [ var-inl ]ʳ σ y) ⋈ˢ (λ y → tm-var (var-inr y))) (extendʳ ρ x)
-  extend-⋈ˢ σ ρ (var-inl x) = ≈-≡ refl
-  extend-⋈ˢ σ ρ (var-inr x) = ≈-≡ refl
-
-
-  -- composition of a renaming and a substitution extended to terms
-  ˢ∘ʳtm-≈ : ∀ {Θ Γ Δ Ξ A} (σ : Θ ⊕ Δ ⇒ˢ Ξ) (ρ : Γ ⇒ʳ Δ) (t : Term Θ Γ A)
-    → [ σ ˢ∘ʳ ρ ]ˢ  t ≈ [ σ ]ˢ ([ ρ ]ʳ t)
-  ˢ∘ʳtm-≈ σ ρ (tm-var x) = ≈-≡ refl
-  ˢ∘ʳtm-≈ σ ρ (tm-meta M ts) = ≈-meta λ i → ˢ∘ʳtm-≈ σ ρ (ts i)
-  ˢ∘ʳtm-≈ σ ρ (tm-oper f es) = ≈-oper (λ i → ˢ∘ʳtm-≈-aux σ ρ (es i))
-    where
-    ˢ∘ʳtm-≈-aux : ∀ {Θ Γ Δ Ξ Λ A} (σ : Θ ⊕ Δ ⇒ˢ Ξ) (ρ : Γ ⇒ʳ Δ) (t : Term Θ (Γ ,, Λ) A)
-                → [ ⇑ˢ (σ ˢ∘ʳ ρ) ]ˢ t ≈ [ ⇑ˢ σ ]ˢ ([ extendʳ ρ ]ʳ t)
-    ˢ∘ʳtm-≈-aux σ ρ (tm-var (var-inl x)) = ≈-refl
-    ˢ∘ʳtm-≈-aux σ ρ (tm-var (var-inr x)) = ≈-refl
-    ˢ∘ʳtm-≈-aux σ ρ (tm-meta M ts) = ≈-meta λ i → ˢ∘ʳtm-≈-aux σ ρ (ts i)
-    ˢ∘ʳtm-≈-aux σ ρ (tm-oper f es) = ≈-oper λ i → ≈-trans
-                                                   (≈ˢ[]ˢ {t = es i} (≈ˢextendˢ λ x → extend-⋈ˢ σ ρ x))
-                                                   (ˢ∘ʳtm-≈-aux (⇑ˢ σ) (extendʳ ρ) (es i))
-
-  -- extending a renaming then changing it into a substitution is like
-  -- changing it into a substitution and then weaken the result
-  extend-weaken : ∀ {Θ Γ Δ Ξ} (ρ : Γ ⇒ʳ Δ) → _≈ˢ_ {Θ = Θ} ((extendʳ ρ) ʳ⃗ˢ) (⇑ˢ {Ξ = Ξ} (ρ ʳ⃗ˢ))
-  extend-weaken ρ (var-inl x) = ≈-refl
-  extend-weaken ρ (var-inr x) = ≈-refl
-
-  -- the action of the induced substitution of a renaming is the action of the renaming
-  _ʳ⃗ˢcorrect : ∀ {Θ Γ Δ A} (ρ : Γ ⇒ʳ Δ) (t : Term Θ Γ A) → [ ρ ʳ⃗ˢ ]ˢ t ≈ [ ρ ]ʳ t
-  (ρ ʳ⃗ˢcorrect) (tm-var x) = ≈-≡ refl
-  (ρ ʳ⃗ˢcorrect) (tm-meta M ts) = ≈-meta λ i → (ρ ʳ⃗ˢcorrect) (ts i)
-  (ρ ʳ⃗ˢcorrect) (tm-oper f es) = ≈-oper (λ i → ≈-sym
-                                                (≈-trans
-                                                  (≈-sym (((extendʳ ρ) ʳ⃗ˢcorrect) (es i)))
-                                                  (≈ˢ[]ˢ {t = es i} (extend-weaken ρ))))
-
-  -- the action of the substitution induced by the inl renaming is the same
-  -- as the action of the inl substitution
-  inl-invariance : ∀ {Θ Γ Δ A} (t : Term Θ Γ A) → [ inlˢ {Θ} {Γ} {Δ} ]ˢ t ≈ [ var-inl ]ʳ t
-  inl-invariance = inlʳ ʳ⃗ˢcorrect
-
-  -- same for inr
-  inr-invariance : ∀ {Θ Γ Δ A} (t : Term Θ Δ A) → [ inrˢ {Θ} {Γ} {Δ} ]ˢ t ≈ [ var-inr ]ʳ t
-  inr-invariance = inrʳ ʳ⃗ˢcorrect
+  ⋈ˢ-≈ˢ : ∀ {Θ Γ Δ Ξ} {σ₁ σ₂ : Θ ⊕ Γ ⇒ˢ Ξ} {τ₁ τ₂ : Θ ⊕ Δ ⇒ˢ Ξ}
+    → σ₁ ≈ˢ σ₂ → τ₁ ≈ˢ τ₂ → (σ₁ ⋈ˢ τ₁) ≈ˢ (σ₂ ⋈ˢ τ₂)
+  ⋈ˢ-≈ˢ pσ pτ = λ x → ≈-trans (⋈ˢ-≈ˢ-r pτ x) (⋈ˢ-≈ˢ-l pσ x)
 
   --------------------------------------------------------------------------------------------------
   -------------------------------------------
@@ -284,138 +455,3 @@ module SecondOrder.Substitution
   --------------------------------------------------------------------------------------------------
 
 
-  -- composition of a substitution and a renaming extended to terms
-  ʳ∘ˢtm-≈ : ∀ {Θ Γ Δ Ξ A} (ρ : Δ ⇒ʳ Ξ) (σ : Θ ⊕ Γ ⇒ˢ Δ) (t : Term Θ Γ A)
-    → [ ρ ʳ∘ˢ σ ]ˢ  t ≈ [ ρ ]ʳ ([ σ ]ˢ t)
-  ʳ∘ˢtm-≈ ρ σ (tm-var var-slot) = (ρ ʳ⃗ˢcorrect) (σ var-slot)
-  ʳ∘ˢtm-≈ ρ σ (tm-var (var-inl x)) = (ρ ʳ⃗ˢcorrect) (σ (var-inl x))
-  ʳ∘ˢtm-≈ ρ σ (tm-var (var-inr x)) = (ρ ʳ⃗ˢcorrect) (σ (var-inr x))
-  ʳ∘ˢtm-≈ ρ σ (tm-meta M ts) = ≈-meta λ i → ʳ∘ˢtm-≈ ρ σ (ts i)
-  ʳ∘ˢtm-≈ ρ σ (tm-oper f es) = ≈-oper (λ i → ʳ∘ˢtm-≈-aux ρ σ (es i))
-    where
-       ʳ∘ˢtm-≈-aux₁ : ∀ {Γ Δ Ξ} (ρ : Γ ⇒ʳ Δ) →  ((var-inl {Δ = Ξ}) ∘ʳ ρ) ≡ʳ (extendʳ ρ) ∘ʳ (var-inl)
-       ʳ∘ˢtm-≈-aux₁ ρ x = refl
-
-       ʳ∘ˢtm-≈-aux₂ : ∀ {Γ Δ Ξ Λ Θ} (ρ : Δ ⇒ʳ Ξ) (σ : Θ ⊕ Γ ⇒ˢ Δ)
-                → (λ {A} (x : A ∈ Γ) → (⇑ˢ {Ξ = Λ} (ρ ʳ∘ˢ σ)) (var-inl x)) ≈ˢ (λ {A} (x : A ∈ Γ) → [ extendʳ ρ ]ʳ (⇑ˢ σ (var-inl x)))
-       ʳ∘ˢtm-≈-aux₂ ρ σ x = ≈-trans
-                            (≈-trans
-                              (≈-tm-ʳ ((ρ ʳ⃗ˢcorrect) (σ x)))
-                              (≈-trans
-                                (≈-sym (∘r-≈ (σ x) ρ var-inl))
-                                (≈ʳ[]ʳ (ʳ∘ˢtm-≈-aux₁ ρ))))
-                            (∘r-≈ (σ x) var-inl (extendʳ ρ))
-
-
-       ʳ∘ˢtm-≈-aux₃ : ∀ {Θ Γ Δ Ξ Λ} (ρ : Δ ⇒ʳ Ξ) (σ : Θ ⊕ Γ ⇒ˢ Δ)
-                      →   (λ {A} x → (_⋈ˢ_ {Γ = Γ} {Δ = Λ} (λ x₁ → [ var-inl ]ʳ (ρ ʳ∘ˢ σ) x₁) (λ y → tm-var (var-inr y))) x)
-                      ≈ˢ (λ {A} x → [ extendʳ ρ ʳ⃗ˢ ]ˢ ((λ x₁ → [ var-inl ]ʳ σ x₁) ⋈ˢ (λ y → tm-var (var-inr y))) x)
-       ʳ∘ˢtm-≈-aux₃ ρ σ (var-inl x) = ≈-trans
-                                      (≈-tm-ʳ ((ρ ʳ⃗ˢcorrect) (σ x)))
-                                      (≈-trans
-                                        (≈-sym (∘r-≈ (σ x) ρ var-inl))
-                                        (≈-trans
-                                          (≈ʳ[]ʳ (ʳ∘ˢtm-≈-aux₁ ρ))
-                                          (≈-trans
-                                            (≈-trans
-                                              (≈ʳ[]ʳ (ʳ∘ˢtm-≈-aux₁ ρ))
-                                              (∘r-≈ (σ x) var-inl (extendʳ ρ)))
-                                            (≈-sym ((extendʳ ρ ʳ⃗ˢcorrect) ([ var-inl ]ʳ σ x))))))
-       ʳ∘ˢtm-≈-aux₃ ρ σ (var-inr x) = ≈-refl
-
-       ʳ∘ˢtm-≈-aux : ∀ {Θ Γ Δ Ξ Λ A} (ρ : Δ ⇒ʳ Ξ) (σ : Θ ⊕ Γ ⇒ˢ Δ) (t : Term Θ (Γ ,, Λ) A)
-                → [ ⇑ˢ (ρ ʳ∘ˢ σ) ]ˢ t ≈ [ extendʳ ρ ]ʳ ([ ⇑ˢ σ ]ˢ t)
-       ʳ∘ˢtm-≈-aux ρ σ (tm-var (var-inl x)) = ʳ∘ˢtm-≈-aux₂ ρ σ x
-       ʳ∘ˢtm-≈-aux ρ σ (tm-var (var-inr x)) = ≈-refl
-       ʳ∘ˢtm-≈-aux ρ σ (tm-meta M ts) = ≈-meta λ i → ʳ∘ˢtm-≈-aux ρ σ (ts i)
-       ʳ∘ˢtm-≈-aux ρ σ (tm-oper f es) = ≈-oper (λ i →
-                                        ≈-trans
-                                          (≈ˢ[]ˢ {t = es i} (≈ˢextendˢ (ʳ∘ˢtm-≈-aux₃ ρ σ)))
-                                          (ʳ∘ˢtm-≈-aux (extendʳ ρ) (⇑ˢ σ) (es i)))
-
-  -- interactions between extension and weakening
-  extendʳ⇑ˢ : ∀ {Θ Γ Δ Ξ Λ A} (t : Term Θ (Γ ,, Λ) A) (σ : Θ ⊕ Γ ⇒ˢ Δ)
-            → [ extendʳ (var-inl {Δ = Ξ}) ]ʳ ([ ⇑ˢ σ ]ˢ t)
-             ≈ [ ⇑ˢ ((λ y → [ var-inl ]ʳ σ y) ⋈ˢ (λ y → tm-var (var-inr y))) ]ˢ ([ extendʳ var-inl ]ʳ t)
-  extendʳ⇑ˢ {Δ = Δ} {Ξ = Ξ} t σ = ≈-trans
-                                  (≈-sym (ʳ∘ˢtm-≈ (extendʳ (var-inl {Δ = Ξ})) ( ⇑ˢ σ) t))
-                                  (≈-trans
-                                    (≈ˢ[]ˢ
-                                      {t = t}
-                                      {σ = extendʳ var-inl ʳ∘ˢ ⇑ˢ σ}
-                                      {τ = ⇑ˢ ((λ y → [ var-inl ]ʳ σ y) ⋈ˢ (λ y → tm-var (var-inr y))) ˢ∘ʳ extendʳ var-inl}
-                                      (extendʳ⇑ˢ-aux σ))
-                                    (ˢ∘ʳtm-≈ (⇑ˢ ((λ y → [ var-inl ]ʳ σ y) ⋈ˢ (λ y → tm-var (var-inr y)))) (extendʳ var-inl) t))
-            where
-              extendʳ⇑ˢ-aux : ∀ {Θ Γ Δ Ξ Λ} (σ : Θ ⊕ Γ ⇒ˢ Δ)
-                             → (extendʳ (var-inl {Δ = Ξ}) {Ξ = Λ} ʳ∘ˢ ⇑ˢ σ) ≈ˢ (⇑ˢ ((λ y → [ var-inl ]ʳ σ y) ⋈ˢ (λ y → tm-var (var-inr y))) ˢ∘ʳ extendʳ var-inl)
-              extendʳ⇑ˢ-aux σ (var-inl x) =
-                                          ≈-trans
-                                           (≈-trans
-                                             ((extendʳ var-inl ʳ⃗ˢcorrect) ([ var-inl ]ʳ σ x))
-                                             (≈-sym (∘r-≈ (σ x) var-inl (extendʳ var-inl))))
-                                          (∘r-≈ (σ x) var-inl var-inl)
-              extendʳ⇑ˢ-aux σ (var-inr x) = ≈-refl
-
-  -- The extension of a composition is equal to the composition of extensions
-  -- We need this lemma to show that the action of substitutions is functorial
-  ∘ˢ-≈-extendˢ : ∀ {Θ Γ Δ Λ Ξ} (τ : Θ ⊕ Γ ⇒ˢ Δ) (σ : Θ ⊕ Δ ⇒ˢ Λ)
-        →  ⇑ˢ {Ξ = Ξ} (σ ∘ˢ τ) ≈ˢ ((⇑ˢ σ) ∘ˢ (⇑ˢ τ))
-  ∘ˢ-≈-extendˢ τ σ (var-inl x) = ∘ˢ-≈-extendˢ-aux (τ x) σ
-    where
-      ∘ˢ-≈-extendˢ-aux : ∀ {Θ Γ Δ Ξ A} (t : Term Θ Γ A) (σ : Θ ⊕ Γ ⇒ˢ Δ)
-        → [ var-inl {Δ = Ξ} ]ʳ ([ σ ]ˢ t)
-         ≈ [ (λ x → [ var-inl ]ʳ σ x) ⋈ˢ (λ y → tm-var (var-inr y)) ]ˢ ([ var-inl ]ʳ t)
-      ∘ˢ-≈-extendˢ-aux (tm-var x) σ = ≈-refl
-      ∘ˢ-≈-extendˢ-aux (tm-meta M ts) σ = ≈-meta λ i → ∘ˢ-≈-extendˢ-aux (ts i) σ
-      ∘ˢ-≈-extendˢ-aux (tm-oper f es) σ = ≈-oper (λ i → extendʳ⇑ˢ (es i) σ)
-  ∘ˢ-≈-extendˢ τ σ (var-inr x) = ≈-≡ refl
-
-
-  -- (3) Action of substitution is functorial
-  ∘ˢ-≈ : ∀ {Θ Γ Δ Ξ A} (t : Term Θ Γ A) (σ : Θ ⊕ Γ ⇒ˢ Δ) (τ : Θ ⊕ Δ ⇒ˢ Ξ)
-        → [ τ ∘ˢ σ ]ˢ t ≈ [ τ ]ˢ ([ σ ]ˢ t)
-  ∘ˢ-≈ (tm-var x) σ τ = ≈-refl
-  ∘ˢ-≈ (tm-meta M ts) σ τ = ≈-meta (λ i → ∘ˢ-≈ (ts i) σ τ)
-  ∘ˢ-≈ (tm-oper f es) σ τ = ≈-oper λ i → ≈-trans
-                                           (≈ˢ[]ˢ  {t = es i} (∘ˢ-≈-extendˢ σ τ))
-                                           (∘ˢ-≈ (es i) (⇑ˢ σ) (⇑ˢ τ))
-
-
-  -- (4) the action of the identity substitution is the identity
-  idˢextendˢ : ∀ {Θ Γ Ξ} → _≈ˢ_ {Θ = Θ} (⇑ˢ  {Ξ = Ξ} (idˢ {Γ = Γ})) idˢ
-  idˢextendˢ (var-inl x) = ≈-refl
-  idˢextendˢ (var-inr x) = ≈-refl
-
-  -- (4)
-  []ˢidˢ : ∀ {Θ Γ A} (t : Term Θ Γ A)
-          → [ idˢ ]ˢ t ≈ t
-  []ˢidˢ (tm-var x) = ≈-refl
-  []ˢidˢ (tm-meta M ts) = ≈-meta λ i → []ˢidˢ (ts i)
-  []ˢidˢ (tm-oper f es) = ≈-oper λ i → ≈-trans
-                                         (≈ˢ[]ˢ {t = es i} idˢextendˢ)
-                                         ([]ˢidˢ (es i))
-
-
-  -- (5) substitutions preserve syntactical equality of terms
-  ≈-tm-ˢ : ∀ {Θ Γ Δ A} {s t : Term Θ Γ A} {σ : Θ ⊕ Γ ⇒ˢ Δ}
-        → s ≈ t → [ σ ]ˢ s ≈ [ σ ]ˢ t
-  ≈-tm-ˢ (≈-≡ refl) = ≈-≡ refl
-  ≈-tm-ˢ (≈-meta ξ) = ≈-meta (λ i → ≈-tm-ˢ (ξ i))
-  ≈-tm-ˢ (≈-oper ξ) = ≈-oper (λ i → ≈-tm-ˢ (ξ i))
-
-
-  -- (6) the join of two substitutions preserves equality
-  ⋈ˢ-≈ˢ-r : ∀ {Θ Γ Δ Ξ} {σ : Θ ⊕ Γ ⇒ˢ Ξ} {τ₁ τ₂ : Θ ⊕ Δ ⇒ˢ Ξ}
-    → τ₁ ≈ˢ τ₂ → (σ ⋈ˢ τ₁) ≈ˢ (σ ⋈ˢ τ₂)
-  ⋈ˢ-≈ˢ-r p (var-inl x) = ≈-≡ refl
-  ⋈ˢ-≈ˢ-r p (var-inr x) = p x
-
-  ⋈ˢ-≈ˢ-l : ∀ {Θ Γ Δ Ξ} {σ₁ σ₂ : Θ ⊕ Γ ⇒ˢ Ξ} {τ : Θ ⊕ Δ ⇒ˢ Ξ}
-    → σ₁ ≈ˢ σ₂ → (σ₁ ⋈ˢ τ) ≈ˢ (σ₂ ⋈ˢ τ)
-  ⋈ˢ-≈ˢ-l p (var-inl x) = p x
-  ⋈ˢ-≈ˢ-l p (var-inr x) = ≈-≡ refl
-
-  ⋈ˢ-≈ˢ : ∀ {Θ Γ Δ Ξ} {σ₁ σ₂ : Θ ⊕ Γ ⇒ˢ Ξ} {τ₁ τ₂ : Θ ⊕ Δ ⇒ˢ Ξ}
-    → σ₁ ≈ˢ σ₂ → τ₁ ≈ˢ τ₂ → (σ₁ ⋈ˢ τ₁) ≈ˢ (σ₂ ⋈ˢ τ₂)
-  ⋈ˢ-≈ˢ pσ pτ = λ x → ≈-trans (⋈ˢ-≈ˢ-r pτ x) (⋈ˢ-≈ˢ-l pσ x)
