@@ -98,27 +98,27 @@ module SecondOrder.Substitution
   ≈ˢ-refl : ∀ {Θ Γ Δ} {σ : Θ ⊕ Γ ⇒ˢ Δ}
           → σ ≈ˢ σ
   ≈ˢ-refl x = ≈-refl
-
-  ≈ˢ-symm : ∀ {Θ Γ Δ} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
+            
+  ≈ˢ-sym : ∀ {Θ Γ Δ} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
           → σ ≈ˢ τ
           → τ ≈ˢ σ
-  ≈ˢ-symm eq x = ≈-sym (eq x)
-
+  ≈ˢ-sym eq x = ≈-sym (eq x)
+                           
   ≈ˢ-trans : ∀ {Θ Γ Δ} {σ τ μ : Θ ⊕ Γ ⇒ˢ Δ}
            → σ ≈ˢ τ → τ ≈ˢ μ
            → σ ≈ˢ μ
   ≈ˢ-trans eq1 eq2 x = ≈-trans (eq1 x) (eq2 x)
-
-    -- substitutions form a setoid
-  eq-setoid : ∀ (Γ Δ : Context) (Θ : MetaContext) → Setoid (lsuc ℓs ⊔ lsuc ℓo) (lsuc ℓs ⊔ lsuc ℓo)
-  eq-setoid Γ Δ Θ =
+    
+  -- substitutions form a setoid
+  substitution-setoid : ∀ (Γ Δ : Context) (Θ : MetaContext) → Setoid (lsuc ℓs ⊔ lsuc ℓo) (lsuc ℓs ⊔ lsuc ℓo)
+  substitution-setoid Γ Δ Θ =
     record
       { Carrier = Θ ⊕ Γ ⇒ˢ Δ
       ;  _≈_ = λ σ τ → σ ≈ˢ τ
       ; isEquivalence =
                       record
-                        { refl = λ {σ} → (≈ˢ-refl {σ = σ})
-                        ; sym = ≈ˢ-symm
+                        { refl = λ {σ} x → ≈ˢ-refl {σ = σ} x
+                        ; sym = ≈ˢ-sym
                         ; trans = ≈ˢ-trans
                         }
       }
@@ -129,12 +129,36 @@ module SecondOrder.Substitution
 --∥                              ========================                                ∥
 --========================================================================================
 
+  -- Action of inl substitution is the same as induced action of inl renaming
+  inlʳ⃗ˢ≈ˢinlˢ : ∀ {Θ Γ Δ} → inlˢ {Θ} {Γ} {Δ} ≈ˢ ( inlʳ ʳ⃗ˢ )
+  inlʳ⃗ˢ≈ˢinlˢ x = ≈-refl
+
+  -- the composition of the substitutions induced by the association renamings
+  -- are inverses of each other
+  assocˢ∘ˢunassocˢ≈ˢid : ∀ {Θ Γ Δ Ξ} → _≈ˢ_ {Θ} ((rename-assoc {Γ} {Δ} {Ξ} ʳ⃗ˢ) ∘ˢ (rename-unassoc ʳ⃗ˢ)) idˢ
+  assocˢ∘ˢunassocˢ≈ˢid x = ≈-≡ (cong tm-var (rename-assoc-inv x))
+
+  unassocˢ∘ˢassocˢ≈ˢid : ∀ {Θ Γ Δ Ξ} → _≈ˢ_ {Θ} ((rename-unassoc {Γ} {Δ} {Ξ} ʳ⃗ˢ) ∘ˢ (rename-assoc ʳ⃗ˢ)) idˢ
+  unassocˢ∘ˢassocˢ≈ˢid x = ≈-≡ (cong tm-var (rename-unassoc-inv x))
+
+
   -------------------------------------------
   --          Lemmas about joins           --
   -------------------------------------------
 
   -- joins of substitutions give the coproduct structure of Contexts
   -- this is analogous to renamings
+
+  -- existence:
+  exist⋈ˢ-l : ∀ {Θ Γ Δ Ξ} {σ : Θ ⊕ Γ ⇒ˢ Ξ} {τ : Θ ⊕ Δ ⇒ˢ Ξ}
+          → (σ ⋈ˢ τ) ∘ˢ inlˢ ≈ˢ σ
+  exist⋈ˢ-l x = ≈-refl
+  
+  exist⋈ˢ-r : ∀ {Θ Γ Μ Ξ} {σ : Θ ⊕ Γ ⇒ˢ Ξ} {τ : Θ ⊕ Μ ⇒ˢ Ξ}
+          → σ ⋈ˢ τ ∘ˢ inrˢ ≈ˢ τ
+  exist⋈ˢ-r x = ≈-refl
+
+  -- Uniqueness:
   unique⋈ˢ : ∀ {Θ Γ Μ Ξ} {σ : Θ ⊕ Γ ⇒ˢ Ξ} {τ : Θ ⊕ Μ ⇒ˢ Ξ} {μ : Θ ⊕ Γ ,, Μ ⇒ˢ Ξ}
           → (μ ∘ˢ inlˢ) ≈ˢ σ
           → (μ ∘ˢ inrˢ) ≈ˢ τ
@@ -142,34 +166,21 @@ module SecondOrder.Substitution
   unique⋈ˢ eq1 eq2 (var-inl x) = eq1 x
   unique⋈ˢ eq1 eq2 (var-inr y) = eq2 y
 
-  --------------------------------------------------------------------------------------------------
-  -------------------------------------------
-  --          Lemmas about sums            --
-  -------------------------------------------
-
-  unique-cotuple : ∀ {Θ Γ Γ' Ξ} {σ : Θ ⊕ Γ ⇒ˢ Ξ} {τ : Θ ⊕ Γ' ⇒ˢ Ξ} {μ ν : Θ ⊕ Γ ,, Γ' ⇒ˢ Ξ}
+  unique-cotupleˢ : ∀ {Θ Γ Γ' Ξ} {σ : Θ ⊕ Γ ⇒ˢ Ξ} {τ : Θ ⊕ Γ' ⇒ˢ Ξ} {μ ν : Θ ⊕ Γ ,, Γ' ⇒ˢ Ξ}
           → (μ ∘ˢ inlˢ) ≈ˢ σ → (μ ∘ˢ inrˢ) ≈ˢ τ
           → (ν ∘ˢ inlˢ) ≈ˢ σ → (ν ∘ˢ inrˢ) ≈ˢ τ
           → μ ≈ˢ ν
-  unique-cotuple {μ = μ} {ν = ν} eq1 eq2 eq3 eq4 (var-inl x) = ≈ˢ-trans eq1 (≈ˢ-symm eq3) x
-  unique-cotuple {μ = μ} {ν = ν} eq1 eq2 eq3 eq4 (var-inr y) = ≈ˢ-trans eq2 (≈ˢ-symm eq4) y
+  unique-cotupleˢ {μ = μ} {ν = ν} eq1 eq2 eq3 eq4 (var-inl x) = ≈ˢ-trans eq1 (≈ˢ-sym eq3) x
+  unique-cotupleˢ {μ = μ} {ν = ν} eq1 eq2 eq3 eq4 (var-inr y) = ≈ˢ-trans eq2 (≈ˢ-sym eq4) y
 
-  -- Sums of substitutions have the structure of coproducts
-  unique+ˢ : ∀ {Θ Γ Γ' Δ Δ'} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Γ' ⇒ˢ Δ'} {μ ν : Θ ⊕ (Γ ,, Γ') ⇒ˢ (Δ ,, Δ')}
-    → μ ∘ˢ inlˢ ≈ˢ inlˢ ∘ˢ σ → μ ∘ˢ inrˢ ≈ˢ inrˢ ∘ˢ τ
-    → ν ∘ˢ inlˢ ≈ˢ inlˢ ∘ˢ σ → ν ∘ˢ inrˢ ≈ˢ inrˢ ∘ˢ τ
-    → μ ≈ˢ ν
-  unique+ˢ {σ = σ} {τ = τ} {μ = μ} {ν = ν} eq_lft1 eq_rgt1 eq_lft2 eq_rgt2 =
-    unique-cotuple {σ = inlˢ ∘ˢ σ} {τ = inrˢ ∘ˢ τ} {μ = μ} {ν = ν} eq_lft1 eq_rgt1 eq_lft2 eq_rgt2
 
-  -- (1) the weakening of to equal substitutions are equal
+  -- (1) the weakening of equal substitutions are equal
   ≈ˢextendˢ : ∀ {Θ Γ Δ Ξ} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
         → σ ≈ˢ τ → ⇑ˢ {Ξ = Ξ} σ ≈ˢ ⇑ˢ τ
   ≈ˢextendˢ p (var-inl x) = ≈-tm-ʳ (p x)
   ≈ˢextendˢ p (var-inr x) = ≈-refl
 
-  --------------------------------------------------------------------------------------------------
-
+ 
   -- (2) two equal substitution have the same action
   ≈ˢ[]ˢ : ∀ {Θ Γ Δ A} {t : Term Θ Γ A} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
         → σ ≈ˢ τ → [ σ ]ˢ t ≈ [ τ ]ˢ t
@@ -218,6 +229,59 @@ module SecondOrder.Substitution
                                                 (≈-trans
                                                   (≈-sym (((extendʳ ρ) ʳ⃗ˢcorrect) (es i)))
                                                   (≈ˢ[]ˢ {t = es i} (extend-weaken ρ))))
+
+  -- the action of the substitution induced by the inl renaming is the same
+  -- as the action of the inl substitution
+  inl-invariance : ∀ {Θ Γ Δ A} (t : Term Θ Γ A) → [ inlˢ {Θ} {Γ} {Δ} ]ˢ t ≈ [ var-inl ]ʳ t
+  inl-invariance = inlʳ ʳ⃗ˢcorrect
+
+  -- same for inr
+  inr-invariance : ∀ {Θ Γ Δ A} (t : Term Θ Δ A) → [ inrˢ {Θ} {Γ} {Δ} ]ˢ t ≈ [ var-inr ]ʳ t
+  inr-invariance = inrʳ ʳ⃗ˢcorrect
+
+  --------------------------------------------------------------------------------------------------
+  -------------------------------------------
+  --          Lemmas about sums            --
+  -------------------------------------------
+
+  -- Sums of substitutions have the structure of coproducts
+
+  -- existence:
+  exist+ˢ-l : ∀ {Θ Γ Γ' Δ Δ'} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Γ' ⇒ˢ Δ'}
+            → σ +ˢ τ ∘ˢ inlˢ ≈ˢ inlˢ ∘ˢ σ
+  exist+ˢ-l {σ = σ} {τ = τ} x = ≈-sym (inl-invariance (σ x))
+
+  exist+ˢ-r : ∀ {Θ Γ Γ' Δ Δ'} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Γ' ⇒ˢ Δ'}
+            → σ +ˢ τ ∘ˢ inrˢ ≈ˢ inrˢ ∘ˢ τ
+  exist+ˢ-r {σ = σ} {τ = τ} y = ≈-sym (inr-invariance (τ y))
+
+  -- uniqueness:
+  unique+ˢ : ∀ {Θ Γ Γ' Δ Δ'} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Γ' ⇒ˢ Δ'} {μ ν : Θ ⊕ (Γ ,, Γ') ⇒ˢ (Δ ,, Δ')}
+    → μ ∘ˢ inlˢ ≈ˢ inlˢ ∘ˢ σ → μ ∘ˢ inrˢ ≈ˢ inrˢ ∘ˢ τ
+    → ν ∘ˢ inlˢ ≈ˢ inlˢ ∘ˢ σ → ν ∘ˢ inrˢ ≈ˢ inrˢ ∘ˢ τ
+    → μ ≈ˢ ν
+  unique+ˢ {σ = σ} {τ = τ} {μ = μ} {ν = ν} eq_lft1 eq_rgt1 eq_lft2 eq_rgt2 =
+    unique-cotupleˢ {σ = inlˢ ∘ˢ σ} {τ = inrˢ ∘ˢ τ} {μ = μ} {ν = ν} eq_lft1 eq_rgt1 eq_lft2 eq_rgt2
+
+  unique+ˢ-aux : ∀ {Θ Γ Γ' Δ Δ'} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Γ' ⇒ˢ Δ'} {μ : Θ ⊕ (Γ ,, Γ') ⇒ˢ (Δ ,, Δ')}
+    → μ ∘ˢ inlˢ ≈ˢ inlˢ ∘ˢ σ → μ ∘ˢ inrˢ ≈ˢ inrˢ ∘ˢ τ
+    → μ ≈ˢ (σ +ˢ τ)
+  unique+ˢ-aux {Θ = Θ} {σ = σ} {τ = τ} {μ = μ} eq_l eq_r =
+    unique+ˢ {σ = σ} {τ = τ} {μ = μ} {ν = σ +ˢ τ}
+      eq_l eq_r (exist+ˢ-l {σ = σ} {τ = τ}) (exist+ˢ-r {σ = σ} {τ = τ})
+
+  -- sum of substitutions is associative
+  +ˢ-assoc-l : ∀ {Θ Γ Γ' Γ'' Δ Δ' Δ''} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Γ' ⇒ˢ Δ'} {γ : Θ ⊕ Γ'' ⇒ˢ Δ''}
+           → (σ +ˢ (τ +ˢ γ)) ≈ˢ (rename-unassoc ʳ⃗ˢ) ∘ˢ (σ +ˢ τ) +ˢ γ ∘ˢ (rename-assoc ʳ⃗ˢ)
+  +ˢ-assoc-l {σ = σ} {τ = τ} {γ = γ} = ≈ˢ-sym (
+    unique+ˢ-aux {σ = σ} {τ = τ +ˢ γ} {μ = (rename-unassoc ʳ⃗ˢ) ∘ˢ (σ +ˢ τ) +ˢ γ ∘ˢ (rename-assoc ʳ⃗ˢ)}
+      {!!} {!!})
+  
+  -- other direction
+  +ˢ-assoc-r : ∀ {Θ Γ Γ' Γ'' Δ Δ' Δ''} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Γ' ⇒ˢ Δ'} {γ : Θ ⊕ Γ'' ⇒ˢ Δ''}
+             → (σ +ˢ τ) +ˢ γ  ≈ˢ (rename-assoc ʳ⃗ˢ) ∘ˢ (σ +ˢ (τ +ˢ γ)) ∘ˢ (rename-unassoc ʳ⃗ˢ)
+  +ˢ-assoc-r {σ = σ} {τ = τ} {γ = γ} = {!!}
+  --------------------------------------------------------------------------------------------------
 
 
   -- composition of a substitution and a renaming extended to terms

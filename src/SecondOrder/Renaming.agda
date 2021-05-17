@@ -1,7 +1,8 @@
 -- {-# OPTIONS --allow-unsolved-metas #-}
 
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subst)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; subst)
+open import Relation.Binary using (Setoid)
 
 import SecondOrder.Arity
 import SecondOrder.Signature
@@ -63,6 +64,7 @@ module SecondOrder.Renaming
   rename-unassoc (var-inl (var-inr x)) = var-inr (var-inl x)
   rename-unassoc (var-inr x) = var-inr (var-inr x)
 
+
   -- the empty context is the right unit
 
   ctx-empty-right-unit : ∀ {Γ} → Γ ,, ctx-empty ⇒ʳ Γ
@@ -116,12 +118,52 @@ module SecondOrder.Renaming
 
   infixl 3 _≡ʳ_
 
+  ≡ʳ-refl : ∀ {Γ Δ} {ρ : Γ ⇒ʳ Δ} → ρ ≡ʳ ρ
+  ≡ʳ-refl = λ x → refl
+
+  ≡ʳ-sym : ∀ {Γ Δ} {ρ ν : Γ ⇒ʳ Δ}
+          → ρ ≡ʳ ν
+          → ν ≡ʳ ρ
+  ≡ʳ-sym eq x = sym (eq x)
+
+  ≡ʳ-trans : ∀ {Γ Δ} {ρ ν γ : Γ ⇒ʳ Δ}
+           → ρ ≡ʳ ν
+           → ν ≡ʳ γ
+           → ρ ≡ʳ γ
+  ≡ʳ-trans eq1 eq2 x = trans (eq1 x) (eq2 x)
+
+  -- renamings form a setoid
+  renaming-setoid : ∀ (Γ Δ : Context) → Setoid ℓs ℓs
+  renaming-setoid Γ Δ =
+    record
+      { Carrier = Γ ⇒ʳ Δ
+      ;  _≈_ = λ ρ ν → ρ ≡ʳ ν
+      ; isEquivalence =
+                      record
+                        { refl = λ {ρ} x → ≡ʳ-refl {Γ} {Δ} {ρ} x
+                        ; sym = ≡ʳ-sym
+                        ; trans = ≡ʳ-trans
+                        }
+      }
+
 
 --========================================================================================
 --∥                              ========================                                ∥
 --∥                              ∥  ** METATHEOREMS **  ∥                                ∥
 --∥                              ========================                                ∥
 --========================================================================================
+
+  -- association and unassociation renamings are inverses of each other
+  rename-assoc-inv : ∀ {Γ Δ Ξ} → rename-assoc {Γ} {Δ} {Ξ} ∘ʳ rename-unassoc ≡ʳ idʳ
+  rename-assoc-inv (var-inl (var-inl x)) = refl
+  rename-assoc-inv (var-inl (var-inr y)) = refl
+  rename-assoc-inv (var-inr z) = refl
+
+  rename-unassoc-inv : ∀ {Γ Δ Ξ} → rename-unassoc {Γ} {Δ} {Ξ} ∘ʳ rename-assoc ≡ʳ idʳ
+  rename-unassoc-inv (var-inl x) = refl
+  rename-unassoc-inv (var-inr (var-inl y)) = refl
+  rename-unassoc-inv (var-inr (var-inr z)) = refl
+
 
   -------------------------------------------
   --          Lemmas about joins           --
@@ -141,6 +183,13 @@ module SecondOrder.Renaming
   unique⋈ʳ eq1 eq2 (var-inl x) = eq1 x
   unique⋈ʳ eq1 eq2 (var-inr y) = eq2 y
 
+  unique-cotupleʳ : ∀ {Γ Δ Ξ} {ρ : Γ ⇒ʳ Ξ} {ν : Δ ⇒ʳ Ξ} {γ δ : Γ ,, Δ ⇒ʳ Ξ}
+                 → γ ∘ʳ inlʳ ≡ʳ ρ → γ ∘ʳ inrʳ ≡ʳ ν
+                 → δ ∘ʳ inlʳ ≡ʳ ρ → δ ∘ʳ inrʳ ≡ʳ ν
+                 → γ ≡ʳ δ
+  unique-cotupleʳ {γ = γ} {δ = δ} eq1 eq2 eq3 eq4 (var-inl x) = ≡ʳ-trans eq1 (≡ʳ-sym eq3) x
+  unique-cotupleʳ {γ = γ} {δ = δ} eq1 eq2 eq3 eq4 (var-inr y) = ≡ʳ-trans eq2 (≡ʳ-sym eq4) y
+
   -------------------------------------------
   --          Lemmas about sums            --
   -------------------------------------------
@@ -149,6 +198,14 @@ module SecondOrder.Renaming
   -- once again, what about uniqueness?
   -- For any renaming ρ : Γ ,, Γ' → Δ ,, Δ' that makes the corresponding
   -- squares commute, we have ρ ≡ʳ σ +ʳ τ
+  unique+ʳ : ∀ {Γ Γ' Δ Δ'} {ρ : Γ ⇒ʳ Δ} {ν : Γ' ⇒ʳ Δ'} {γ δ : Γ ,, Γ' ⇒ʳ Δ ,, Δ'}
+             → γ ∘ʳ inlʳ ≡ʳ inlʳ ∘ʳ ρ
+             → γ ∘ʳ inrʳ ≡ʳ inrʳ ∘ʳ ν
+             → δ ∘ʳ inlʳ ≡ʳ inlʳ ∘ʳ ρ
+             → δ ∘ʳ inrʳ ≡ʳ inrʳ ∘ʳ ν
+             → γ ≡ʳ δ
+  unique+ʳ {ρ = ρ} {ν = ν} {γ = γ} {δ = δ} eq1 eq2 eq3 eq4 = unique-cotupleʳ {γ = γ} {δ = δ} eq1 eq2 eq3 eq4
+             
   unique+ : ∀ {Γ Γ' Δ Δ' Ξ Λ} {ρ : Γ ⇒ʳ Δ} {ν : Γ' ⇒ʳ Δ'} {δ : Ξ ⇒ʳ Λ}
     → (α₁ : Γ ⇒ʳ Ξ) → (α₂ : Δ ⇒ʳ Λ) → (δ ∘ʳ α₁) ≡ʳ (α₂ ∘ʳ ρ)
     → (β₁ : Γ' ⇒ʳ Ξ) → (β₂ : Δ' ⇒ʳ Λ) → (δ ∘ʳ β₁) ≡ʳ (β₂ ∘ʳ ν)
