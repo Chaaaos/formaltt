@@ -37,7 +37,7 @@ module SecondOrder.Substitution
   -- ⇑ˢ : ∀ {Θ Γ Δ Ξ} → Θ ⊕ Γ ⇒ˢ Δ → Θ ⊕ (Γ ,, Ξ) ⇒ˢ (Δ ,, Ξ)
   -- ⇑ˢ σ = σ +ˢ idˢ
 
-  -- the action of a substitution on a term (contravariant)
+  -- the action of a substitution on a term
   infixr 6 [_]ˢ_
 
   [_]ˢ_ : ∀ {Θ Γ Δ A} → Θ ⊕ Γ ⇒ˢ Δ → Term Θ Γ A → Term Θ Δ A

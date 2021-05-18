@@ -3,7 +3,10 @@ open import Relation.Binary.PropositionalEquality
 open import Relation.Binary using (Setoid)
 
 import Categories.Category
+import Categories.Functor
+import Categories.Category.Instance.Setoids
 import Categories.Category.Cocartesian
+import Categories.Monad.Relative
 
 import SecondOrder.Arity
 import SecondOrder.Signature
@@ -105,8 +108,8 @@ module SecondOrder.Renaming
   module _ where
     open Categories.Category
 
-    Context-Category : Category ℓs ℓs ℓs
-    Context-Category =
+    Contexts : Category ℓs ℓs ℓs
+    Contexts =
       record
         { Obj = Context
         ; _⇒_ = _⇒ʳ_
@@ -123,8 +126,7 @@ module SecondOrder.Renaming
         }
 
 
-  -- the coproduct structure
-
+  -- the coproduct structure of the category
   module _ where
 
     infixl 7 [_,_]ʳ
@@ -140,7 +142,7 @@ module SecondOrder.Renaming
     uniqueʳ ξ ζ (var-inl x) = sym (ξ x)
     uniqueʳ ξ ζ (var-inr y) = sym (ζ y)
 
-    Context-+ : Categories.Category.Cocartesian.BinaryCoproducts Context-Category
+    Context-+ : Categories.Category.Cocartesian.BinaryCoproducts Contexts
     Context-+ =
       record {
         coproduct =
@@ -171,6 +173,81 @@ module SecondOrder.Renaming
     -- weakening
     ⇑ʳ : ∀ {Γ Δ A} → Term Θ Γ A → Term Θ (Γ ,, Δ) A
     ⇑ʳ = [ i₁ ]ʳ_
+
+  -- The sum of identities is an identity
+  idʳ+idʳ : ∀ {Γ Δ} → idʳ {Γ = Γ} +₁ idʳ {Γ = Δ} ≡ʳ idʳ {Γ = Γ ,, Δ}
+  idʳ+idʳ (var-inl x) = refl
+  idʳ+idʳ (var-inr y) = refl
+
+  -- The action of a renaming respects equality of terms
+  []ʳ-resp-≈ : ∀ {Θ Γ Δ A} {s t : Term Θ Γ A} {ρ : Γ ⇒ʳ Δ} → s ≈ t → [ ρ ]ʳ s ≈ [ ρ ]ʳ t
+  []ʳ-resp-≈ (≈-≡ refl) = ≈-≡ refl
+  []ʳ-resp-≈ (≈-meta ξ) = ≈-meta (λ i → []ʳ-resp-≈ (ξ i))
+  []ʳ-resp-≈ (≈-oper ξ) = ≈-oper (λ i → []ʳ-resp-≈ (ξ i))
+
+  -- The action of a renaming respects equality of renamings
+  []ʳ-resp-≡ʳ : ∀ {Θ Γ Δ A} {ρ τ : Γ ⇒ʳ Δ} {t : Term Θ Γ A} → ρ ≡ʳ τ → [ ρ ]ʳ t ≈ [ τ ]ʳ t
+  []ʳ-resp-≡ʳ {t = tm-var x} ξ = ≈-≡ (cong tm-var (ξ x))
+  []ʳ-resp-≡ʳ {t = tm-meta M ts} ξ = ≈-meta (λ i → []ʳ-resp-≡ʳ ξ)
+  []ʳ-resp-≡ʳ {t = tm-oper f es} ξ = ≈-oper (λ i → []ʳ-resp-≡ʳ (+₁-cong₂ ξ ≡ʳ-refl))
+
+  -- The action of the identity is trival
+  [id]ʳ : ∀ {Θ Γ A} {t : Term Θ Γ A} → [ idʳ ]ʳ t ≈ t
+  [id]ʳ {t = tm-var x} = ≈-refl
+  [id]ʳ {t = tm-meta M ts} = ≈-meta λ i → [id]ʳ
+  [id]ʳ {t = tm-oper f es} = ≈-oper λ i → ≈-trans ([]ʳ-resp-≡ʳ idʳ+idʳ) [id]ʳ
+
+  -- Summing with identity respects composition
+  ∘ʳ-+₁-idʳ : ∀ {Γ Δ Ξ Ψ} {ρ : Γ ⇒ʳ Δ} {τ : Δ ⇒ʳ Ξ} → (τ ∘ʳ ρ) +₁ idʳ {Γ = Ψ} ≡ʳ (τ +₁ idʳ) ∘ʳ (ρ +₁ idʳ)
+  ∘ʳ-+₁-idʳ (var-inl x) = refl
+  ∘ʳ-+₁-idʳ (var-inr y) = refl
+
+  -- The action of a renaming is functorial
+  [∘]ʳ : ∀ {Θ Γ Δ Ξ} {ρ : Γ ⇒ʳ Δ} {τ : Δ ⇒ʳ Ξ} {A} {t : Term Θ Γ A} → [ τ ∘ʳ ρ ]ʳ t ≈ [ τ ]ʳ ([ ρ ]ʳ t)
+  [∘]ʳ {t = tm-var x} = ≈-refl
+  [∘]ʳ {t = tm-meta M ts} = ≈-meta (λ i → [∘]ʳ)
+  [∘]ʳ {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ʳ-resp-≡ʳ ∘ʳ-+₁-idʳ) [∘]ʳ)
+
+  -- Forming terms over a given metacontext and sort is functorial in the context,
+  -- and even a relative monad
+  module _ {Θ : MetaContext} {A : sort} where
+    open Categories.Functor
+    open Categories.Category.Instance.Setoids
+    open Categories.Monad.Relative
+
+    Term-Functor : Functor Contexts (Setoids (lsuc (ℓs ⊔ ℓo)) (lsuc (ℓs ⊔ ℓo)))
+    Term-Functor =
+      record
+        { F₀ = λ Γ → Term-setoid Θ Γ A
+        ; F₁ = λ ρ → record { _⟨$⟩_ = [ ρ ]ʳ_ ; cong = []ʳ-resp-≈ }
+        ; identity = ≈-trans [id]ʳ
+        ; homomorphism = λ ξ → ≈-trans ([]ʳ-resp-≈ ξ) [∘]ʳ
+        ; F-resp-≈ = λ ζ ξ → ≈-trans ([]ʳ-resp-≡ʳ ζ) ([]ʳ-resp-≈ ξ)
+        }
+
+    -- The embedding of contexts into setoids
+    slots : Functor Contexts (Setoids (ℓs ⊔ ℓo) ℓs)
+    slots = record
+              { F₀ = λ Γ → setoid (A ∈ Γ)
+              ; F₁ = λ ρ → record { _⟨$⟩_ = ρ ; cong = cong ρ }
+              ; identity = λ ξ → ξ
+              ; homomorphism = λ {_} {_} {_} {f = f} {g = g} {_} {_} ξ → cong g (cong f ξ)
+              ; F-resp-≈ = λ ζ ξ → trans (ζ _) (cong _ ξ)
+              }
+
+    Term-Monad : Monad slots
+    Term-Monad =
+      record
+        { F₀ = λ Γ → {!Term-setoid Θ Γ A!}
+        ; unit = {!!}
+        ; extend = {!!}
+        ; identityʳ = {!!}
+        ; identityˡ = {!!}
+        ; assoc = {!!}
+        ; extend-≈ = {!!}
+        }
+
+
 
     -- -- -- apply the reassociation renaming on terms
     -- -- term-reassoc : ∀ {Δ Γ Ξ A}

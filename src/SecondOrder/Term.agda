@@ -65,4 +65,3 @@ module SecondOrder.Term
   -- to equal variable give rise to two equal terms
   ≡-var : ∀ {Θ Γ A} → {s t : A ∈ Γ} → s ≡ t → tm-var {Θ = Θ} s ≡ tm-var t
   ≡-var refl = refl
-
