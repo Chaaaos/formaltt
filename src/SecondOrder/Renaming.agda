@@ -1,12 +1,13 @@
-open import Agda.Primitive using (lzero; lsuc; _⊔_)
+open import Level
 open import Relation.Binary.PropositionalEquality
 open import Relation.Binary using (Setoid)
+import Function.Equality
 
 import Categories.Category
 import Categories.Functor
 import Categories.Category.Instance.Setoids
+
 import Categories.Category.Cocartesian
-import Categories.Monad.Relative
 
 import SecondOrder.Arity
 import SecondOrder.Signature
@@ -14,9 +15,9 @@ import SecondOrder.Metavariable
 import SecondOrder.Term
 
 module SecondOrder.Renaming
-  {ℓs ℓo}
+  {ℓ}
   {𝔸 : SecondOrder.Arity.Arity}
-  (Σ : SecondOrder.Signature.Signature ℓs ℓo 𝔸)
+  (Σ : SecondOrder.Signature.Signature ℓ 𝔸)
   where
 
   open SecondOrder.Signature.Signature Σ
@@ -24,14 +25,14 @@ module SecondOrder.Renaming
   open SecondOrder.Term Σ
 
   -- a renaming maps variables between contexts in a type-preserving way
-  _⇒ʳ_ : ∀ (Γ Δ : Context) → Set ℓs
+  _⇒ʳ_ : ∀ (Γ Δ : Context) → Set ℓ
   Γ ⇒ʳ Δ = ∀ {A} → A ∈ Γ → A ∈ Δ
 
   infix 4 _⇒ʳ_
 
   -- equality of renamings
 
-  _≡ʳ_ : ∀ {Γ Δ} (σ τ : Γ ⇒ʳ Δ) → Set ℓs
+  _≡ʳ_ : ∀ {Γ Δ} (σ τ : Γ ⇒ʳ Δ) → Set ℓ
   _≡ʳ_ {Γ} σ τ = ∀ {A} (x : A ∈ Γ) → σ x ≡ τ x
 
   infixl 3 _≡ʳ_
@@ -51,7 +52,8 @@ module SecondOrder.Renaming
   ≡ʳ-trans eq1 eq2 x = trans (eq1 x) (eq2 x)
 
   -- renamings form a setoid
-  renaming-setoid : ∀ (Γ Δ : Context) → Setoid ℓs ℓs
+
+  renaming-setoid : ∀ (Γ Δ : Context) → Setoid ℓ ℓ
   renaming-setoid Γ Δ =
     record
       { Carrier = Γ ⇒ʳ Δ
@@ -65,10 +67,12 @@ module SecondOrder.Renaming
       }
 
   -- the identity renaming
+
   idʳ : ∀ {Γ : Context} → Γ ⇒ʳ Γ
   idʳ x = x
 
   -- the canonical injection renamings
+
   inlʳ : ∀ {Γ Δ} → Γ ⇒ʳ Γ ,, Δ
   inlʳ = var-inl
 
@@ -108,7 +112,7 @@ module SecondOrder.Renaming
   module _ where
     open Categories.Category
 
-    Contexts : Category ℓs ℓs ℓs
+    Contexts : Category ℓ ℓ ℓ
     Contexts =
       record
         { Obj = Context
@@ -208,14 +212,12 @@ module SecondOrder.Renaming
   [∘]ʳ {t = tm-meta M ts} = ≈-meta (λ i → [∘]ʳ)
   [∘]ʳ {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ʳ-resp-≡ʳ ∘ʳ-+₁-idʳ) [∘]ʳ)
 
-  -- Forming terms over a given metacontext and sort is functorial in the context,
-  -- and even a relative monad
+  -- Forming terms over a given metacontext and sort is functorial in the context
   module _ {Θ : MetaContext} {A : sort} where
     open Categories.Functor
     open Categories.Category.Instance.Setoids
-    open Categories.Monad.Relative
 
-    Term-Functor : Functor Contexts (Setoids (lsuc (ℓs ⊔ ℓo)) (lsuc (ℓs ⊔ ℓo)))
+    Term-Functor : Functor Contexts (Setoids ℓ ℓ)
     Term-Functor =
       record
         { F₀ = λ Γ → Term-setoid Θ Γ A
@@ -224,30 +226,6 @@ module SecondOrder.Renaming
         ; homomorphism = λ ξ → ≈-trans ([]ʳ-resp-≈ ξ) [∘]ʳ
         ; F-resp-≈ = λ ζ ξ → ≈-trans ([]ʳ-resp-≡ʳ ζ) ([]ʳ-resp-≈ ξ)
         }
-
-    -- The embedding of contexts into setoids
-    slots : Functor Contexts (Setoids (ℓs ⊔ ℓo) ℓs)
-    slots = record
-              { F₀ = λ Γ → setoid (A ∈ Γ)
-              ; F₁ = λ ρ → record { _⟨$⟩_ = ρ ; cong = cong ρ }
-              ; identity = λ ξ → ξ
-              ; homomorphism = λ {_} {_} {_} {f = f} {g = g} {_} {_} ξ → cong g (cong f ξ)
-              ; F-resp-≈ = λ ζ ξ → trans (ζ _) (cong _ ξ)
-              }
-
-    Term-Monad : Monad slots
-    Term-Monad =
-      record
-        { F₀ = λ Γ → {!Term-setoid Θ Γ A!}
-        ; unit = {!!}
-        ; extend = {!!}
-        ; identityʳ = {!!}
-        ; identityˡ = {!!}
-        ; assoc = {!!}
-        ; extend-≈ = {!!}
-        }
-
-
 
     -- -- -- apply the reassociation renaming on terms
     -- -- term-reassoc : ∀ {Δ Γ Ξ A}

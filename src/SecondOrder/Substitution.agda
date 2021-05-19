@@ -1,18 +1,22 @@
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subst)
-open import Relation.Binary using (Setoid)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; setoid; cong; trans)
+import Function.Equality
 
+import Categories.Functor
+import Categories.Category.Instance.Setoids
+import Categories.Monad.Relative
 
 import SecondOrder.Arity
 import SecondOrder.Signature
 import SecondOrder.Metavariable
 import SecondOrder.Renaming
 import SecondOrder.Term
+import SecondOrder.IndexedCategory
 
 module SecondOrder.Substitution
-  {ℓs ℓo}
+  {ℓ}
   {𝔸 : SecondOrder.Arity.Arity}
-  (Σ : SecondOrder.Signature.Signature ℓs ℓo 𝔸)
+  (Σ : SecondOrder.Signature.Signature ℓ 𝔸)
   where
 
   open SecondOrder.Signature.Signature Σ
@@ -24,20 +28,55 @@ module SecondOrder.Substitution
 
   infix 4 _⊕_⇒ˢ_
 
-  _⊕_⇒ˢ_ : ∀ (Θ : MetaContext) (Γ Δ : Context) → Set (lsuc (ℓs ⊔ ℓo))
+  _⊕_⇒ˢ_ : ∀ (Θ : MetaContext) (Γ Δ : Context) → Set ℓ
   Θ ⊕ Γ ⇒ˢ Δ = ∀ {A} (x : A ∈ Γ) → Term Θ Δ A
+
+  -- syntactic equality of substitutions
+
+  infix 5 _≈ˢ_
+
+  _≈ˢ_ : ∀ {Θ} {Γ Δ} (σ τ : Θ ⊕ Γ ⇒ˢ Δ) → Set ℓ
+  _≈ˢ_ {Θ} {Γ} σ τ = ∀ {A} (x : A ∈ Γ) → σ x ≈ τ x
 
   -- identity substitution
 
   idˢ : ∀ {Θ Γ} → Θ ⊕ Γ ⇒ˢ Γ
   idˢ = tm-var
 
-  -- extending a substitution
+  -- -- the join of substitutions
+  -- infixl 7 _⋈ˢ_
 
-  -- ⇑ˢ : ∀ {Θ Γ Δ Ξ} → Θ ⊕ Γ ⇒ˢ Δ → Θ ⊕ (Γ ,, Ξ) ⇒ˢ (Δ ,, Ξ)
-  -- ⇑ˢ σ = σ +ˢ idˢ
+  -- _⋈ˢ_ : ∀ {Θ} {Γ Δ Ξ} → Θ ⊕ Γ ⇒ˢ Ξ → Θ ⊕ Δ ⇒ˢ Ξ → Θ ⊕ Γ ,, Δ ⇒ˢ Ξ
+  -- (σ ⋈ˢ τ) (var-inl x) = σ x
+  -- (σ ⋈ˢ τ) (var-inr y) = τ y
+
+  -- -- the sum of substitutions
+
+  -- infixl 8 _+ˢ_
+
+  -- _+ˢ_ : ∀ {Θ} {Γ Γ' Δ Δ'} → Θ ⊕ Γ ⇒ˢ Δ → Θ ⊕ Γ' ⇒ˢ Δ' → Θ ⊕ (Γ ,, Γ') ⇒ˢ Δ ,, Δ'
+  -- σ +ˢ τ = (λ x → [ var-inl ]ʳ (σ x)) ⋈ˢ (λ y → [ var-inr ]ʳ (τ y))
+
+  -- extension of a substitution
+
+  ⇑ˢ : ∀ {Θ Γ Δ Ξ} → Θ ⊕ Γ ⇒ˢ Δ → Θ ⊕ (Γ ,, Ξ) ⇒ˢ (Δ ,, Ξ)
+  ⇑ˢ σ (var-inl x) = [ var-inl ]ʳ σ x
+  ⇑ˢ σ (var-inr y) = tm-var (var-inr y)
+
+  -- extension preserves identity
+
+  ⇑ˢ-idˢ : ∀ {Θ} {Γ Δ} → ⇑ˢ idˢ ≈ˢ idˢ {Θ = Θ} {Γ = Γ ,, Δ}
+  ⇑ˢ-idˢ (var-inl x) = ≈-refl
+  ⇑ˢ-idˢ (var-inr y) = ≈-refl
+
+  -- extension respects equality of substitutions
+
+  ⇑ˢ-resp-≈ˢ : ∀ {Θ Γ Δ Ξ} {σ τ : Θ ⊕ Γ ⇒ˢ Δ} → σ ≈ˢ τ → ⇑ˢ {Ξ = Ξ} σ ≈ˢ ⇑ˢ {Ξ = Ξ} τ
+  ⇑ˢ-resp-≈ˢ ξ (var-inl x) = []ʳ-resp-≈ (ξ x)
+  ⇑ˢ-resp-≈ˢ ξ (var-inr y) = ≈-refl
 
   -- the action of a substitution on a term
+
   infixr 6 [_]ˢ_
 
   [_]ˢ_ : ∀ {Θ Γ Δ A} → Θ ⊕ Γ ⇒ˢ Δ → Term Θ Γ A → Term Θ Δ A
@@ -46,9 +85,89 @@ module SecondOrder.Substitution
   [ σ ]ˢ (tm-oper f es) = tm-oper f (λ i → [ ⇑ˢ σ ]ˢ es i)
 
   -- composition of substitutions
+
   infixl 7 _∘ˢ_
-  _∘ˢ_ : ∀ {Γ Δ Ξ : Context} → Θ ⊕ Δ ⇒ˢ Ξ → Θ ⊕ Γ ⇒ˢ Δ → Θ ⊕ Γ ⇒ˢ Ξ
+  _∘ˢ_ : ∀ {Θ} {Γ Δ Ξ} → Θ ⊕ Δ ⇒ˢ Ξ → Θ ⊕ Γ ⇒ˢ Δ → Θ ⊕ Γ ⇒ˢ Ξ
   (σ ∘ˢ τ) x = [ σ ]ˢ τ x
+
+  -- interchange law (needs to be generalized, this is the only missing part)
+
+  inlʳ-[]ˢ : ∀ {Θ} {A} {Γ Δ Ξ} (σ : Θ ⊕ Γ ⇒ˢ Δ) (t : Term Θ Γ A) →
+             [ var-inl ]ʳ ([ σ ]ˢ t) ≈ [ ⇑ˢ {Ξ = Ξ}  σ ]ˢ ([ var-inl ]ʳ t)
+  inlʳ-[]ˢ σ (tm-var x) = ≈-refl
+  inlʳ-[]ˢ σ (tm-meta M ts) = ≈-meta (λ i → inlʳ-[]ˢ σ (ts i))
+  inlʳ-[]ˢ σ (tm-oper f es) = ≈-oper (λ i → {!!})
+
+  -- composition commutes with extension
+
+  ⇑ˢ-∘ˢ : ∀ {Θ} {Γ Δ Ξ Ψ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Δ ⇒ˢ Ξ} →
+          ⇑ˢ {Ξ = Ψ} (τ ∘ˢ σ) ≈ˢ ⇑ˢ τ ∘ˢ ⇑ˢ σ
+  ⇑ˢ-∘ˢ {σ = σ} {τ = τ} (var-inl x) = inlʳ-[]ˢ τ (σ x)
+  ⇑ˢ-∘ˢ (var-inr y) = ≈-refl
+
+  -- substitution action respects equality of terms
+
+  []ˢ-resp-≈ : ∀ {Θ} {Γ Δ} {A} (σ : Θ ⊕ Γ ⇒ˢ Δ) {t u : Term Θ Γ A} → t ≈ u → [ σ ]ˢ t ≈  [ σ ]ˢ u
+  []ˢ-resp-≈ σ (≈-≡ refl) = ≈-refl
+  []ˢ-resp-≈ σ (≈-meta ξ) = ≈-meta (λ i → []ˢ-resp-≈ σ (ξ i))
+  []ˢ-resp-≈ σ (≈-oper ξ) = ≈-oper (λ i → []ˢ-resp-≈ (⇑ˢ σ) (ξ i))
+
+  -- substitution action respects equality of substitutions
+
+  []ˢ-resp-≈ˢ : ∀ {Θ} {Γ Δ} {A} {σ τ : Θ ⊕ Γ ⇒ˢ Δ} (t : Term Θ Γ A) → σ ≈ˢ τ → [ σ ]ˢ t ≈ [ τ ]ˢ t
+  []ˢ-resp-≈ˢ (tm-var x) ξ = ξ x
+  []ˢ-resp-≈ˢ (tm-meta M ts) ξ = ≈-meta (λ i → []ˢ-resp-≈ˢ (ts i) ξ)
+  []ˢ-resp-≈ˢ (tm-oper f es) ξ = ≈-oper (λ i → []ˢ-resp-≈ˢ (es i) (⇑ˢ-resp-≈ˢ ξ))
+
+  -- substitution actions respects both equalities
+
+  []ˢ-resp-≈ˢ-≈ : ∀ {Θ} {Γ Δ} {A} {σ τ : Θ ⊕ Γ ⇒ˢ Δ} {t u : Term Θ Γ A} → σ ≈ˢ τ → t ≈ u → [ σ ]ˢ t ≈ [ τ ]ˢ u
+  []ˢ-resp-≈ˢ-≈ {τ = τ} {t = t} ζ ξ = ≈-trans ([]ˢ-resp-≈ˢ t ζ) ([]ˢ-resp-≈ τ ξ)
+
+  -- the identity substution acts trivially
+
+  [id]ˢ : ∀ {Θ} {Γ} {A} {t : Term Θ Γ A} → [ idˢ ]ˢ t ≈ t
+  [id]ˢ {t = tm-var x} = ≈-refl
+  [id]ˢ {t = tm-meta M ts} = ≈-meta (λ i → [id]ˢ)
+  [id]ˢ {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ˢ-resp-≈ˢ (es i) ⇑ˢ-idˢ) [id]ˢ)
+
+  -- substitition action is functorial
+
+  [∘]ˢ : ∀ {Θ} {Γ Δ Ξ} {A} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Δ ⇒ˢ Ξ} (t : Term Θ Γ A) →
+         [ τ ∘ˢ σ ]ˢ t ≈ [ τ ]ˢ ([ σ ]ˢ t)
+  [∘]ˢ (tm-var x) = ≈-refl
+  [∘]ˢ (tm-meta M ts) = ≈-meta (λ i → [∘]ˢ (ts i))
+  [∘]ˢ (tm-oper f es) = ≈-oper (λ i → {!!})
+
+  module _ {Θ : MetaContext} where
+    open Categories.Functor using (Functor)
+    open Categories.Category.Instance.Setoids
+    open Categories.Monad.Relative
+    open Function.Equality using () renaming (setoid to Π-setoid)
+    open import SecondOrder.IndexedCategory
+
+    -- The embedding of contexts into setoids indexed by sorts
+    slots : Functor Contexts (IndexedCategory sort (Setoids ℓ ℓ))
+    slots = record
+              { F₀ = λ Γ A → setoid (A ∈ Γ)
+              ; F₁ = λ ρ A → record { _⟨$⟩_ = ρ ; cong = cong ρ }
+              ; identity = λ A ξ → ξ
+              ; homomorphism = λ {_} {_} {_} {ρ} {σ} A {_} {_} ξ → cong σ (cong ρ ξ)
+              ; F-resp-≈ = λ ξ A ζ → trans (ξ _) (cong _ ζ)
+              }
+
+    Term-Monad : Monad slots
+    Term-Monad =
+      let open Function.Equality using (_⟨$⟩_) renaming (cong to func-cong) in
+      record
+        { F₀ = Term-setoid Θ
+        ; unit = λ A → record { _⟨$⟩_ = tm-var ; cong = λ ξ → ≈-≡ (cong tm-var ξ) }
+        ; extend = λ σ A → record { _⟨$⟩_ =  [ (σ _ ⟨$⟩_) ]ˢ_ ; cong = []ˢ-resp-≈ (σ _ ⟨$⟩_)}
+        ; identityʳ = λ {_} {_} {σ} A {_} {_} ξ → func-cong (σ A) ξ
+        ; identityˡ = λ A → ≈-trans [id]ˢ
+        ; assoc = λ {_} {_} {_} {σ} {ρ} A {_} {t} ξ → ≈-trans ([]ˢ-resp-≈ _ ξ) ([∘]ˢ t)
+        ; extend-≈ = λ {Γ} {Δ} {σ} {ρ} ζ B {s} {t} ξ → []ˢ-resp-≈ˢ-≈ (λ x → ζ _ refl) ξ
+        }
 
 --   -- left and right injections as substitutions
 --   inlˢ : ∀ {Θ Γ Δ} → Θ ⊕ Γ ⇒ˢ Γ ,, Δ

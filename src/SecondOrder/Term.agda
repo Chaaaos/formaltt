@@ -7,18 +7,18 @@ import SecondOrder.Signature
 import SecondOrder.Metavariable
 
 module SecondOrder.Term
-  {ℓs ℓo}
+  {ℓ}
   {𝔸 : SecondOrder.Arity.Arity}
-  (Σ : SecondOrder.Signature.Signature ℓs ℓo 𝔸)
+  (Σ : SecondOrder.Signature.Signature ℓ 𝔸)
   where
 
   open SecondOrder.Signature.Signature Σ
   open SecondOrder.Metavariable Σ
 
   -- The term judgement
-  data Term (Θ : MetaContext) : ∀ (Γ : Context) (A : sort) → Set (lsuc (ℓs ⊔ ℓo))
+  data Term (Θ : MetaContext) : ∀ (Γ : Context) (A : sort) → Set ℓ
 
-  Arg : ∀ (Θ : MetaContext) (Γ : Context) (A : sort) (Δ : Context) → Set (lsuc (ℓs ⊔ ℓo))
+  Arg : ∀ (Θ : MetaContext) (Γ : Context) (A : sort) (Δ : Context) → Set ℓ
   Arg Θ Γ A Δ = Term Θ (Γ ,, Δ) A
 
   data Term Θ where
@@ -33,7 +33,7 @@ module SecondOrder.Term
 
   infix 4 _≈_
 
-  data _≈_ {Θ : MetaContext} : ∀ {Γ : Context} {A : sort} → Term Θ Γ A → Term Θ Γ A → Set (lsuc (ℓs ⊔ ℓo)) where
+  data _≈_ {Θ : MetaContext} : ∀ {Γ : Context} {A : sort} → Term Θ Γ A → Term Θ Γ A → Set ℓ where
     ≈-≡ : ∀ {Γ A} {t u : Term Θ Γ A} (ξ : t ≡ u) → t ≈ u
     ≈-meta : ∀ {Γ} {M : mv Θ} {ts us : ∀ {B} (i : mv-arg Θ M B) → Term Θ Γ B}
                (ξ : ∀ {B} i → ts {B} i ≈ us {B} i) → tm-meta M ts ≈ tm-meta M us
@@ -55,7 +55,7 @@ module SecondOrder.Term
   ≈-trans (≈-oper ζ) (≈-≡ refl) = ≈-oper ζ
   ≈-trans (≈-oper ζ) (≈-oper ξ) = ≈-oper (λ i → ≈-trans (ζ i) (ξ i))
 
-  Term-setoid : ∀ (Θ : MetaContext) (Γ : Context)  (A : sort) → Setoid (lsuc (ℓs ⊔ ℓo)) (lsuc (ℓs ⊔ ℓo))
+  Term-setoid : ∀ (Θ : MetaContext) (Γ : Context)  (A : sort) → Setoid ℓ ℓ
   Term-setoid Θ Γ A =
     record
       { Carrier = Term Θ Γ A
