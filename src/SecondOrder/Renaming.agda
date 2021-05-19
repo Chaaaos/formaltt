@@ -164,6 +164,10 @@ module SecondOrder.Renaming
 
   open Categories.Category.Cocartesian.BinaryCoproducts Context-+
 
+  infixr 7 _+ʳ_
+
+  _+ʳ_ = _+₁_
+
   -- the action of a renaming on terms
   module _ {Θ : MetaContext} where
 
@@ -172,14 +176,14 @@ module SecondOrder.Renaming
     [_]ʳ_ : ∀ {Γ Δ A} → Γ ⇒ʳ Δ → Term Θ Γ A → Term Θ Δ A
     [ ρ ]ʳ (tm-var x) = tm-var (ρ x)
     [ ρ ]ʳ (tm-meta M ts) = tm-meta M (λ i → [ ρ ]ʳ (ts i))
-    [ ρ ]ʳ (tm-oper f es) = tm-oper f (λ i → [ ρ +₁ idʳ ]ʳ (es i))
+    [ ρ ]ʳ (tm-oper f es) = tm-oper f (λ i → [ ρ +ʳ idʳ ]ʳ (es i))
 
     -- weakening
     ⇑ʳ : ∀ {Γ Δ A} → Term Θ Γ A → Term Θ (Γ ,, Δ) A
     ⇑ʳ = [ i₁ ]ʳ_
 
   -- The sum of identities is an identity
-  idʳ+idʳ : ∀ {Γ Δ} → idʳ {Γ = Γ} +₁ idʳ {Γ = Δ} ≡ʳ idʳ {Γ = Γ ,, Δ}
+  idʳ+idʳ : ∀ {Γ Δ} → idʳ {Γ = Γ} +ʳ idʳ {Γ = Δ} ≡ʳ idʳ {Γ = Γ ,, Δ}
   idʳ+idʳ (var-inl x) = refl
   idʳ+idʳ (var-inr y) = refl
 
@@ -202,15 +206,15 @@ module SecondOrder.Renaming
   [id]ʳ {t = tm-oper f es} = ≈-oper λ i → ≈-trans ([]ʳ-resp-≡ʳ idʳ+idʳ) [id]ʳ
 
   -- Summing with identity respects composition
-  ∘ʳ-+₁-idʳ : ∀ {Γ Δ Ξ Ψ} {ρ : Γ ⇒ʳ Δ} {τ : Δ ⇒ʳ Ξ} → (τ ∘ʳ ρ) +₁ idʳ {Γ = Ψ} ≡ʳ (τ +₁ idʳ) ∘ʳ (ρ +₁ idʳ)
-  ∘ʳ-+₁-idʳ (var-inl x) = refl
-  ∘ʳ-+₁-idʳ (var-inr y) = refl
+  ∘ʳ-+ʳ-idʳ : ∀ {Γ Δ Ξ Ψ} {ρ : Γ ⇒ʳ Δ} {τ : Δ ⇒ʳ Ξ} → (τ ∘ʳ ρ) +ʳ idʳ {Γ = Ψ} ≡ʳ (τ +ʳ idʳ) ∘ʳ (ρ +ʳ idʳ)
+  ∘ʳ-+ʳ-idʳ (var-inl x) = refl
+  ∘ʳ-+ʳ-idʳ (var-inr y) = refl
 
   -- The action of a renaming is functorial
   [∘]ʳ : ∀ {Θ Γ Δ Ξ} {ρ : Γ ⇒ʳ Δ} {τ : Δ ⇒ʳ Ξ} {A} {t : Term Θ Γ A} → [ τ ∘ʳ ρ ]ʳ t ≈ [ τ ]ʳ ([ ρ ]ʳ t)
   [∘]ʳ {t = tm-var x} = ≈-refl
   [∘]ʳ {t = tm-meta M ts} = ≈-meta (λ i → [∘]ʳ)
-  [∘]ʳ {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ʳ-resp-≡ʳ ∘ʳ-+₁-idʳ) [∘]ʳ)
+  [∘]ʳ {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ʳ-resp-≡ʳ ∘ʳ-+ʳ-idʳ) [∘]ʳ)
 
   -- Forming terms over a given metacontext and sort is functorial in the context
   module _ {Θ : MetaContext} {A : sort} where
