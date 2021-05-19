@@ -83,7 +83,7 @@ module SecondOrder.Substitution
   ⇑ˢ-resp-≈ˢ ξ (var-inr y) = ≈-refl
 
   -- extension commutes with renaming action
-  ⇑ˢ-ˢ∘ʳ : ∀ {Θ} {Γ Δ Ξ Ψ} {ρ : Γ ⇒ʳ Δ} {σ : Θ ⊕ Δ ⇒ˢ Ξ} → ⇑ˢ {Ξ = Ψ} (σ ˢ∘ʳ ρ) ≈ˢ ⇑ˢ σ ˢ∘ʳ (ρ +ʳ idʳ)
+  ⇑ˢ-ˢ∘ʳ : ∀ {Θ} {Γ Δ Ξ Ψ} {ρ : Γ ⇒ʳ Δ} {σ : Θ ⊕ Δ ⇒ˢ Ξ} → ⇑ˢ {Ξ = Ψ} (σ ˢ∘ʳ ρ) ≈ˢ ⇑ˢ σ ˢ∘ʳ ⇑ʳ ρ
   ⇑ˢ-ˢ∘ʳ (var-inl x) = ≈-refl
   ⇑ˢ-ˢ∘ʳ (var-inr x) = ≈-refl
 
@@ -131,7 +131,7 @@ module SecondOrder.Substitution
   -- interchange law (needs to be generalized, this is the only missing part)
 
   []ʳ-⇑ˢ : ∀ {Θ} {Γ Δ Ξ Ψ} {ρ : Δ ⇒ʳ Ξ} {σ : Θ ⊕ Γ ⇒ˢ Δ} →
-           (ρ +ʳ idʳ) ʳ∘ˢ ⇑ˢ σ ≈ˢ ⇑ˢ {Ξ = Ψ} (ρ ʳ∘ˢ σ)
+           ⇑ʳ ρ ʳ∘ˢ ⇑ˢ σ ≈ˢ ⇑ˢ {Ξ = Ψ} (ρ ʳ∘ˢ σ)
   []ʳ-⇑ˢ (var-inl x) = {!!}
   []ʳ-⇑ˢ (var-inr y) = ≈-refl
 
@@ -158,7 +158,7 @@ module SecondOrder.Substitution
   -- interaction of extension and right renaming action
 
   [⇑ˢ∘ʳ] : ∀ {Θ} {A} {Γ Δ Ξ Ψ} {σ : Θ ⊕ Δ ⇒ˢ Ξ} {ρ : Γ ⇒ʳ Δ} (t : Term Θ (Γ ,, Ψ) A) →
-         [ ⇑ˢ (σ ˢ∘ʳ ρ) ]ˢ t ≈ [ ⇑ˢ σ ]ˢ [ ρ +ʳ idʳ ]ʳ t
+         [ ⇑ˢ (σ ˢ∘ʳ ρ) ]ˢ t ≈ [ ⇑ˢ σ ]ˢ [ ⇑ʳ ρ ]ʳ t
   [⇑ˢ∘ʳ] (tm-var (var-inl x)) = ≈-refl
   [⇑ˢ∘ʳ] (tm-var (var-inr x)) = ≈-refl
   [⇑ˢ∘ʳ] (tm-meta M ts) = ≈-meta (λ i → [⇑ˢ∘ʳ] (ts i))
@@ -167,7 +167,7 @@ module SecondOrder.Substitution
   -- interaction of extension and left renaming action
 
   [⇑ʳ∘ˢ] : ∀ {Θ} {A} {Γ Δ Ξ Ψ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {ρ : Δ ⇒ʳ Ξ} (t : Term Θ (Γ ,, Ψ) A) →
-         [ ⇑ˢ (ρ ʳ∘ˢ σ) ]ˢ t ≈ [ ρ +ʳ idʳ ]ʳ ([ ⇑ˢ σ ]ˢ t)
+         [ ⇑ˢ (ρ ʳ∘ˢ σ) ]ˢ t ≈ [ ⇑ʳ ρ ]ʳ ([ ⇑ˢ σ ]ˢ t)
   [⇑ʳ∘ˢ] (tm-var (var-inl x)) = {!!}
   [⇑ʳ∘ˢ] (tm-var (var-inr y)) = ≈-refl
   [⇑ʳ∘ˢ] (tm-meta M ts) = {!!}
