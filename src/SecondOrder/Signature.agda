@@ -4,20 +4,20 @@ import SecondOrder.Arity
 import SecondOrder.Context
 
 module SecondOrder.Signature
-  ℓs ℓo
+  ℓ
   (𝔸 : SecondOrder.Arity.Arity)
   where
 
   open SecondOrder.Arity.Arity 𝔸
 
   -- a second-order algebraic signature
-  record Signature : Set (lsuc (ℓs ⊔ ℓo)) where
+  record Signature : Set (lsuc ℓ) where
 
     -- a signature consists of a set of sorts and a set of operations
     -- e.g. sorts A, B, C, ... and operations f, g, h
     field
-      sort : Set ℓs -- sorts
-      oper : Set ℓo -- operations
+      sort : Set ℓ -- sorts
+      oper : Set ℓ -- operations
 
     open SecondOrder.Context sort public
 

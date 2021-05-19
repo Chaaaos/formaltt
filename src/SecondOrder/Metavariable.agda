@@ -4,15 +4,15 @@ import SecondOrder.Arity
 import SecondOrder.Signature
 
 module SecondOrder.Metavariable
-  {ℓs ℓo}
+  {ℓ}
   {𝔸 : SecondOrder.Arity.Arity}
-  (Σ : SecondOrder.Signature.Signature ℓs ℓo 𝔸)
+  (Σ : SecondOrder.Signature.Signature ℓ 𝔸)
   where
 
   open SecondOrder.Signature.Signature Σ
 
   -- A metavariable context
-  record MetaContext : Set (lsuc ℓs) where
+  record MetaContext : Set (lsuc ℓ) where
     field
       mv : Set -- the metavariables
       mv-arity : mv → Context -- the arity of a metavariable
@@ -20,5 +20,5 @@ module SecondOrder.Metavariable
 
   open MetaContext public
 
-  mv-arg : ∀ (Θ : MetaContext) → MetaContext.mv Θ → sort → Set ℓs
+  mv-arg : ∀ (Θ : MetaContext) → MetaContext.mv Θ → sort → Set ℓ
   mv-arg Θ M A = A ∈ (MetaContext.mv-arity Θ M)
