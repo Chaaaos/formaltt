@@ -137,7 +137,7 @@ module SecondOrder.Substitution
          [ τ ∘ˢ σ ]ˢ t ≈ [ τ ]ˢ ([ σ ]ˢ t)
   [∘]ˢ (tm-var x) = ≈-refl
   [∘]ˢ (tm-meta M ts) = ≈-meta (λ i → [∘]ˢ (ts i))
-  [∘]ˢ (tm-oper f es) = ≈-oper (λ i → {!!})
+  [∘]ˢ (tm-oper f es) = ≈-oper (λ i → ≈-trans ([]ˢ-resp-≈ˢ (es i) ⇑ˢ-∘ˢ) ([∘]ˢ (es i)))
 
   module _ {Θ : MetaContext} where
     open Categories.Functor using (Functor)
