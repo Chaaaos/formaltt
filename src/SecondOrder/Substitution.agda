@@ -166,12 +166,16 @@ module SecondOrder.Substitution
 
   -- interaction of extension and left renaming action
 
+  ⇑ˢ-ʳ∘ˢ : ∀ {Θ} {Γ Δ Ξ Ψ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {ρ : Δ ⇒ʳ Ξ} →
+           ⇑ˢ {Ξ = Ψ} (ρ ʳ∘ˢ σ) ≈ˢ ⇑ʳ ρ ʳ∘ˢ ⇑ˢ σ
+  ⇑ˢ-ʳ∘ˢ (var-inl x) = ≈-trans (≈-sym [∘]ʳ) (≈-trans ([]ʳ-resp-≡ʳ (λ _ → refl)) [∘]ʳ)
+  ⇑ˢ-ʳ∘ˢ (var-inr y) = ≈-refl
+
   [⇑ʳ∘ˢ] : ∀ {Θ} {A} {Γ Δ Ξ Ψ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {ρ : Δ ⇒ʳ Ξ} (t : Term Θ (Γ ,, Ψ) A) →
          [ ⇑ˢ (ρ ʳ∘ˢ σ) ]ˢ t ≈ [ ⇑ʳ ρ ]ʳ ([ ⇑ˢ σ ]ˢ t)
-  [⇑ʳ∘ˢ] (tm-var (var-inl x)) = {!!}
-  [⇑ʳ∘ˢ] (tm-var (var-inr y)) = ≈-refl
-  [⇑ʳ∘ˢ] (tm-meta M ts) = {!!}
-  [⇑ʳ∘ˢ] (tm-oper f es) = ≈-oper (λ i → {!!})
+  [⇑ʳ∘ˢ] (tm-var x) = ⇑ˢ-ʳ∘ˢ x
+  [⇑ʳ∘ˢ] (tm-meta M ts) = ≈-meta (λ i → [⇑ʳ∘ˢ] (ts i))
+  [⇑ʳ∘ˢ] (tm-oper f es) = ≈-oper (λ i → ≈-trans ([]ˢ-resp-≈ˢ (es i) (⇑ˢ-resp-≈ˢ ⇑ˢ-ʳ∘ˢ)) ([⇑ʳ∘ˢ] (es i)))
 
   -- functoriality of left renaming action
 
@@ -179,7 +183,7 @@ module SecondOrder.Substitution
            [ ρ ʳ∘ˢ σ ]ˢ t ≈ [ ρ ]ʳ ([ σ ]ˢ t)
   [ʳ∘ˢ]ˢ (tm-var x) = ≈-refl
   [ʳ∘ˢ]ˢ (tm-meta M ts) = ≈-meta (λ i → [ʳ∘ˢ]ˢ (ts i))
-  [ʳ∘ˢ]ˢ (tm-oper f es) = ≈-oper (λ i → {!!})
+  [ʳ∘ˢ]ˢ (tm-oper f es) = ≈-oper (λ i → [⇑ʳ∘ˢ] (es i))
 
   -- functoriality of right renaming action
 
