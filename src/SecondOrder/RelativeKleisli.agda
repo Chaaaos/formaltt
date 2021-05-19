@@ -8,7 +8,7 @@ module SecondOrder.RelativeKleisli
          {𝒞 : Category o l e}
          {𝒟 : Category o' l' e'}
          {J : Functor 𝒞 𝒟}
-         {M : Monad J}
+         (M : Monad J)
        where
 
   Kleisli : Category o l' e'
@@ -21,8 +21,6 @@ module SecondOrder.RelativeKleisli
       ; _≈_ = _≈_ 𝒟
       ; id = Monad.unit M
       ; _∘_ = λ f g → _∘_ 𝒟 (Monad.extend M f) g
-      -- the following properties should follow quite directly from the corresponding
-      -- properties of the relative monad M
       ; assoc = λ {A} {B} {C} {D} {f} {g} {h}
                 → Equiv.trans 𝒟 (∘-resp-≈ˡ 𝒟 (Monad.assoc M)) (assoc 𝒟)
       ; sym-assoc = λ {A} {B} {C} {D} {f} {g} {h}

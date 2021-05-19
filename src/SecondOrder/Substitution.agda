@@ -2,6 +2,7 @@ open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; setoid; cong; trans)
 import Function.Equality
 
+import Categories.Category
 import Categories.Functor
 import Categories.Category.Instance.Setoids
 import Categories.Monad.Relative
@@ -12,6 +13,7 @@ import SecondOrder.Metavariable
 import SecondOrder.Renaming
 import SecondOrder.Term
 import SecondOrder.IndexedCategory
+import SecondOrder.RelativeKleisli
 
 module SecondOrder.Substitution
   {ℓ}
@@ -176,6 +178,7 @@ module SecondOrder.Substitution
   -- Terms form a relative monad
 
   module _ {Θ : MetaContext} where
+    open Categories.Category
     open Categories.Functor using (Functor)
     open Categories.Category.Instance.Setoids
     open Categories.Monad.Relative
@@ -183,6 +186,7 @@ module SecondOrder.Substitution
     open import SecondOrder.IndexedCategory
 
     -- The embedding of contexts into setoids indexed by sorts
+
     slots : Functor Contexts (IndexedCategory sort (Setoids ℓ ℓ))
     slots = record
               { F₀ = λ Γ A → setoid (A ∈ Γ)
@@ -191,6 +195,9 @@ module SecondOrder.Substitution
               ; homomorphism = λ {_} {_} {_} {ρ} {σ} A {_} {_} ξ → cong σ (cong ρ ξ)
               ; F-resp-≈ = λ ξ A ζ → trans (ξ _) (cong _ ζ)
               }
+
+
+    -- The relative monad of terms over contexts
 
     Term-Monad : Monad slots
     Term-Monad =
@@ -204,3 +211,9 @@ module SecondOrder.Substitution
         ; assoc = λ {_} {_} {_} {σ} {ρ} A {_} {t} ξ → ≈-trans ([]ˢ-resp-≈ _ ξ) ([∘]ˢ t)
         ; extend-≈ = λ {Γ} {Δ} {σ} {ρ} ζ B {s} {t} ξ → []ˢ-resp-≈ˢ-≈ (λ x → ζ _ refl) ξ
         }
+
+
+    -- the category of contexts and substitutions
+
+    Terms : Category ℓ ℓ ℓ
+    Terms = SecondOrder.RelativeKleisli.Kleisli Term-Monad
