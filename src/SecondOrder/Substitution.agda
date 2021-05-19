@@ -82,6 +82,11 @@ module SecondOrder.Substitution
   ⇑ˢ-resp-≈ˢ ξ (var-inl x) = []ʳ-resp-≈ (ξ x)
   ⇑ˢ-resp-≈ˢ ξ (var-inr y) = ≈-refl
 
+  -- extension commutes with renaming action
+  ⇑ˢ-ˢ∘ʳ : ∀ {Θ} {Γ Δ Ξ Ψ} {ρ : Γ ⇒ʳ Δ} {σ : Θ ⊕ Δ ⇒ˢ Ξ} → ⇑ˢ {Ξ = Ψ} (σ ˢ∘ʳ ρ) ≈ˢ ⇑ˢ σ ˢ∘ʳ (ρ +ʳ idʳ)
+  ⇑ˢ-ˢ∘ʳ (var-inl x) = ≈-refl
+  ⇑ˢ-ˢ∘ʳ (var-inr x) = ≈-refl
+
   -- the action of a substitution on a term
 
   infixr 6 [_]ˢ_
@@ -148,11 +153,47 @@ module SecondOrder.Substitution
   -- inlʳ-[]ˢ σ (tm-meta M ts) = ≈-meta (λ i → inlʳ-[]ˢ σ (ts i))
   -- inlʳ-[]ˢ σ (tm-oper f es) = ≈-oper (λ i → {!!})
 
+  -- any unfinished goal above is not needed
+
+  -- interaction of extension and right renaming action
+
+  [⇑ˢ∘ʳ] : ∀ {Θ} {A} {Γ Δ Ξ Ψ} {σ : Θ ⊕ Δ ⇒ˢ Ξ} {ρ : Γ ⇒ʳ Δ} (t : Term Θ (Γ ,, Ψ) A) →
+         [ ⇑ˢ (σ ˢ∘ʳ ρ) ]ˢ t ≈ [ ⇑ˢ σ ]ˢ [ ρ +ʳ idʳ ]ʳ t
+  [⇑ˢ∘ʳ] (tm-var (var-inl x)) = ≈-refl
+  [⇑ˢ∘ʳ] (tm-var (var-inr x)) = ≈-refl
+  [⇑ˢ∘ʳ] (tm-meta M ts) = ≈-meta (λ i → [⇑ˢ∘ʳ] (ts i))
+  [⇑ˢ∘ʳ] (tm-oper f es) = ≈-oper (λ i → ≈-trans ([]ˢ-resp-≈ˢ (es i) (⇑ˢ-resp-≈ˢ ⇑ˢ-ˢ∘ʳ)) ([⇑ˢ∘ʳ] (es i)))
+
+  -- interaction of extension and left renaming action
+
+  [⇑ʳ∘ˢ] : ∀ {Θ} {A} {Γ Δ Ξ Ψ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {ρ : Δ ⇒ʳ Ξ} (t : Term Θ (Γ ,, Ψ) A) →
+         [ ⇑ˢ (ρ ʳ∘ˢ σ) ]ˢ t ≈ [ ρ +ʳ idʳ ]ʳ ([ ⇑ˢ σ ]ˢ t)
+  [⇑ʳ∘ˢ] (tm-var (var-inl x)) = {!!}
+  [⇑ʳ∘ˢ] (tm-var (var-inr y)) = ≈-refl
+  [⇑ʳ∘ˢ] (tm-meta M ts) = {!!}
+  [⇑ʳ∘ˢ] (tm-oper f es) = ≈-oper (λ i → {!!})
+
+  -- functoriality of left renaming action
+
+  [ʳ∘ˢ]ˢ : ∀ {Θ} {A} {Γ Δ Ξ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {ρ : Δ ⇒ʳ Ξ} (t : Term Θ Γ A) →
+           [ ρ ʳ∘ˢ σ ]ˢ t ≈ [ ρ ]ʳ ([ σ ]ˢ t)
+  [ʳ∘ˢ]ˢ (tm-var x) = ≈-refl
+  [ʳ∘ˢ]ˢ (tm-meta M ts) = ≈-meta (λ i → [ʳ∘ˢ]ˢ (ts i))
+  [ʳ∘ˢ]ˢ (tm-oper f es) = ≈-oper (λ i → {!!})
+
+  -- functoriality of right renaming action
+
+  [ˢ∘ʳ]ˢ : ∀ {Θ} {A} {Γ Δ Ξ} {σ : Θ ⊕ Δ ⇒ˢ Ξ} {ρ : Γ ⇒ʳ Δ} (t : Term Θ Γ A) →
+           [ σ ˢ∘ʳ ρ ]ˢ t ≈ [ σ ]ˢ ([ ρ ]ʳ t)
+  [ˢ∘ʳ]ˢ (tm-var x) = ≈-refl
+  [ˢ∘ʳ]ˢ (tm-meta M ts) = ≈-meta (λ i → [ˢ∘ʳ]ˢ (ts i))
+  [ˢ∘ʳ]ˢ (tm-oper f es) = ≈-oper (λ i → [⇑ˢ∘ʳ] (es i))
+
   -- composition commutes with extension
 
   ⇑ˢ-∘ˢ : ∀ {Θ} {Γ Δ Ξ Ψ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Δ ⇒ˢ Ξ} →
           ⇑ˢ {Ξ = Ψ} (τ ∘ˢ σ) ≈ˢ ⇑ˢ τ ∘ˢ ⇑ˢ σ
-  ⇑ˢ-∘ˢ {σ = σ} {τ = τ} (var-inl x) =  ≈-trans (≈-sym ([]ʳ-[]ˢ (σ x))) {!!}
+  ⇑ˢ-∘ˢ {σ = σ} {τ = τ} (var-inl x) =  ≈-trans (≈-sym ([ʳ∘ˢ]ˢ (σ x))) ([ˢ∘ʳ]ˢ (σ x))
   ⇑ˢ-∘ˢ (var-inr y) = ≈-refl
 
   -- substitition action is functorial
