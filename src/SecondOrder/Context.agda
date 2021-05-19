@@ -1,3 +1,4 @@
+open import Level
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subst)
 
 module SecondOrder.Context {ℓ} (Sort : Set ℓ)  where
