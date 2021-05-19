@@ -6,6 +6,7 @@ import Categories.Category
 import Categories.Functor
 import Categories.Category.Instance.Setoids
 import Categories.Monad.Relative
+import Categories.Category.Cocartesian
 
 import SecondOrder.Arity
 import SecondOrder.Signature
@@ -217,3 +218,42 @@ module SecondOrder.Substitution
 
     Terms : Category ℓ ℓ ℓ
     Terms = SecondOrder.RelativeKleisli.Kleisli Term-Monad
+
+    -- the binary coproduct structure on Terms
+
+    infixl 7 [_,_]ˢ
+
+    [_,_]ˢ : ∀ {Γ Δ Ξ} (σ : Θ ⊕ Γ ⇒ˢ Ξ) (τ : Θ ⊕ Δ ⇒ˢ Ξ) → Θ ⊕ (Γ ,, Δ) ⇒ˢ Ξ
+    [ σ , τ ]ˢ (var-inl x) = σ x
+    [ σ , τ ]ˢ (var-inr y) = τ y
+
+    inlˢ : ∀ {Γ Δ} → Θ ⊕ Γ ⇒ˢ Γ ,, Δ
+    inlˢ x = tm-var (var-inl x)
+
+    inrˢ : ∀ {Γ Δ} → Θ ⊕ Δ ⇒ˢ Γ ,, Δ
+    inrˢ y = tm-var (var-inr y)
+
+    uniqueˢ : ∀ {Γ Δ Ξ} {τ : Θ ⊕ Γ ,, Δ ⇒ˢ Ξ} {ρ : Θ ⊕ Γ ⇒ˢ Ξ} {σ : Θ ⊕ Δ ⇒ˢ Ξ}
+              → τ ∘ˢ inlˢ ≈ˢ ρ
+              → τ ∘ˢ inrˢ ≈ˢ σ
+              → [ ρ , σ ]ˢ ≈ˢ τ
+    uniqueˢ ξ ζ (var-inl x) = ≈-sym (ξ x)
+    uniqueˢ ξ ζ (var-inr y) = ≈-sym (ζ y)
+
+
+    Terms-+ : Categories.Category.Cocartesian.BinaryCoproducts Terms
+    Terms-+ =
+      let open Function.Equality using (_⟨$⟩_) renaming (cong to func-cong) in
+      record {
+        coproduct =
+          λ {Γ Δ} →
+          record
+            { A+B = Γ ,, Δ
+            ; i₁ = λ A → record { _⟨$⟩_ = inlˢ ; cong = λ ξ → ≈-≡ (cong _ ξ) }
+            ; i₂ = λ A → record { _⟨$⟩_ = inrˢ ; cong = λ ξ → ≈-≡ (cong _ ξ) }
+            ; [_,_] = λ σ τ A → record { _⟨$⟩_ =  [ σ _ ⟨$⟩_ , τ _ ⟨$⟩_ ]ˢ ; cong = λ ξ → ≈-≡ (cong _ ξ) }
+            ; inject₁ = λ A ξ → ≈-≡ (cong _ ξ)
+            ; inject₂ = λ A ξ → ≈-≡ (cong _ ξ)
+            ; unique = {!!}
+            }
+      }
