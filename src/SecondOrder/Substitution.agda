@@ -6,6 +6,7 @@ import Categories.Category
 import Categories.Functor
 import Categories.Category.Instance.Setoids
 import Categories.Monad.Relative
+import Categories.Category.Equivalence
 import Categories.Category.Cocartesian
 
 import SecondOrder.Arity
@@ -184,7 +185,9 @@ module SecondOrder.Substitution
     open Categories.Category.Instance.Setoids
     open Categories.Monad.Relative
     open Function.Equality using () renaming (setoid to Π-setoid)
+    open Categories.Category.Equivalence using (StrongEquivalence)
     open import SecondOrder.IndexedCategory
+    open import SecondOrder.RelativeKleisli
 
     -- The embedding of contexts into setoids indexed by sorts
 
@@ -216,8 +219,34 @@ module SecondOrder.Substitution
 
     -- the category of contexts and substitutions
 
+    -- we show below that the category of contexts and substitiions is equivalent
+    -- to the Kleisli category for the Term relative monad. However, we define
+    -- the category of contexts and substitutions directly, as that it is easier
+    -- to work with it
+
     Terms : Category ℓ ℓ ℓ
-    Terms = SecondOrder.RelativeKleisli.Kleisli Term-Monad
+    Terms =
+      record
+        { Obj = Context
+        ; _⇒_ = Θ ⊕_⇒ˢ_
+        ; _≈_ =  _≈ˢ_
+        ; id = idˢ
+        ; _∘_ = _∘ˢ_
+          ; assoc = λ {Γ} {Δ} {Ξ} {Ψ} {σ} {τ} {ψ} {A} x → [∘]ˢ (σ x)
+        ; sym-assoc = {!!}
+        ; identityˡ = {!!}
+        ; identityʳ = {!!}
+        ; identity² = {!!}
+        ; equiv = {!!}
+        ; ∘-resp-≈ = {!!}
+        }
+
+    Terms-is-Kleisli : StrongEquivalence Terms (Kleisli Term-Monad)
+    Terms-is-Kleisli =
+      record
+      { F = {!!}
+      ; G = {!!}
+      ; weak-inverse = {!!} }
 
     -- the binary coproduct structure on Terms
 
@@ -240,20 +269,23 @@ module SecondOrder.Substitution
     uniqueˢ ξ ζ (var-inl x) = ≈-sym (ξ x)
     uniqueˢ ξ ζ (var-inr y) = ≈-sym (ζ y)
 
-
-    Terms-+ : Categories.Category.Cocartesian.BinaryCoproducts Terms
-    Terms-+ =
+    Terms-Coproduct : Categories.Category.Cocartesian.BinaryCoproducts Terms
+    Terms-Coproduct =
       let open Function.Equality using (_⟨$⟩_) renaming (cong to func-cong) in
       record {
         coproduct =
           λ {Γ Δ} →
           record
             { A+B = Γ ,, Δ
-            ; i₁ = λ A → record { _⟨$⟩_ = inlˢ ; cong = λ ξ → ≈-≡ (cong _ ξ) }
-            ; i₂ = λ A → record { _⟨$⟩_ = inrˢ ; cong = λ ξ → ≈-≡ (cong _ ξ) }
-            ; [_,_] = λ σ τ A → record { _⟨$⟩_ =  [ σ _ ⟨$⟩_ , τ _ ⟨$⟩_ ]ˢ ; cong = λ ξ → ≈-≡ (cong _ ξ) }
-            ; inject₁ = λ A ξ → ≈-≡ (cong _ ξ)
-            ; inject₂ = λ A ξ → ≈-≡ (cong _ ξ)
+            ; i₁ = inlˢ
+            ; i₂ = inrˢ
+            ; [_,_] = [_,_]ˢ
+            ; inject₁ = {!!}
+            ; inject₂ = {!!}
             ; unique = {!!}
             }
       }
+
+    -- the sum of subsitutions
+    _+ˢ_ =
+      let open Categories.Category.Cocartesian.BinaryCoproducts Terms-Coproduct in _+₁_
