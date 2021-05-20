@@ -71,14 +71,6 @@ module SecondOrder.Renaming
   idʳ : ∀ {Γ : Context} → Γ ⇒ʳ Γ
   idʳ x = x
 
-  -- the canonical injection renamings
-
-  inlʳ : ∀ {Γ Δ} → Γ ⇒ʳ Γ ,, Δ
-  inlʳ = var-inl
-
-  inrʳ : ∀ {Γ Δ} → Δ ⇒ʳ Γ ,, Δ
-  inrʳ = var-inr
-
   -- composition of renamings
   _∘ʳ_ : ∀ {Γ Δ Ξ} → Δ ⇒ʳ Ξ → Γ ⇒ʳ Δ → Γ ⇒ʳ Ξ
   (σ ∘ʳ ρ) x = σ (ρ x)
@@ -139,6 +131,12 @@ module SecondOrder.Renaming
     [ σ , τ ]ʳ (var-inl x) = σ x
     [ σ , τ ]ʳ (var-inr y) = τ y
 
+    inlʳ : ∀ {Γ Δ} → Γ ⇒ʳ Γ ,, Δ
+    inlʳ = var-inl
+
+    inrʳ : ∀ {Γ Δ} → Δ ⇒ʳ Γ ,, Δ
+    inrʳ = var-inr
+
     uniqueʳ : ∀ {Γ Δ Ξ} {τ : Γ ,, Δ ⇒ʳ Ξ} {ρ : Γ ⇒ʳ Ξ} {σ : Δ ⇒ʳ Ξ}
               → τ ∘ʳ inlʳ ≡ʳ ρ
               → τ ∘ʳ inrʳ ≡ʳ σ
@@ -153,8 +151,8 @@ module SecondOrder.Renaming
           λ {Γ Δ} →
           record
             { A+B = Γ ,, Δ
-            ; i₁ = var-inl
-            ; i₂ = var-inr
+            ; i₁ = inlʳ
+            ; i₂ = inrʳ
             ; [_,_] = [_,_]ʳ
             ; inject₁ = λ x → refl
             ; inject₂ = λ x → refl

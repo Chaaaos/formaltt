@@ -2,9 +2,12 @@ open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; setoid; cong; trans)
 import Function.Equality
 
+import Categories.Category
 import Categories.Functor
 import Categories.Category.Instance.Setoids
 import Categories.Monad.Relative
+import Categories.Category.Equivalence
+import Categories.Category.Cocartesian
 
 import SecondOrder.Arity
 import SecondOrder.Signature
@@ -12,6 +15,7 @@ import SecondOrder.Metavariable
 import SecondOrder.Renaming
 import SecondOrder.Term
 import SecondOrder.IndexedCategory
+import SecondOrder.RelativeKleisli
 
 module SecondOrder.Substitution
   {ℓ}
@@ -176,13 +180,17 @@ module SecondOrder.Substitution
   -- Terms form a relative monad
 
   module _ {Θ : MetaContext} where
+    open Categories.Category
     open Categories.Functor using (Functor)
     open Categories.Category.Instance.Setoids
     open Categories.Monad.Relative
     open Function.Equality using () renaming (setoid to Π-setoid)
+    open Categories.Category.Equivalence using (StrongEquivalence)
     open import SecondOrder.IndexedCategory
+    open import SecondOrder.RelativeKleisli
 
     -- The embedding of contexts into setoids indexed by sorts
+
     slots : Functor Contexts (IndexedCategory sort (Setoids ℓ ℓ))
     slots = record
               { F₀ = λ Γ A → setoid (A ∈ Γ)
@@ -191,6 +199,9 @@ module SecondOrder.Substitution
               ; homomorphism = λ {_} {_} {_} {ρ} {σ} A {_} {_} ξ → cong σ (cong ρ ξ)
               ; F-resp-≈ = λ ξ A ζ → trans (ξ _) (cong _ ζ)
               }
+
+
+    -- The relative monad of terms over contexts
 
     Term-Monad : Monad slots
     Term-Monad =
@@ -204,3 +215,77 @@ module SecondOrder.Substitution
         ; assoc = λ {_} {_} {_} {σ} {ρ} A {_} {t} ξ → ≈-trans ([]ˢ-resp-≈ _ ξ) ([∘]ˢ t)
         ; extend-≈ = λ {Γ} {Δ} {σ} {ρ} ζ B {s} {t} ξ → []ˢ-resp-≈ˢ-≈ (λ x → ζ _ refl) ξ
         }
+
+
+    -- the category of contexts and substitutions
+
+    -- we show below that the category of contexts and substitiions is equivalent
+    -- to the Kleisli category for the Term relative monad. However, we define
+    -- the category of contexts and substitutions directly, as that it is easier
+    -- to work with it
+
+    Terms : Category ℓ ℓ ℓ
+    Terms =
+      record
+        { Obj = Context
+        ; _⇒_ = Θ ⊕_⇒ˢ_
+        ; _≈_ =  _≈ˢ_
+        ; id = idˢ
+        ; _∘_ = _∘ˢ_
+          ; assoc = λ {Γ} {Δ} {Ξ} {Ψ} {σ} {τ} {ψ} {A} x → [∘]ˢ (σ x)
+        ; sym-assoc = {!!}
+        ; identityˡ = {!!}
+        ; identityʳ = {!!}
+        ; identity² = {!!}
+        ; equiv = {!!}
+        ; ∘-resp-≈ = {!!}
+        }
+
+    Terms-is-Kleisli : StrongEquivalence Terms (Kleisli Term-Monad)
+    Terms-is-Kleisli =
+      record
+      { F = {!!}
+      ; G = {!!}
+      ; weak-inverse = {!!} }
+
+    -- the binary coproduct structure on Terms
+
+    infixl 7 [_,_]ˢ
+
+    [_,_]ˢ : ∀ {Γ Δ Ξ} (σ : Θ ⊕ Γ ⇒ˢ Ξ) (τ : Θ ⊕ Δ ⇒ˢ Ξ) → Θ ⊕ (Γ ,, Δ) ⇒ˢ Ξ
+    [ σ , τ ]ˢ (var-inl x) = σ x
+    [ σ , τ ]ˢ (var-inr y) = τ y
+
+    inlˢ : ∀ {Γ Δ} → Θ ⊕ Γ ⇒ˢ Γ ,, Δ
+    inlˢ x = tm-var (var-inl x)
+
+    inrˢ : ∀ {Γ Δ} → Θ ⊕ Δ ⇒ˢ Γ ,, Δ
+    inrˢ y = tm-var (var-inr y)
+
+    uniqueˢ : ∀ {Γ Δ Ξ} {τ : Θ ⊕ Γ ,, Δ ⇒ˢ Ξ} {ρ : Θ ⊕ Γ ⇒ˢ Ξ} {σ : Θ ⊕ Δ ⇒ˢ Ξ}
+              → τ ∘ˢ inlˢ ≈ˢ ρ
+              → τ ∘ˢ inrˢ ≈ˢ σ
+              → [ ρ , σ ]ˢ ≈ˢ τ
+    uniqueˢ ξ ζ (var-inl x) = ≈-sym (ξ x)
+    uniqueˢ ξ ζ (var-inr y) = ≈-sym (ζ y)
+
+    Terms-Coproduct : Categories.Category.Cocartesian.BinaryCoproducts Terms
+    Terms-Coproduct =
+      let open Function.Equality using (_⟨$⟩_) renaming (cong to func-cong) in
+      record {
+        coproduct =
+          λ {Γ Δ} →
+          record
+            { A+B = Γ ,, Δ
+            ; i₁ = inlˢ
+            ; i₂ = inrˢ
+            ; [_,_] = [_,_]ˢ
+            ; inject₁ = {!!}
+            ; inject₂ = {!!}
+            ; unique = {!!}
+            }
+      }
+
+    -- the sum of subsitutions
+    _+ˢ_ =
+      let open Categories.Category.Cocartesian.BinaryCoproducts Terms-Coproduct in _+₁_
