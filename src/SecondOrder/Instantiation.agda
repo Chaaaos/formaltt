@@ -21,6 +21,7 @@ module SecondOrder.Instantiation
   open SecondOrder.Substitution Σ
 
   -- metavariable instantiation
+
   _⇒ⁱ_⊕_ : MetaContext → MetaContext → Context → Set ℓ
   Θ ⇒ⁱ Ξ ⊕ Γ = ∀ (M : mv Θ) → Term Ξ (Γ ,, mv-arity Θ M) (mv-sort Θ M)
 
@@ -35,10 +36,9 @@ module SecondOrder.Instantiation
 
   [_]ⁱ_ : ∀ {Θ Ξ Γ Δ A} → Ξ ⇒ⁱ Θ ⊕ Δ → Term Ξ Γ A → Term Θ (Δ ,, Γ) A
   [ I ]ⁱ (tm-var x) = tm-var (var-inr x)
-  -- [ I ]ⁱ (tm-meta M ts) = [ [  var-inl ʳ∘ˢ idˢ , (λ x → [ I ]ⁱ ts x) ]ˢ ]ˢ I M
-  -- [ I ]ⁱ (tm-oper f es) = tm-oper f λ i → term-reassoc ([ I ]ⁱ (es i))
   [ I ]ⁱ (tm-meta M ts) =  [ [ inlˢ , (λ i → [ I ]ⁱ (ts i)) ]ˢ ]ˢ I M
   [ I ]ⁱ (tm-oper f es) = tm-oper f λ i →  [ assoc-r ]ˢ [ I ]ⁱ es i
+
   -- composition of metavariable instantiations
 
   infixl 5 _∘ⁱ_
@@ -53,7 +53,7 @@ module SecondOrder.Instantiation
   -- as a special case we define instantiation of a closed term such that
   -- the empty context does not appear. This is used when axioms are instantiated.
   instantiate-closed-term : ∀ {Θ Ξ Γ A} (I : Θ ⇒ⁱ Ξ ⊕ Γ) → Term Θ ctx-empty A → Term Ξ Γ A
-  instantiate-closed-term I t =  [ ctx-empty-right-unit ]ʳ ([ I ]ⁱ t)
+  instantiate-closed-term I t =  [ sum-ctx-empty-r ]ˢ ([ I ]ⁱ t)
 
 
   --------------------------------------------------------------------------------------------------
@@ -92,26 +92,26 @@ module SecondOrder.Instantiation
   ≈ⁱ[]ⁱ {t = tm-var x} p = ≈-≡ refl
   ≈ⁱ[]ⁱ {t = tm-meta M ts} {I = I} {J = J} p = ≈-trans
                                                ([]ˢ-resp-≈ˢ
-                                                 {σ = [ var-inl ʳ∘ˢ idˢ , (λ x → [ I ]ⁱ ts x) ]ˢ}
-                                                 {τ =  [ var-inl ʳ∘ˢ idˢ , (λ x → [ J ]ⁱ ts x) ]ˢ }
+                                                 {σ = [ inlˢ , (λ x → [ I ]ⁱ ts x) ]ˢ}
+                                                 {τ =  [ inlˢ , (λ x → [ J ]ⁱ ts x) ]ˢ }
                                                  (I M)
-                                                 {!!}) -- (uniqueˢ (λ x → ≈-refl) λ x → ≈ⁱ[]ⁱ {t = {!!}} p)) -- (? λ x → ≈ⁱ[]ⁱ {t = ts x} p))
+                                                 (uniqueˢ { τ = [ inlˢ , (λ x → [ J ]ⁱ ts x) ]ˢ} (λ x → ≈-refl) λ x → ≈-sym (≈ⁱ[]ⁱ {t = ts x} p)))
                                                  ([]ˢ-resp-≈ [ var-inl ʳ∘ˢ tm-var , (λ x → [ J ]ⁱ ts x) ]ˢ (p M))
-  ≈ⁱ[]ⁱ {t = tm-oper f es} p = ≈-oper λ i → []ʳ-resp-≈ (≈ⁱ[]ⁱ {t = es i} p)
+  ≈ⁱ[]ⁱ {t = tm-oper f es} p = ≈-oper λ i → []ˢ-resp-≈ assoc-r (≈ⁱ[]ⁱ {t = es i} p)
 
 
   -- ** Action of instantiation is functirial wrt. composition ** (the proof comes later)
   ∘ⁱ-≈ : ∀ {Θ Ω ψ Γ Δ Ξ A} (t : Term Θ Ξ A) (I : Ω ⇒ⁱ ψ ⊕ Δ) (J : Θ ⇒ⁱ Ω ⊕ Γ)
-        → [ I ∘ⁱ J ]ⁱ t ≈ term-reassoc ([ I ]ⁱ ([ J ]ⁱ t))
+        → [ I ∘ⁱ J ]ⁱ t ≈ [ assoc-r ]ˢ ([ I ]ⁱ ([ J ]ⁱ t))
 
   -- reassociation of a composition
   reassoc-∘ⁱ : ∀ {Θ Ω ψ Γ Δ Ξ Λ A} (t : Term Θ (Ξ ,, Λ) A) (I : Ω ⇒ⁱ ψ ⊕ Δ) (J : Θ ⇒ⁱ Ω ⊕ Γ)
-              → term-reassoc ([ I ∘ⁱ J ]ⁱ t) ≈  term-reassoc (term-reassoc ([ I ]ⁱ ([ J ]ⁱ t)))
-  reassoc-∘ⁱ t I J = {!!} -- []ˢ-resp-≈ (∘ⁱ-≈ t I J) ?
+              → [ assoc-r ]ˢ ([ I ∘ⁱ J ]ⁱ t) ≈  [ assoc-r ]ˢ ([ assoc-r ]ˢ ([ I ]ⁱ ([ J ]ⁱ t)))
+  reassoc-∘ⁱ t I J = []ˢ-resp-≈ assoc-r (∘ⁱ-≈ t I J)
 
   -- auxiliary function, to deal with extensions in the oper case
   ∘ⁱ-≈-oper : ∀ {Θ Ω ψ Γ Δ Ξ Λ A} (t : Term Θ (Ξ ,, Λ) A) (I : Ω ⇒ⁱ ψ ⊕ Δ) (J : Θ ⇒ⁱ Ω ⊕ Γ)
-              → term-reassoc ([ I ∘ⁱ J ]ⁱ t) ≈ [ ⇑ʳ rename-assoc ]ʳ term-reassoc ([ I ]ⁱ term-reassoc ([ J ]ⁱ t))
+              → [ assoc-r ]ˢ ([ I ∘ⁱ J ]ⁱ t) ≈ [ ⇑ˢ assoc-r ]ˢ [ assoc-r ]ˢ ([ I ]ⁱ [ assoc-r ]ˢ ([ J ]ⁱ t))
   ∘ⁱ-≈-oper (tm-var (var-inl x)) I J = ≈-refl
   ∘ⁱ-≈-oper (tm-var (var-inr x)) I J = ≈-refl
   ∘ⁱ-≈-oper (tm-meta M ts) I J = {!!}
@@ -120,39 +120,38 @@ module SecondOrder.Instantiation
   -- proof of the metatheorem obout composition (action of instantiations is functorial)
   ∘ⁱ-≈ (tm-var x) I J = ≈-≡ refl
   ∘ⁱ-≈ (tm-meta M ts) I J = {!!} -- ≈-trans ([]ˢ-resp-≈ {!!}) {!!} -- I don't really know how to begin with this
-  ∘ⁱ-≈ (tm-oper f es) I J = ≈-oper λ i → ∘ⁱ-≈-oper (es i) I J
+  ∘ⁱ-≈ (tm-oper f es) I J = ≈-oper λ i →  ∘ⁱ-≈-oper (es i) I J
 
   -- the action of an extension of the identity is the identity
   []ⁱidⁱ-oper : ∀ {Θ Γ Ξ A} (t : Term Θ (Γ ,, Ξ) A)
-              → [ ⇑ʳ ctx-empty-left-unit ]ʳ term-reassoc ([ idⁱ ]ⁱ t) ≈ t
+              → [ ⇑ˢ sum-ctx-empty-l ]ˢ [ assoc-r ]ˢ ([ idⁱ ]ⁱ t) ≈ t
   []ⁱidⁱ-oper (tm-var (var-inl x)) = ≈-refl
   []ⁱidⁱ-oper (tm-var (var-inr x)) = ≈-refl
-  []ⁱidⁱ-oper (tm-meta M ts) = ≈-meta λ i → ≈-trans (≈-sym ([∘]ʳ ([ (λ t → tm-meta t (λ i₁ → [ var-inr ]ʳ tm-var i₁)) ]ⁱ ts i) rename-assoc (⇑ʳ ctx-empty-left-unit))) {!!}
+  []ⁱidⁱ-oper (tm-meta M ts) =  {!!} -- ≈-meta λ i → ≈-trans (≈-sym ([∘]ʳ ([ (λ t → tm-meta t (λ i₁ → [ var-inr ]ʳ tm-var i₁)) ]ⁱ ts i) rename-assoc (⇑ʳ ctx-empty-left-unit))) {!!}
   []ⁱidⁱ-oper (tm-oper f es) = ≈-oper (λ i → []ⁱidⁱ-oper-aux (es i))
     where
       []ⁱidⁱ-oper-aux : ∀ {Θ Γ Ξ Λ A} (t : Term Θ ((Γ ,, Ξ) ,, Λ) A)
-              → [ ⇑ʳ (⇑ʳ ctx-empty-left-unit) ]ʳ ([ ⇑ʳ rename-assoc ]ʳ term-reassoc ([ idⁱ ]ⁱ t)) ≈ t -- problem with extensions of extensions of functions : should be avoided
+              → [ ⇑ˢ (⇑ˢ sum-ctx-empty-l) ]ˢ ([ ⇑ˢ assoc-r ]ˢ ([ assoc-r ]ˢ ([ idⁱ ]ⁱ t))) ≈ t -- problem with extensions of extensions of functions : should be avoided
       []ⁱidⁱ-oper-aux t = ≈-trans
-                          (≈-sym ([∘]ʳ ([ rename-assoc ]ʳ ([ idⁱ ]ⁱ t)) (⇑ʳ rename-assoc) (⇑ʳ (⇑ʳ ctx-empty-left-unit))))
-                          (≈-trans (≈-sym ([∘]ʳ ([ idⁱ ]ⁱ t) rename-assoc ((_ SecondOrder.Renaming.∘ʳ ⇑ʳ (⇑ʳ ctx-empty-left-unit))
-                                                                            (⇑ʳ rename-assoc)))) {!!})
+                          (≈-sym ([∘]ˢ  {σ = ⇑ˢ assoc-r} {τ = (⇑ˢ (⇑ˢ sum-ctx-empty-l))} ([ assoc-r ]ˢ ([ idⁱ ]ⁱ t))))
+                          (≈-trans (≈-sym ([∘]ˢ  {σ = assoc-r} {τ = ⇑ˢ (⇑ˢ sum-ctx-empty-l) ∘ˢ ⇑ˢ assoc-r} ([ idⁱ ]ⁱ t)))
+                                                                           {!!} )
+
 
   -- ** The action of the identity instantiation is the identity **
   []ⁱidⁱ : ∀ {Θ Γ A} (t : Term Θ Γ A)
-           → [ ctx-empty-left-unit ]ʳ ([ idⁱ ]ⁱ t) ≈ t
+           → [ sum-ctx-empty-l ]ˢ ([ idⁱ ]ⁱ t) ≈ t
   []ⁱidⁱ (tm-var x) = ≈-refl
   []ⁱidⁱ (tm-meta M ts) = ≈-meta (λ i → []ⁱidⁱ (ts i))
   []ⁱidⁱ (tm-oper f es) = ≈-oper λ i → []ⁱidⁱ-oper (es i)
 
 
-  -- -- ** Intantisations preserve syntactical equality of terms **
-  -- ≈-tm-ⁱ : ∀ {Θ Ω Γ Δ A} {s t : Term Θ Δ A} {I : Θ ⇒ⁱ Ω ⊕ Γ}
-  --       → s ≈ t → [ I ]ⁱ s ≈ [ I ]ⁱ t
-  -- ≈-tm-ⁱ (≈-≡ refl) = ≈-refl
-  -- ≈-tm-ⁱ {t = tm-meta M ts} {I = I} (≈-meta ξ) = []ˢ-resp-≈ˢ {t = I M} (? (λ x → ≈-tm-ⁱ (ξ x)))
-  -- ≈-tm-ⁱ (≈-oper ξ) = ≈-oper λ i → []ʳ-resp-≈ (≈-tm-ⁱ (ξ i))
-
-  -- instantiate-closed-term I t =  [ sum-ctx-empty-r ]ˢ ([ I ]ⁱ t)
+  -- ** Intantisations preserve syntactical equality of terms **
+  ≈-tm-ⁱ : ∀ {Θ Ω Γ Δ A} {s t : Term Θ Δ A} {I : Θ ⇒ⁱ Ω ⊕ Γ}
+        → s ≈ t → [ I ]ⁱ s ≈ [ I ]ⁱ t
+  ≈-tm-ⁱ (≈-≡ refl) = ≈-refl
+  ≈-tm-ⁱ {t = tm-meta M ts} {I = I} (≈-meta ξ) = []ˢ-resp-≈ˢ (I M) (uniqueˢ {τ = [ inlˢ , (λ i → [ I ]ⁱ ts i) ]ˢ} (λ x → ≈-refl) λ x → ≈-sym (≈-tm-ⁱ (ξ x)))
+  ≈-tm-ⁱ (≈-oper ξ) = ≈-oper λ i → []ˢ-resp-≈ assoc-r (≈-tm-ⁱ (ξ i))
 
 
 --   --------------------------------------------------------------------------------------------------
