@@ -3,6 +3,7 @@
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; setoid; cong; trans)
 import Function.Equality
+open import Relation.Binary using (Setoid)
 
 import Categories.Category
 import Categories.Functor
@@ -43,6 +44,37 @@ module SecondOrder.Substitution
 
   _≈ˢ_ : ∀ {Θ} {Γ Δ} (σ τ : Θ ⊕ Γ ⇒ˢ Δ) → Set ℓ
   _≈ˢ_ {Θ} {Γ} σ τ = ∀ {A} (x : A ∈ Γ) → σ x ≈ τ x
+
+  -- equality of substitutions form a setoid
+  ≈ˢ-refl : ∀ {Θ Γ Δ} {σ : Θ ⊕ Γ ⇒ˢ Δ}
+          → σ ≈ˢ σ
+  ≈ˢ-refl x = ≈-refl
+
+  ≈ˢ-sym : ∀ {Θ Γ Δ} {σ τ : Θ ⊕ Γ ⇒ˢ Δ}
+          → σ ≈ˢ τ
+          → τ ≈ˢ σ
+  ≈ˢ-sym eq x = ≈-sym (eq x)
+
+  ≈ˢ-trans : ∀ {Θ Γ Δ} {σ τ μ : Θ ⊕ Γ ⇒ˢ Δ}
+           → σ ≈ˢ τ → τ ≈ˢ μ
+           → σ ≈ˢ μ
+  ≈ˢ-trans eq1 eq2 x = ≈-trans (eq1 x) (eq2 x)
+
+  substitution-setoid : ∀ (Γ Δ : Context) (Θ : MetaContext) → Setoid ℓ ℓ
+  substitution-setoid Γ Δ Θ =
+    record
+      { Carrier = Θ ⊕ Γ ⇒ˢ Δ
+      ;  _≈_ = λ σ τ → σ ≈ˢ τ
+      ; isEquivalence =
+                      record
+                        { refl = λ {σ} x → ≈ˢ-refl {σ = σ} x
+                        ; sym = ≈ˢ-sym
+                        ; trans = ≈ˢ-trans
+                        }
+      }
+
+  congˢ : ∀ {Θ} {Γ Δ} {A} {σ τ : Θ ⊕ Γ ⇒ˢ Δ} {x : A ∈ Γ} → σ ≈ˢ τ → σ x ≈ τ x
+  congˢ {x = x} eq = eq x
 
   -- extension of a substitution
 
@@ -113,6 +145,7 @@ module SecondOrder.Substitution
   idˢ : ∀ {Θ Γ} → Θ ⊕ Γ ⇒ˢ Γ
   idˢ = tm-var
 
+
   -- extension preserves identity
 
   ⇑ˢ-idˢ : ∀ {Θ} {Γ Δ} → ⇑ˢ idˢ ≈ˢ idˢ {Θ = Θ} {Γ = Γ ,, Δ}
@@ -125,7 +158,7 @@ module SecondOrder.Substitution
   [id]ˢ {t = tm-var x} = ≈-refl
   [id]ˢ {t = tm-meta M ts} = ≈-meta (λ i → [id]ˢ)
   [id]ˢ {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ˢ-resp-≈ˢ (es i) ⇑ˢ-idˢ) [id]ˢ)
-
+  
   -- interaction of extension and right renaming action
 
   [⇑ˢ∘ʳ] : ∀ {Θ} {A} {Γ Δ Ξ Ψ} {σ : Θ ⊕ Δ ⇒ˢ Ξ} {ρ : Γ ⇒ʳ Δ} (t : Term Θ (Γ ,, Ψ) A) →
@@ -235,19 +268,32 @@ module SecondOrder.Substitution
         ; id = idˢ
         ; _∘_ = _∘ˢ_
         ; assoc = λ {Γ} {Δ} {Ξ} {Ψ} {σ} {τ} {ψ} {A} x → [∘]ˢ (σ x)
-        ; sym-assoc = {!!}
-        ; identityˡ = {!!}
-        ; identityʳ = {!!}
-        ; identity² = {!!}
-        ; equiv = {!!}
-        ; ∘-resp-≈ = {!!}
+        ; sym-assoc = λ {Γ} {Δ} {Ξ} {Ψ} {σ} {τ} {ψ} {A} x → ≈-sym ([∘]ˢ (σ x))
+        ; identityˡ = λ x → [id]ˢ
+        ; identityʳ = λ x → ≈-refl
+        ; identity² = λ x → ≈-refl
+        ; equiv = record { refl = λ x → ≈-refl ; sym = ≈ˢ-sym ; trans = ≈ˢ-trans }
+        ; ∘-resp-≈ = λ f≈ˢg g≈ˢi x → []ˢ-resp-≈ˢ-≈ f≈ˢg (g≈ˢi x)
         }
 
     Terms-is-Kleisli : StrongEquivalence Terms (Kleisli Term-Monad)
     Terms-is-Kleisli =
       record
-      { F = {!!}
-      ; G = {!!}
+      { F = record
+              { F₀ = λ Γ → Γ
+              ; F₁ = λ σ A → record { _⟨$⟩_ = λ x → σ x ; cong = λ i≡j → ≈-≡ (cong σ i≡j) }
+              ; identity = λ A eq → ≈-≡ (cong (λ v → tm-var v) eq)
+              ; homomorphism = λ {Γ} {Δ} {Ξ} {σ} {τ} A eq → ≈-≡ (cong (λ x → [ τ ]ˢ σ x) eq)
+              ; F-resp-≈ = λ {Γ} {Δ} {σ} {τ} hom_eq A eq
+                         → ≈-trans (congˢ hom_eq) (≈-≡ (cong (λ y → τ y) eq))
+              }
+      ; G = record
+              { F₀ = λ Γ → Γ
+              ; F₁ = λ {Γ} {Δ} σ {A} x → {!!}
+              ; identity = {!!}
+              ; homomorphism = {!!}
+              ; F-resp-≈ = {!!}
+              }
       ; weak-inverse = {!!} }
 
     -- the binary coproduct structure on Terms
