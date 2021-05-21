@@ -22,12 +22,12 @@ module SecondOrder.Instantiation
 
   -- metavariable instantiation
 
-  _⇒ⁱ_⊕_ : MetaContext → MetaContext → VContext → Set ℓ
-  Θ ⇒ⁱ Ξ ⊕ Γ = ∀ (M : mv Θ) → Term Ξ (Γ ,, mv-arity Θ M) (mv-sort Θ M)
+  _⇒ⁱ_⊕_ : MContext → MContext → VContext → Set ℓ
+  Θ ⇒ⁱ Ξ ⊕ Γ = ∀ {Γᴹ Aᴹ} (M : [ Γᴹ , Aᴹ ]∈ Θ) → Term Ξ (Γ ,, Γᴹ) Aᴹ
 
   -- syntactic equality of instantiations
   _≈ⁱ_ : ∀ {Θ Ξ Γ} (I J : Θ ⇒ⁱ Ξ ⊕ Γ) → Set ℓ
-  _≈ⁱ_ {Θ} I J = ∀ (M : mv Θ) → I M ≈ J M
+  _≈ⁱ_ {Θ} I J = ∀ {Γᴹ Aᴹ} (M : [ Γᴹ , Aᴹ ]∈ Θ) → I M ≈ J M
 
   -- the identity metavariable instantiation
 

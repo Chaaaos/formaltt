@@ -1,6 +1,3 @@
-open import Level
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subst)
-
 module SecondOrder.VContext {ℓ} (sort : Set ℓ)  where
 
   -- a context is a binary tree whose leaves are labeled with sorts

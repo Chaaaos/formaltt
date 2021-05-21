@@ -172,7 +172,7 @@ module SecondOrder.Renaming
 
 
   -- the action of a renaming on terms
-  module _ {Θ : MetaContext} where
+  module _ {Θ : MContext} where
 
     infix 6 [_]ʳ_
 
@@ -216,7 +216,7 @@ module SecondOrder.Renaming
   [∘]ʳ {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ʳ-resp-≡ʳ ⇑ʳ-∘ʳ) [∘]ʳ)
 
   -- Forming terms over a given metacontext and sort is functorial in the context
-  module _ {Θ : MetaContext} {A : sort} where
+  module _ {Θ : MContext} {A : sort} where
     open Categories.Functor
     open Categories.Category.Instance.Setoids
 
