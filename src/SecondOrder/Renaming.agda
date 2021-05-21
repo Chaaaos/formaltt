@@ -162,6 +162,11 @@ module SecondOrder.Renaming
 
   open Categories.Category.Cocartesian.BinaryCoproducts Context-+
 
+  -- the renaming from the empty context
+
+  inʳ : ∀ {Γ} → ctx-empty ⇒ʳ Γ
+  inʳ ()
+
   -- extension of a renaming is summing with identity
   ⇑ʳ : ∀ {Γ Δ Ξ} → Γ ⇒ʳ Δ → Γ ,, Ξ ⇒ʳ Δ ,, Ξ
   ⇑ʳ ρ = ρ +₁ idʳ
