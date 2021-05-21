@@ -166,6 +166,11 @@ module SecondOrder.Renaming
   ⇑ʳ : ∀ {Γ Δ Ξ} → Γ ⇒ʳ Δ → Γ ,, Ξ ⇒ʳ Δ ,, Ξ
   ⇑ʳ ρ = ρ +₁ idʳ
 
+  -- a renaming can also be extended on the right
+  ʳ⇑ʳ : ∀ {Γ Δ} → Γ ⇒ʳ Δ → ∀ {Ξ} → Ξ ,, Γ ⇒ʳ Ξ ,, Δ
+  ʳ⇑ʳ ρ = idʳ +₁ ρ
+
+
   -- the action of a renaming on terms
   module _ {Θ : MetaContext} where
 
@@ -175,6 +180,38 @@ module SecondOrder.Renaming
     [ ρ ]ʳ (tm-var x) = tm-var (ρ x)
     [ ρ ]ʳ (tm-meta M ts) = tm-meta M (λ i → [ ρ ]ʳ (ts i))
     [ ρ ]ʳ (tm-oper f es) = tm-oper f (λ i → [ ⇑ʳ ρ ]ʳ (es i))
+
+  -- the reassociation renaming
+  rename-assoc : ∀ {Γ Δ Ξ} → Γ ,, (Δ ,, Ξ) ⇒ʳ (Γ ,, Δ) ,, Ξ
+  rename-assoc (var-inl x) = var-inl (var-inl x)
+  rename-assoc (var-inr (var-inl y)) = var-inl (var-inr y)
+  rename-assoc (var-inr (var-inr z)) = var-inr z
+
+  -- the inverse of the reassociation renaming
+
+  rename-unassoc : ∀ {Γ Δ Ξ} → (Γ ,, Δ) ,, Ξ ⇒ʳ Γ ,, (Δ ,, Ξ)
+  rename-unassoc (var-inl (var-inl x)) = var-inl x
+  rename-unassoc (var-inl (var-inr x)) = var-inr (var-inl x)
+  rename-unassoc (var-inr x) = var-inr (var-inr x)
+
+  -- apply the reassociation renaming on terms
+  term-reassoc : ∀ {Θ Δ Γ Ξ A}
+    → Term Θ (Δ ,, (Γ ,, Ξ)) A
+    → Term Θ ((Δ ,, Γ) ,, Ξ) A
+  term-reassoc = [ rename-assoc ]ʳ_
+
+  -- the empty context is the right unit
+
+  ctx-empty-right-unit : ∀ {Γ} → Γ ,, ctx-empty ⇒ʳ Γ
+  ctx-empty-right-unit (var-inl x) = x
+
+  rename-ctx-empty-inv : ∀ {Γ} → Γ ⇒ʳ Γ ,, ctx-empty
+  rename-ctx-empty-inv x = var-inl x
+
+  -- the empty context is the left unit
+
+  ctx-empty-left-unit : ∀ {Γ} → ctx-empty ,, Γ ⇒ʳ Γ
+  ctx-empty-left-unit (var-inr x) = x
 
   -- The sum of identities is an identity
   idʳ+idʳ : ∀ {Γ Δ} → idʳ {Γ = Γ} +₁ idʳ {Γ = Δ} ≡ʳ idʳ {Γ = Γ ,, Δ}
@@ -224,3 +261,35 @@ module SecondOrder.Renaming
         ; homomorphism = λ ξ → ≈-trans ([]ʳ-resp-≈ ξ) [∘]ʳ
         ; F-resp-≈ = λ ζ ξ → ≈-trans ([]ʳ-resp-≡ʳ ζ) ([]ʳ-resp-≈ ξ)
         }
+
+  -- interactions between "reassociation" and "unassociation"
+  -- (the functions that change the way the concatenation of context is associated)
+  -- the reassociation renaming and "unassociation" renaming are inverse
+  unassoc-reassoc : ∀ {Γ Δ Ξ} → (rename-unassoc {Δ} {Γ} {Ξ}) ∘ʳ rename-assoc ≡ʳ idʳ
+  unassoc-reassoc (var-inl x) = refl
+  unassoc-reassoc (var-inr (var-inl x)) = refl
+  unassoc-reassoc (var-inr (var-inr x)) = refl
+
+  -- "reassociating" and then "unassociating" a term acts like the identity
+  unassoc-reassoc-tm : ∀ {Θ Γ Δ Ξ A} (t : Term Θ (Γ ,, (Δ ,, Ξ)) A) → [ rename-unassoc ]ʳ (term-reassoc t) ≈ t
+  unassoc-reassoc-tm t = ≈-trans
+                           (≈-trans
+                             (≈-sym ([∘]ʳ))
+                             ([]ʳ-resp-≡ʳ unassoc-reassoc))
+                           ([id]ʳ)
+
+  -- term-reassociation preserves syntactical equality of terms
+  ≈-tm-reassoc : ∀ {Θ Γ Δ Ξ A} {s t : Term Θ (Γ ,, (Δ ,, Ξ)) A}
+                 → term-reassoc s ≈ term-reassoc t → s ≈ t
+  ≈-tm-reassoc {s = s} {t = t} p = ≈-trans
+                                     (≈-sym (unassoc-reassoc-tm s))
+                                     (≈-sym (≈-trans
+                                       (≈-sym (unassoc-reassoc-tm t))
+                                       ([]ʳ-resp-≈ (≈-sym p))))
+
+  -- -- extending two times is like extending one time and unassociating
+  extendʳ² : ∀ {Γ Δ Ξ Λ Ω} (ρ : Γ ,, Δ ⇒ʳ Ω)
+             → (rename-unassoc {Δ = Ξ} {Ξ = Λ}) ∘ʳ (⇑ʳ  (⇑ʳ ρ)) ≡ʳ (⇑ʳ ρ) ∘ʳ rename-unassoc
+  extendʳ² ρ (var-inl (var-inl x)) = refl
+  extendʳ² ρ (var-inl (var-inr x)) = refl
+  extendʳ² ρ (var-inr x) = refl
