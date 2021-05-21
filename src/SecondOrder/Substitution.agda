@@ -145,7 +145,6 @@ module SecondOrder.Substitution
   idˢ : ∀ {Θ Γ} → Θ ⊕ Γ ⇒ˢ Γ
   idˢ = tm-var
 
-
   -- extension preserves identity
 
   ⇑ˢ-idˢ : ∀ {Θ} {Γ Δ} → ⇑ˢ idˢ ≈ˢ idˢ {Θ = Θ} {Γ = Γ ,, Δ}
@@ -158,6 +157,10 @@ module SecondOrder.Substitution
   [id]ˢ {t = tm-var x} = ≈-refl
   [id]ˢ {t = tm-meta M ts} = ≈-meta (λ i → [id]ˢ)
   [id]ˢ {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ˢ-resp-≈ˢ (es i) ⇑ˢ-idˢ) [id]ˢ)
+
+  -- if a substiution is equal to the identity then it acts trivially
+  ≈ˢ-idˢ-[]ˢ : ∀ {Θ} {Γ} {A} {σ : Θ ⊕ Γ ⇒ˢ Γ} {t : Term Θ Γ A} → σ ≈ˢ idˢ → [ σ ]ˢ t ≈ t
+  ≈ˢ-idˢ-[]ˢ {t = t} ξ = ≈-trans ([]ˢ-resp-≈ˢ t ξ) [id]ˢ
 
   -- interaction of extension and right renaming action
 

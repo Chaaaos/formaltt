@@ -45,10 +45,24 @@ module SecondOrder.Instantiation
   [ I ]ⁱ (tm-meta M ts) =   [  [ idˢ , (λ i → [ I ]ⁱ ts i) ]ˢ ]ˢ I M
   [ I ]ⁱ (tm-oper f es) = tm-oper f λ i → [ ⇑ⁱ I ]ⁱ es i
 
+  -- generically applied metavariable
+
+  tm-meta-generic : ∀ {Θ} {Γ} {Γᴹ Aᴹ} (M : [ Γᴹ , Aᴹ ]∈ Θ) → Term Θ (Γ ,, Γᴹ) Aᴹ
+  tm-meta-generic M = tm-meta M λ i → tm-var (var-inr i)
+
+  -- the action of an instantiation on a generically applied metavariable
+
+  []ⁱ-generic : ∀ {Θ Ξ} {Γ} {I : Θ ⇒ⁱ Ξ ⊕ Γ} {Γᴹ Aᴹ} {M : [ Γᴹ , Aᴹ ]∈ Θ} →
+                [ ⇑ⁱ I ]ⁱ tm-meta-generic M ≈ I M
+  []ⁱ-generic {I = I} {M = M} =
+    ≈-trans
+      (≈-sym ([∘]ˢ (I M)))
+      (≈ˢ-idˢ-[]ˢ (λ { (var-inl x) → ≈-refl ; (var-inr y) → ≈-refl }))
+
   -- the identity metavariable instantiation
 
   idⁱ : ∀ {Θ} Γ → Θ ⇒ⁱ Θ ⊕ Γ
-  idⁱ Γ t = tm-meta t (λ i → [ var-inr ]ʳ (tm-var i))
+  idⁱ Γ M = tm-meta-generic M
 
   -- composition of metavariable instantiations
 
@@ -61,14 +75,16 @@ module SecondOrder.Instantiation
 
   [id]ⁱ : ∀ {Θ Γ A} {t : Term Θ Γ A}  → [ idⁱ Γ ]ⁱ t ≈ t
   [id]ⁱ {t = tm-var x} = ≈-refl
-  [id]ⁱ {t = tm-meta M ts} = ≈-meta (λ i → {!!})
-  [id]ⁱ {t = tm-oper f es} = ≈-oper (λ i → {!!})
+  [id]ⁱ {t = tm-meta M ts} = ≈-meta (λ i → [id]ⁱ)
+  [id]ⁱ {t = tm-oper f es} = ≈-oper (λ i → [id]ⁱ)
 
   -- the action of a composition
 
   [∘]ⁱ : ∀ {Θ Ξ Ω Γ A} → {I : Θ ⇒ⁱ Ξ ⊕ Γ} → {J : Ξ ⇒ⁱ Ω ⊕ Γ} {t : Term Θ Γ A}  →
          [ J ∘ⁱ I ]ⁱ t ≈ [ J ]ⁱ [ I ]ⁱ t
-  [∘]ⁱ = {!!}
+  [∘]ⁱ {t = tm-var x} = ≈-refl
+  [∘]ⁱ {t = tm-meta M ts} = {!!}
+  [∘]ⁱ {t = tm-oper f es} = ≈-oper (λ i → [∘]ⁱ)
 
 
 
