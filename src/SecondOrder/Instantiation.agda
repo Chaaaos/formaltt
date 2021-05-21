@@ -70,8 +70,9 @@ module SecondOrder.Instantiation
   (σ ˢ∘ⁱ I) M = [ ⇑ˢ σ ]ˢ I M
 
   -- action of an instantiation on a substitution
-  _ⁱ∘ˢ_ : ∀ {Θ ψ Γ Δ Ξ} → Θ ⇒ⁱ ψ ⊕ Ξ → Θ ⊕ Γ ⇒ˢ Δ → ψ ⊕ Γ ⇒ˢ (Ξ ,, Δ)
-  (I ⁱ∘ˢ σ) x = [ I ]ⁱ σ x
+  _ⁱ∘ˢ_ : ∀ {Θ ψ Γ Δ Ξ} → Θ ⇒ⁱ ψ ⊕ Ξ → Θ ⊕ Γ ⇒ˢ Δ →  ψ ⊕ (Ξ ,, Γ) ⇒ˢ (Ξ ,, Δ)
+  (I ⁱ∘ˢ σ) (var-inl x) = tm-var (var-inl x)
+  (I ⁱ∘ˢ σ) (var-inr x) = [ I ]ⁱ (σ x)
 
 
 --========================================================================================
@@ -99,6 +100,8 @@ module SecondOrder.Instantiation
                                                  ([]ˢ-resp-≈ [ var-inl ʳ∘ˢ tm-var , (λ x → [ J ]ⁱ ts x) ]ˢ (p M))
   ≈ⁱ[]ⁱ {t = tm-oper f es} p = ≈-oper λ i → []ˢ-resp-≈ assoc-r (≈ⁱ[]ⁱ {t = es i} p)
 
+  -- interaction
+
 
   -- ** Action of instantiation is functirial wrt. composition ** (the proof comes later)
   ∘ⁱ-≈ : ∀ {Θ Ω ψ Γ Δ Ξ A} (t : Term Θ Ξ A) (I : Ω ⇒ⁱ ψ ⊕ Δ) (J : Θ ⇒ⁱ Ω ⊕ Γ)
@@ -119,8 +122,11 @@ module SecondOrder.Instantiation
 
   -- proof of the metatheorem obout composition (action of instantiations is functorial)
   ∘ⁱ-≈ (tm-var x) I J = ≈-≡ refl
-  ∘ⁱ-≈ (tm-meta M ts) I J = ? -- I don't really know how to begin with this
-  ∘ⁱ-≈ (tm-oper f es) I J = ≈-oper λ i →  ∘ⁱ-≈-oper (es i) I J
+  ∘ⁱ-≈ (tm-meta M ts) I J = ≈-sym ( ≈-trans ([]ˢ-resp-≈ assoc-r {!!}) {!!} )-- I don't really know how to begin with this
+  ∘ⁱ-≈ (tm-oper f es) I J = ≈-oper λ i → ∘ⁱ-≈-oper (es i) I J
+
+-- [ I ∘ⁱ J ]ⁱ tm-meta M ts ≈
+--    [ assoc-r ]ˢ [ I ]ⁱ [ J ]ⁱ tm-meta M ts
 
   -- the action of an extension of the identity is the identity
   []ⁱidⁱ-oper : ∀ {Θ Γ Ξ A} (t : Term Θ (Γ ,, Ξ) A)
