@@ -288,6 +288,41 @@ module SecondOrder.Substitution
             }
       }
 
+    open Categories.Category.Cocartesian.BinaryCoproducts Terms-Coproduct
+
     -- the sum of subsitutions
-    _+ˢ_ =
-      let open Categories.Category.Cocartesian.BinaryCoproducts Terms-Coproduct in _+₁_
+
+    infixl 6 _+ˢ_
+
+    _+ˢ_ : ∀ {Γ₁ Γ₂ Δ₁ Δ₂} (σ : Θ ⊕ Γ₁ ⇒ˢ Δ₁) (τ : Θ ⊕ Γ₂ ⇒ˢ Δ₂) → Θ ⊕ Γ₁ ,, Γ₂ ⇒ˢ Δ₁ ,, Δ₂
+    σ +ˢ τ = σ +₁ τ
+
+    -- reassociations of context sums
+
+    assoc-l : ∀ {Γ Δ Ξ} → Θ ⊕ (Γ ,, Δ) ,, Ξ ⇒ˢ Γ ,, (Δ ,, Ξ)
+    assoc-l (var-inl (var-inl x)) = tm-var (var-inl x)
+    assoc-l (var-inl (var-inr y)) = tm-var (var-inr (var-inl y))
+    assoc-l (var-inr z) = tm-var (var-inr (var-inr z))
+
+    assoc-r : ∀ {Γ Δ Ξ} → Θ ⊕ Γ ,, (Δ ,, Ξ) ⇒ˢ (Γ ,, Δ) ,, Ξ
+    assoc-r (var-inl x) = tm-var (var-inl (var-inl x))
+    assoc-r (var-inr (var-inl y)) = tm-var (var-inl (var-inr y))
+    assoc-r (var-inr (var-inr z)) = tm-var (var-inr z)
+
+    assoc-lr : ∀ {Γ Δ Ξ} → assoc-l {Γ = Γ} {Δ = Δ} {Ξ = Ξ} ∘ˢ assoc-r {Γ = Γ} {Δ = Δ} {Ξ = Ξ} ≈ˢ idˢ
+    assoc-lr (var-inl x) = ≈-refl
+    assoc-lr (var-inr (var-inl y)) = ≈-refl
+    assoc-lr (var-inr (var-inr y)) = ≈-refl
+
+    assoc-rl : ∀ {Γ Δ Ξ} → assoc-r {Γ = Γ} {Δ = Δ} {Ξ = Ξ} ∘ˢ assoc-l {Γ = Γ} {Δ = Δ} {Ξ = Ξ} ≈ˢ idˢ
+    assoc-rl (var-inl (var-inl x)) = ≈-refl
+    assoc-rl (var-inl (var-inr x)) = ≈-refl
+    assoc-rl (var-inr z) = ≈-refl
+
+    -- summing with the empty context is the unit
+
+    sum-ctx-empty-r : ∀ {Γ} → Θ ⊕ Γ ,, ctx-empty ⇒ˢ Γ
+    sum-ctx-empty-r (var-inl x) = tm-var x
+
+    sum-ctx-empty-l : ∀ {Γ} → Θ ⊕ ctx-empty ,, Γ ⇒ˢ Γ
+    sum-ctx-empty-l (var-inr x) = tm-var x
