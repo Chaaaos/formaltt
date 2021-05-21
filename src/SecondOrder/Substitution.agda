@@ -1,3 +1,5 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; setoid; cong; trans)
 import Function.Equality
@@ -232,7 +234,7 @@ module SecondOrder.Substitution
         ; _≈_ =  _≈ˢ_
         ; id = idˢ
         ; _∘_ = _∘ˢ_
-          ; assoc = λ {Γ} {Δ} {Ξ} {Ψ} {σ} {τ} {ψ} {A} x → [∘]ˢ (σ x)
+        ; assoc = λ {Γ} {Δ} {Ξ} {Ψ} {σ} {τ} {ψ} {A} x → [∘]ˢ (σ x)
         ; sym-assoc = {!!}
         ; identityˡ = {!!}
         ; identityʳ = {!!}
