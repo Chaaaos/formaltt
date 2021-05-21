@@ -18,12 +18,3 @@ module SecondOrder.Context {ℓ} (Sort : Set ℓ)  where
     var-slot : A ∈ ctx-slot A
     var-inl : ∀ {Γ Δ} (x : A ∈ Γ) → A ∈ Γ ,, Δ
     var-inr : ∀ {Γ Δ} (y : A ∈ Δ) → A ∈ Γ ,, Δ
-
-  -- it is absurd to have a variable in the empty context
-  ctx-empty-absurd : ∀ {ℓ} {A} {P : A ∈ ctx-empty → Set ℓ} (x : A ∈ ctx-empty) → P x
-  ctx-empty-absurd ()
-
-  -- the injection of two equal variables are equal
-  ≡-inl : ∀ {Γ Δ A} {s t : A ∈ Γ}
-        → s ≡ t → var-inl {Δ = Δ} s ≡ var-inl t
-  ≡-inl refl = refl
