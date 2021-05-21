@@ -158,7 +158,7 @@ module SecondOrder.Substitution
   [id]ˢ {t = tm-var x} = ≈-refl
   [id]ˢ {t = tm-meta M ts} = ≈-meta (λ i → [id]ˢ)
   [id]ˢ {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ˢ-resp-≈ˢ (es i) ⇑ˢ-idˢ) [id]ˢ)
-  
+
   -- interaction of extension and right renaming action
 
   [⇑ˢ∘ʳ] : ∀ {Θ} {A} {Γ Δ Ξ Ψ} {σ : Θ ⊕ Δ ⇒ˢ Ξ} {ρ : Γ ⇒ʳ Δ} (t : Term Θ (Γ ,, Ψ) A) →
@@ -272,7 +272,7 @@ module SecondOrder.Substitution
         ; identityˡ = λ x → [id]ˢ
         ; identityʳ = λ x → ≈-refl
         ; identity² = λ x → ≈-refl
-        ; equiv = record { refl = λ x → ≈-refl ; sym = ≈ˢ-sym ; trans = ≈ˢ-trans }
+        ; equiv = record { refl = λ {σ} {A} → ≈ˢ-refl {σ = σ} ; sym = ≈ˢ-sym ; trans = ≈ˢ-trans }
         ; ∘-resp-≈ = λ f≈ˢg g≈ˢi x → []ˢ-resp-≈ˢ-≈ f≈ˢg (g≈ˢi x)
         }
 
@@ -310,6 +310,11 @@ module SecondOrder.Substitution
     inrˢ : ∀ {Γ Δ} → Θ ⊕ Δ ⇒ˢ Γ ,, Δ
     inrˢ y = tm-var (var-inr y)
 
+    [,]ˢ-resp-≈ˢ : ∀ {Γ Δ Ξ} {σ₁ σ₂ : Θ ⊕ Γ ⇒ˢ Ξ} {τ₁ τ₂ : Θ ⊕ Δ ⇒ˢ Ξ} →
+                   σ₁ ≈ˢ σ₂ → τ₁ ≈ˢ τ₂ → [ σ₁ , τ₁ ]ˢ ≈ˢ [ σ₂ , τ₂ ]ˢ
+    [,]ˢ-resp-≈ˢ ζ ξ (var-inl x) = ζ x
+    [,]ˢ-resp-≈ˢ ζ ξ (var-inr y) = ξ y
+
     uniqueˢ : ∀ {Γ Δ Ξ} {τ : Θ ⊕ Γ ,, Δ ⇒ˢ Ξ} {ρ : Θ ⊕ Γ ⇒ˢ Ξ} {σ : Θ ⊕ Δ ⇒ˢ Ξ}
               → τ ∘ˢ inlˢ ≈ˢ ρ
               → τ ∘ˢ inrˢ ≈ˢ σ
@@ -328,8 +333,8 @@ module SecondOrder.Substitution
             ; i₁ = inlˢ
             ; i₂ = inrˢ
             ; [_,_] = [_,_]ˢ
-            ; inject₁ = {!!}
-            ; inject₂ = {!!}
+            ; inject₁ = λ x → ≈-≡ refl
+            ; inject₂ = λ x → ≈-≡ refl
             ; unique = {!!}
             }
       }
