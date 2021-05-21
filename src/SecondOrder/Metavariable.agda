@@ -15,7 +15,7 @@ module SecondOrder.Metavariable
   record MetaContext : Set (lsuc ℓ) where
     field
       mv : Set -- the metavariables
-      mv-arity : mv → Context -- the arity of a metavariable
+      mv-arity : mv → VContext -- the arity of a metavariable
       mv-sort : mv → sort -- the sort of a metavariable
 
   open MetaContext public

@@ -35,7 +35,7 @@ module SecondOrder.Substitution
 
   infix 4 _⊕_⇒ˢ_
 
-  _⊕_⇒ˢ_ : ∀ (Θ : MetaContext) (Γ Δ : Context) → Set ℓ
+  _⊕_⇒ˢ_ : ∀ (Θ : MetaContext) (Γ Δ : VContext) → Set ℓ
   Θ ⊕ Γ ⇒ˢ Δ = ∀ {A} (x : A ∈ Γ) → Term Θ Δ A
 
   -- syntactic equality of substitutions
@@ -60,7 +60,7 @@ module SecondOrder.Substitution
            → σ ≈ˢ μ
   ≈ˢ-trans eq1 eq2 x = ≈-trans (eq1 x) (eq2 x)
 
-  substitution-setoid : ∀ (Γ Δ : Context) (Θ : MetaContext) → Setoid ℓ ℓ
+  substitution-setoid : ∀ (Γ Δ : VContext) (Θ : MetaContext) → Setoid ℓ ℓ
   substitution-setoid Γ Δ Θ =
     record
       { Carrier = Θ ⊕ Γ ⇒ˢ Δ
@@ -262,7 +262,7 @@ module SecondOrder.Substitution
     Terms : Category ℓ ℓ ℓ
     Terms =
       record
-        { Obj = Context
+        { Obj = VContext
         ; _⇒_ = Θ ⊕_⇒ˢ_
         ; _≈_ =  _≈ˢ_
         ; id = idˢ
