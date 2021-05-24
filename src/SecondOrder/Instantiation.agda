@@ -28,6 +28,9 @@ module SecondOrder.Instantiation
   Θ ⇒ⁱ Ξ ⊕ Γ = ∀ {Γᴹ Aᴹ} (M : [ Γᴹ , Aᴹ ]∈ Θ) → Term Ξ (Γ ,, Γᴹ) Aᴹ
 
   -- syntactic equality of instantiations
+
+  infix 5 _≈ⁱ_
+
   _≈ⁱ_ : ∀ {Θ Ξ Γ} (I J : Θ ⇒ⁱ Ξ ⊕ Γ) → Set ℓ
   _≈ⁱ_ {Θ} I J = ∀ {Γᴹ Aᴹ} (M : [ Γᴹ , Aᴹ ]∈ Θ) → I M ≈ J M
 
@@ -40,10 +43,20 @@ module SecondOrder.Instantiation
 
   infixr 6 [_]ⁱ_
 
-  [_]ⁱ_ : ∀ {Θ Ξ Γ A} → Ξ ⇒ⁱ Θ ⊕ Γ → Term Ξ Γ A → Term Θ Γ A
+  [_]ⁱ_ : ∀ {Θ Ξ Γ} → Ξ ⇒ⁱ Θ ⊕ Γ → ∀ {A Δ} → Term Ξ (Γ ,, Δ) A → Term Θ (Γ ,, Δ) A
   [ I ]ⁱ (tm-var x) = tm-var x
-  [ I ]ⁱ (tm-meta M ts) =   [  [ idˢ , (λ i → [ I ]ⁱ ts i) ]ˢ ]ˢ I M
+  [ I ]ⁱ (tm-meta M ts) =   [ [ inlˢ , (λ i → [ I ]ⁱ ts i) ]ˢ ]ˢ (I M)
   [ I ]ⁱ (tm-oper f es) = tm-oper f λ i → [ ⇑ⁱ I ]ⁱ es i
+
+  -- instantiation preserves equality
+
+  []ⁱ-resp-≈ : ∀ {Θ Ξ Γ} (I : Ξ ⇒ⁱ Θ ⊕ Γ) → ∀ {A Δ} (t u : Term Ξ (Γ ,, Δ) A) →
+               t ≈ u → [ I ]ⁱ t ≈ [ I ]ⁱ u
+  []ⁱ-resp-≈ I ξ = {!!}
+
+  []ⁱ-resp-≈ⁱ : ∀ {Θ Ξ Γ} {I J : Ξ ⇒ⁱ Θ ⊕ Γ} → ∀ {A Δ} (t : Term Ξ (Γ ,, Δ) A) →
+               I ≈ⁱ J → [ I ]ⁱ t ≈ [ J ]ⁱ t
+  []ⁱ-resp-≈ⁱ = {!!}
 
   -- generically applied metavariable
 
@@ -53,41 +66,42 @@ module SecondOrder.Instantiation
   -- the action of an instantiation on a generically applied metavariable
 
   []ⁱ-generic : ∀ {Θ Ξ} {Γ} {I : Θ ⇒ⁱ Ξ ⊕ Γ} {Γᴹ Aᴹ} {M : [ Γᴹ , Aᴹ ]∈ Θ} →
-                [ ⇑ⁱ I ]ⁱ tm-meta-generic M ≈ I M
-  []ⁱ-generic {I = I} {M = M} =
-    ≈-trans
-      (≈-sym ([∘]ˢ (I M)))
-      (≈ˢ-idˢ-[]ˢ (λ { (var-inl x) → ≈-refl ; (var-inr y) → ≈-refl }))
+                [ I ]ⁱ tm-meta-generic M ≈ I M
+  []ⁱ-generic {I = I} {M = M} = ≈ˢ-idˢ-[]ˢ (λ { (var-inl _) → ≈-refl ; (var-inr _) → ≈-refl })
 
   -- the identity metavariable instantiation
 
-  idⁱ : ∀ {Θ} Γ → Θ ⇒ⁱ Θ ⊕ Γ
-  idⁱ Γ M = tm-meta-generic M
+  idⁱ : ∀ {Θ Γ} → Θ ⇒ⁱ Θ ⊕ Γ
+  idⁱ M = tm-meta-generic M
 
   -- composition of metavariable instantiations
 
-  infixl 5 _∘ⁱ_
+  infixl 6 _∘ⁱ_
 
   _∘ⁱ_ : ∀ {Θ Ξ Ω Γ} → Ξ ⇒ⁱ Ω ⊕ Γ → Θ ⇒ⁱ Ξ ⊕ Γ → (Θ ⇒ⁱ Ω ⊕ Γ)
-  (I ∘ⁱ J) M =  [ ⇑ⁱ I ]ⁱ J M
+  (I ∘ⁱ J) M =  [ I ]ⁱ J M
 
   -- the action of the identity
 
-  [id]ⁱ : ∀ {Θ Γ A} {t : Term Θ Γ A}  → [ idⁱ Γ ]ⁱ t ≈ t
+  [id]ⁱ : ∀ {Θ Γ A Δ} {t : Term Θ (Γ ,, Δ) A}  → [ idⁱ ]ⁱ t ≈ t
   [id]ⁱ {t = tm-var x} = ≈-refl
   [id]ⁱ {t = tm-meta M ts} = ≈-meta (λ i → [id]ⁱ)
   [id]ⁱ {t = tm-oper f es} = ≈-oper (λ i → [id]ⁱ)
 
+  -- extension commutes with composition
+
+  ⇑ⁱ-resp-∘ⁱ : ∀ {Θ Ξ Ω} {Γ Δ} {I : Θ ⇒ⁱ Ξ ⊕ Γ} {J : Ξ ⇒ⁱ Ω ⊕ Γ} →
+               ⇑ⁱ {Δ = Δ} (J ∘ⁱ I) ≈ⁱ ⇑ⁱ J ∘ⁱ ⇑ⁱ I
+  ⇑ⁱ-resp-∘ⁱ = {!!}
+
   -- the action of a composition
 
-  [∘]ⁱ : ∀ {Θ Ξ Ω Γ A} → {I : Θ ⇒ⁱ Ξ ⊕ Γ} → {J : Ξ ⇒ⁱ Ω ⊕ Γ} {t : Term Θ Γ A}  →
-         [ J ∘ⁱ I ]ⁱ t ≈ [ J ]ⁱ [ I ]ⁱ t
-  [∘]ⁱ {t = tm-var x} = ≈-refl
-  [∘]ⁱ {t = tm-meta M ts} = {!!}
-  [∘]ⁱ {t = tm-oper f es} = ≈-oper (λ i → [∘]ⁱ)
-
-
-
+  [∘]ⁱ : ∀ {Θ Ξ Ω Γ} → {I : Θ ⇒ⁱ Ξ ⊕ Γ} → {J : Ξ ⇒ⁱ Ω ⊕ Γ} →
+           ∀ {Δ A} → ∀ (t : Term Θ (Γ ,, Δ) A) → [ J ∘ⁱ I ]ⁱ t ≈ [ J ]ⁱ [ I ]ⁱ t
+  [∘]ⁱ (tm-var x) = ≈-refl
+  [∘]ⁱ (tm-meta M ts) = {!!}
+  [∘]ⁱ {I = I} {J = J} (tm-oper f es) =
+    ≈-oper (λ i → ≈-trans ([]ⁱ-resp-≈ⁱ (es i) (⇑ⁱ-resp-∘ⁱ {I = I} {J = J})) ([∘]ⁱ (es i)))
 
 
 -- --   -- as a special case we define instantiation of a closed term such that
