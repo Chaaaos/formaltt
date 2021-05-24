@@ -338,7 +338,7 @@ module SecondOrder.Substitution
             ; [_,_] = [_,_]ˢ
             ; inject₁ = λ x → ≈-≡ refl
             ; inject₂ = λ x → ≈-≡ refl
-            ; unique = {!!}
+            ; unique = λ {σ = σ} {h} p₁ p₂ → uniqueˢ {τ = h} p₁ p₂
             }
       }
 

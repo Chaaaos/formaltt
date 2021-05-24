@@ -1,4 +1,4 @@
--- {-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --allow-unsolved-metas #-}
 
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subst)
@@ -10,7 +10,7 @@ import SecondOrder.Renaming
 import SecondOrder.Term
 import SecondOrder.Substitution
 
-module SecondOrder.Instantiation
+module SecondOrder.InstantiationTest
   {ℓ}
   {𝔸 : SecondOrder.Arity.Arity}
   (Σ : SecondOrder.Signature.Signature ℓ 𝔸)
@@ -48,14 +48,14 @@ module SecondOrder.Instantiation
 
   infixr 6 [_]ⁱ_
 
-  [_]ⁱ_ : ∀ {Θ ψ Γ} → ψ ⇒ⁱ Θ ⊕ Γ → ∀ {A Δ} → Term ψ (Γ ,, Δ) A → Term Θ (Γ ,, Δ) A
+  [_]ⁱ_ : ∀ {Θ ψ Γ} → ψ ⇒ⁱ Θ ⊕ Γ → ∀ {A} → Term ψ Γ A → Term Θ Γ A
   [ I ]ⁱ (tm-var x) = tm-var x
-  [ I ]ⁱ (tm-meta M ts) =   [ [ inlˢ , (λ i → [ I ]ⁱ ts i) ]ˢ ]ˢ (I M)
+  [ I ]ⁱ (tm-meta M ts) =  [ [ idˢ , ((λ i → [ I ]ⁱ ts i)) ]ˢ ]ˢ I M
   [ I ]ⁱ (tm-oper f es) = tm-oper f λ i → [ ⇑ⁱ I ]ⁱ es i
 
   -- instantiation preserves equality of terms
 
-  []ⁱ-resp-≈ : ∀ {Θ Ξ Γ} (I : Ξ ⇒ⁱ Θ ⊕ Γ) → ∀ {A Δ} (t u : Term Ξ (Γ ,, Δ) A) →
+  []ⁱ-resp-≈ : ∀ {Θ Ξ Γ} (I : Ξ ⇒ⁱ Θ ⊕ Γ) → ∀ {A} (t u : Term Ξ Γ A) →
                t ≈ u → [ I ]ⁱ t ≈ [ I ]ⁱ u
   []ⁱ-resp-≈ I t t (≈-≡ refl) = ≈-refl
   []ⁱ-resp-≈ I (tm-meta M ts) (tm-meta M us) (≈-meta ξ) =  []ˢ-resp-≈ˢ
@@ -67,7 +67,7 @@ module SecondOrder.Instantiation
 
   -- action preserves equality of instantiation
 
-  []ⁱ-resp-≈ⁱ : ∀ {Θ Ξ Γ} {I J : Ξ ⇒ⁱ Θ ⊕ Γ} → ∀ {A Δ} (t : Term Ξ (Γ ,, Δ) A) →
+  []ⁱ-resp-≈ⁱ : ∀ {Θ Ξ Γ} {I J : Ξ ⇒ⁱ Θ ⊕ Γ} → ∀ {A} (t : Term Ξ Γ A) →
                I ≈ⁱ J → [ I ]ⁱ t ≈ [ J ]ⁱ t
   []ⁱ-resp-≈ⁱ (tm-var x) ξ = ≈-refl
   []ⁱ-resp-≈ⁱ (tm-meta M ts) ξ = []ˢ-resp-≈ˢ-≈
@@ -85,8 +85,8 @@ module SecondOrder.Instantiation
   -- the action of an instantiation on a generically applied metavariable
 
   []ⁱ-generic : ∀ {Θ Ξ} {Γ} {I : Θ ⇒ⁱ Ξ ⊕ Γ} {Γᴹ Aᴹ} {M : [ Γᴹ , Aᴹ ]∈ Θ} →
-                [ I ]ⁱ tm-meta-generic M ≈ I M
-  []ⁱ-generic {I = I} {M = M} = ≈ˢ-idˢ-[]ˢ (λ { (var-inl _) → ≈-refl ; (var-inr _) → ≈-refl })
+                [ ⇑ⁱ I ]ⁱ tm-meta-generic M ≈ I M
+  []ⁱ-generic {I = I} {M = M} = ≈-trans (≈-sym ([∘]ˢ (I M))) (≈ˢ-idˢ-[]ˢ λ { (var-inl _) → ≈-refl ; (var-inr _) → ≈-refl})
 
   -- the identity metavariable instantiation
 
@@ -98,16 +98,15 @@ module SecondOrder.Instantiation
   infixl 6 _∘ⁱ_
 
   _∘ⁱ_ : ∀ {Θ Ξ Ω Γ} → Ξ ⇒ⁱ Ω ⊕ Γ → Θ ⇒ⁱ Ξ ⊕ Γ → (Θ ⇒ⁱ Ω ⊕ Γ)
-  (I ∘ⁱ J) M =  [ I ]ⁱ J M
+  (I ∘ⁱ J) M =  [ ⇑ⁱ I ]ⁱ J M
 
   -- composition of a substitution and an instantiation
   _ˢ∘ⁱ_ : ∀ {Θ ψ Γ Δ} → ψ ⊕ Γ ⇒ˢ Δ → Θ ⇒ⁱ ψ ⊕ Γ → Θ ⇒ⁱ ψ ⊕ Δ
   (σ ˢ∘ⁱ I) M = [ ⇑ˢ σ ]ˢ I M
 
   -- composition of an instantiation and a substitution
-  _ⁱ∘ˢ_ : ∀ {Θ ψ Γ Δ Ξ} → Θ ⇒ⁱ ψ ⊕ Ξ → Θ ⊕ Γ ⇒ˢ Δ →  ψ ⊕ (Ξ ,, Γ) ⇒ˢ (Ξ ,, Δ)
-  (I ⁱ∘ˢ σ) (var-inl x) = inlˢ x
-  (I ⁱ∘ˢ σ) (var-inr x) = [ I ]ⁱ ([ inrˢ ]ˢ σ x)
+  _ⁱ∘ˢ_ : ∀ {Θ ψ Γ Δ} → Θ ⇒ⁱ ψ ⊕ Δ → Θ ⊕ Γ ⇒ˢ Δ →  ψ ⊕ Γ ⇒ˢ Δ
+  (I ⁱ∘ˢ σ) x = [ I ]ⁱ (σ x)
 
   -- the action of the identity
 
@@ -117,29 +116,30 @@ module SecondOrder.Instantiation
   [id]ⁱ {t = tm-oper f es} = ≈-oper (λ i → [id]ⁱ)
 
 
-  -- the action of the composition of an instantiation and a substitution
+  -- -- the action of the composition of an instantiation and a substitution
 
-  [ⁱ∘ˢ]ˢ : ∀ {Θ ψ Γ Δ Ξ A} (I : Θ ⇒ⁱ ψ ⊕ Ξ) (σ : Θ ⊕ Γ ⇒ˢ Δ) (t : Term Θ Γ A) → [ I ⁱ∘ˢ σ ]ˢ ([ I ]ⁱ ([ inrˢ ]ˢ t)) ≈ [ I ]ⁱ ([ inrˢ ∘ˢ σ  ]ˢ t)
-  [ⁱ∘ˢ]ˢ = {!!}
+  -- [ⁱ∘ˢ]ˢ : ∀ {Θ ψ Γ Δ Ξ A} (I : Θ ⇒ⁱ ψ ⊕ Δ) (σ : Θ ⊕ Γ ⇒ˢ Δ) (t : Term Θ Γ A) → [ I ⁱ∘ˢ σ ]ˢ ([ I ]ⁱ t) ≈ [ I ]ⁱ ([ σ ]ˢ t)
+  -- [ⁱ∘ˢ]ˢ = {!!}
 
-  -- extension commutes with composition
+  -- -- extension commutes with composition
 
   ⇑ⁱ-resp-∘ⁱ : ∀ {Θ Ξ Ω} {Γ Δ} {I : Θ ⇒ⁱ Ξ ⊕ Γ} {J : Ξ ⇒ⁱ Ω ⊕ Γ} →
                ⇑ⁱ {Δ = Δ} (J ∘ⁱ I) ≈ⁱ ⇑ⁱ J ∘ⁱ ⇑ⁱ I
-  ⇑ⁱ-resp-∘ⁱ {I = I} {J = J} M = ≈-sym
-                                 (≈-trans
-                                   (≈-sym
-                                     ([ⁱ∘ˢ]ˢ
-                                       ((λ M₁ → [ [ (λ x → tm-var (var-inl (var-inl x))) , (λ x → tm-var (var-inr x)) ]ˢ ]ˢ J M₁))
-                                       (λ x → {!!}) {!I!}))
-                                   {!!})
+  ⇑ⁱ-resp-∘ⁱ {I = I} {J = J} M = {!!}
+--  ≈-sym
+  --                                (≈-trans
+  --                                  (≈-sym
+  --                                    ([ⁱ∘ˢ]ˢ
+  --                                      ((λ M₁ → [ [ (λ x → tm-var (var-inl (var-inl x))) , (λ x → tm-var (var-inr x)) ]ˢ ]ˢ J M₁))
+  --                                      {![ (λ x → tm-var (var-inl (var-inl x))) , (λ x → tm-var (var-inr x)) ]ˢ!} {!!}))
+  --                                  {!!})
 
   -- the action of a composition
 
   [∘]ⁱ : ∀ {Θ Ξ Ω Γ} → {I : Θ ⇒ⁱ Ξ ⊕ Γ} → {J : Ξ ⇒ⁱ Ω ⊕ Γ} →
-           ∀ {Δ A} → ∀ (t : Term Θ (Γ ,, Δ) A) → [ J ∘ⁱ I ]ⁱ t ≈ [ J ]ⁱ [ I ]ⁱ t
+           ∀ {A} → ∀ (t : Term Θ Γ A) → [ J ∘ⁱ I ]ⁱ t ≈ [ J ]ⁱ [ I ]ⁱ t
   [∘]ⁱ (tm-var x) = ≈-refl
-  [∘]ⁱ (tm-meta M ts) = {!!}
+  [∘]ⁱ (tm-meta M ts) = ≈-sym (≈-trans {!!} {!!})
   [∘]ⁱ {I = I} {J = J} (tm-oper f es) =
     ≈-oper (λ i → ≈-trans ([]ⁱ-resp-≈ⁱ (es i) (⇑ⁱ-resp-∘ⁱ {I = I} {J = J})) ([∘]ⁱ (es i)))
 

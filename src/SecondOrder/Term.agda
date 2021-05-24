@@ -40,6 +40,9 @@ module SecondOrder.Term
     ≈-oper : ∀ {Γ} {f : oper} {ds es : ∀ (i : oper-arg f) → Arg Θ Γ (arg-sort f i)  (arg-bind f i)}
                (ξ : ∀ i → ds i ≈ es i) → tm-oper f ds ≈ tm-oper f es
 
+
+  -- Syntactic equality of terms is an equivalence relation
+
   ≈-refl : ∀ {Θ Γ A} {t : Term Θ Γ A} → t ≈ t
   ≈-refl = ≈-≡ refl
 
@@ -62,6 +65,6 @@ module SecondOrder.Term
       ; _≈_ = _≈_
       ; isEquivalence = record { refl = ≈-refl ; sym = ≈-sym ; trans = ≈-trans } }
 
-  -- to equal variable give rise to two equal terms
+  -- two equal variable give rise to two equal terms
   ≡-var : ∀ {Θ Γ A} → {s t : A ∈ Γ} → s ≡ t → tm-var {Θ = Θ} s ≡ tm-var t
   ≡-var refl = refl
