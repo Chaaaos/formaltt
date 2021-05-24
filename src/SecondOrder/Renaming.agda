@@ -25,7 +25,7 @@ module SecondOrder.Renaming
   open SecondOrder.Term Σ
 
   -- a renaming maps variables between contexts in a type-preserving way
-  _⇒ʳ_ : ∀ (Γ Δ : Context) → Set ℓ
+  _⇒ʳ_ : ∀ (Γ Δ : VContext) → Set ℓ
   Γ ⇒ʳ Δ = ∀ {A} → A ∈ Γ → A ∈ Δ
 
   infix 4 _⇒ʳ_
@@ -53,7 +53,7 @@ module SecondOrder.Renaming
 
   -- renamings form a setoid
 
-  renaming-setoid : ∀ (Γ Δ : Context) → Setoid ℓ ℓ
+  renaming-setoid : ∀ (Γ Δ : VContext) → Setoid ℓ ℓ
   renaming-setoid Γ Δ =
     record
       { Carrier = Γ ⇒ʳ Δ
@@ -68,7 +68,7 @@ module SecondOrder.Renaming
 
   -- the identity renaming
 
-  idʳ : ∀ {Γ : Context} → Γ ⇒ʳ Γ
+  idʳ : ∀ {Γ : VContext} → Γ ⇒ʳ Γ
   idʳ x = x
 
   -- composition of renamings
@@ -107,7 +107,7 @@ module SecondOrder.Renaming
     Contexts : Category ℓ ℓ ℓ
     Contexts =
       record
-        { Obj = Context
+        { Obj = VContext
         ; _⇒_ = _⇒ʳ_
         ; _≈_ = _≡ʳ_
         ; id = idʳ
@@ -162,6 +162,11 @@ module SecondOrder.Renaming
 
   open Categories.Category.Cocartesian.BinaryCoproducts Context-+
 
+  -- the renaming from the empty context
+
+  inʳ : ∀ {Γ} → ctx-empty ⇒ʳ Γ
+  inʳ ()
+
   -- extension of a renaming is summing with identity
   ⇑ʳ : ∀ {Γ Δ Ξ} → Γ ⇒ʳ Δ → Γ ,, Ξ ⇒ʳ Δ ,, Ξ
   ⇑ʳ ρ = ρ +₁ idʳ
@@ -172,7 +177,7 @@ module SecondOrder.Renaming
 
 
   -- the action of a renaming on terms
-  module _ {Θ : MetaContext} where
+  module _ {Θ : MContext} where
 
     infix 6 [_]ʳ_
 
@@ -216,7 +221,7 @@ module SecondOrder.Renaming
   [∘]ʳ {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ʳ-resp-≡ʳ ⇑ʳ-∘ʳ) [∘]ʳ)
 
   -- Forming terms over a given metacontext and sort is functorial in the context
-  module _ {Θ : MetaContext} {A : sort} where
+  module _ {Θ : MContext} {A : sort} where
     open Categories.Functor
     open Categories.Category.Instance.Setoids
 

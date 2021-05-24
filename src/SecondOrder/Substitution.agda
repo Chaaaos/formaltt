@@ -35,7 +35,7 @@ module SecondOrder.Substitution
 
   infix 4 _⊕_⇒ˢ_
 
-  _⊕_⇒ˢ_ : ∀ (Θ : MetaContext) (Γ Δ : Context) → Set ℓ
+  _⊕_⇒ˢ_ : ∀ (Θ : MContext) (Γ Δ : VContext) → Set ℓ
   Θ ⊕ Γ ⇒ˢ Δ = ∀ {A} (x : A ∈ Γ) → Term Θ Δ A
 
   -- syntactic equality of substitutions
@@ -60,7 +60,7 @@ module SecondOrder.Substitution
            → σ ≈ˢ μ
   ≈ˢ-trans eq1 eq2 x = ≈-trans (eq1 x) (eq2 x)
 
-  substitution-setoid : ∀ (Γ Δ : Context) (Θ : MetaContext) → Setoid ℓ ℓ
+  substitution-setoid : ∀ (Γ Δ : VContext) (Θ : MContext) → Setoid ℓ ℓ
   substitution-setoid Γ Δ Θ =
     record
       { Carrier = Θ ⊕ Γ ⇒ˢ Δ
@@ -145,7 +145,6 @@ module SecondOrder.Substitution
   idˢ : ∀ {Θ Γ} → Θ ⊕ Γ ⇒ˢ Γ
   idˢ = tm-var
 
-
   -- extension preserves identity
 
   ⇑ˢ-idˢ : ∀ {Θ} {Γ Δ} → ⇑ˢ idˢ ≈ˢ idˢ {Θ = Θ} {Γ = Γ ,, Δ}
@@ -158,6 +157,10 @@ module SecondOrder.Substitution
   [id]ˢ {t = tm-var x} = ≈-refl
   [id]ˢ {t = tm-meta M ts} = ≈-meta (λ i → [id]ˢ)
   [id]ˢ {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ˢ-resp-≈ˢ (es i) ⇑ˢ-idˢ) [id]ˢ)
+
+  -- if a substiution is equal to the identity then it acts trivially
+  ≈ˢ-idˢ-[]ˢ : ∀ {Θ} {Γ} {A} {σ : Θ ⊕ Γ ⇒ˢ Γ} {t : Term Θ Γ A} → σ ≈ˢ idˢ → [ σ ]ˢ t ≈ t
+  ≈ˢ-idˢ-[]ˢ {t = t} ξ = ≈-trans ([]ˢ-resp-≈ˢ t ξ) [id]ˢ
 
   -- interaction of extension and right renaming action
 
@@ -214,7 +217,7 @@ module SecondOrder.Substitution
 
   -- Terms form a relative monad
 
-  module _ {Θ : MetaContext} where
+  module _ {Θ : MContext} where
     open Categories.Category
     open Categories.Functor using (Functor)
     open Categories.Category.Instance.Setoids
@@ -262,7 +265,7 @@ module SecondOrder.Substitution
     Terms : Category ℓ ℓ ℓ
     Terms =
       record
-        { Obj = Context
+        { Obj = VContext
         ; _⇒_ = Θ ⊕_⇒ˢ_
         ; _≈_ =  _≈ˢ_
         ; id = idˢ
