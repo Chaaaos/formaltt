@@ -88,6 +88,9 @@ module SecondOrder.Instantiation
                 [ I ]ⁱ tm-meta-generic M ≈ I M
   []ⁱ-generic {I = I} {M = M} = ≈ˢ-idˢ-[]ˢ (λ { (var-inl _) → ≈-refl ; (var-inr _) → ≈-refl })
 
+
+  -- Interactions involving instantiations
+
   -- the identity metavariable instantiation
 
   idⁱ : ∀ {Θ Γ} → Θ ⇒ⁱ Θ ⊕ Γ
@@ -100,14 +103,29 @@ module SecondOrder.Instantiation
   _∘ⁱ_ : ∀ {Θ Ξ Ω Γ} → Ξ ⇒ⁱ Ω ⊕ Γ → Θ ⇒ⁱ Ξ ⊕ Γ → (Θ ⇒ⁱ Ω ⊕ Γ)
   (I ∘ⁱ J) M =  [ I ]ⁱ J M
 
+  -- composition of a renaming and an instantiation
+  _ʳ∘ⁱ_ : ∀ {Θ ψ Γ Δ} → Γ ⇒ʳ Δ → Θ ⇒ⁱ ψ ⊕ Γ → Θ ⇒ⁱ ψ ⊕ Δ
+  (ρ ʳ∘ⁱ I) M = [ ⇑ʳ ρ ]ʳ I M
+
+  -- composition of a renaming and an instantiation preerve equality of instantiations
+  [ʳ∘ⁱ]ⁱ-resp-≈ⁱ : ∀ {Θ ψ Γ Δ} (ρ : Γ ⇒ʳ Δ) (I J : Θ ⇒ⁱ ψ ⊕ Γ) → (I ≈ⁱ J) → (ρ ʳ∘ⁱ I) ≈ⁱ (ρ ʳ∘ⁱ J)
+  [ʳ∘ⁱ]ⁱ-resp-≈ⁱ σ I J ξ M = []ʳ-resp-≈ (ξ M)
+
   -- composition of a substitution and an instantiation
   _ˢ∘ⁱ_ : ∀ {Θ ψ Γ Δ} → ψ ⊕ Γ ⇒ˢ Δ → Θ ⇒ⁱ ψ ⊕ Γ → Θ ⇒ⁱ ψ ⊕ Δ
   (σ ˢ∘ⁱ I) M = [ ⇑ˢ σ ]ˢ I M
+
+  -- composition of a substitution and an instantiation preerve equality of instantiations
+  [ˢ∘ⁱ]ⁱ-resp-≈ⁱ : ∀ {Θ ψ Γ Δ} (σ : ψ ⊕ Γ ⇒ˢ Δ) (I J : Θ ⇒ⁱ ψ ⊕ Γ) → (I ≈ⁱ J) → (σ ˢ∘ⁱ I) ≈ⁱ (σ ˢ∘ⁱ J)
+  [ˢ∘ⁱ]ⁱ-resp-≈ⁱ σ I J ξ M = []ˢ-resp-≈ (⇑ˢ σ) (ξ M)
 
   -- composition of an instantiation and a substitution
   _ⁱ∘ˢ_ : ∀ {Θ ψ Γ Δ Ξ} → Θ ⇒ⁱ ψ ⊕ Ξ → Θ ⊕ Γ ⇒ˢ Δ →  ψ ⊕ (Ξ ,, Γ) ⇒ˢ (Ξ ,, Δ)
   (I ⁱ∘ˢ σ) (var-inl x) = inlˢ x
   (I ⁱ∘ˢ σ) (var-inr x) = [ I ]ⁱ ([ inrˢ ]ˢ σ x)
+
+
+  -- Actions correspondig to the interactions
 
   -- the action of the identity
 
