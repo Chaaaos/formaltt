@@ -1,7 +1,7 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; setoid; cong; trans)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; setoid; cong; trans)
 import Function.Equality
 open import Relation.Binary using (Setoid)
 
@@ -158,6 +158,11 @@ module SecondOrder.Substitution
   [id]ˢ {t = tm-meta M ts} = ≈-meta (λ i → [id]ˢ)
   [id]ˢ {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ˢ-resp-≈ˢ (es i) ⇑ˢ-idˢ) [id]ˢ)
 
+  -- the identity substitution preserves equality of terms
+  [id]ˢ-resp-≈ : ∀ {Θ} {Γ} {A} {t s : Term Θ Γ A} → t ≈ s → [ idˢ ]ˢ t ≈ s
+  [id]ˢ-resp-≈ t≈s = ≈-trans ([]ˢ-resp-≈ idˢ t≈s) [id]ˢ
+    
+
   -- if a substiution is equal to the identity then it acts trivially
   ≈ˢ-idˢ-[]ˢ : ∀ {Θ} {Γ} {A} {σ : Θ ⊕ Γ ⇒ˢ Γ} {t : Term Θ Γ A} → σ ≈ˢ idˢ → [ σ ]ˢ t ≈ t
   ≈ˢ-idˢ-[]ˢ {t = t} ξ = ≈-trans ([]ˢ-resp-≈ˢ t ξ) [id]ˢ
@@ -246,7 +251,7 @@ module SecondOrder.Substitution
       let open Function.Equality using (_⟨$⟩_) renaming (cong to func-cong) in
       record
         { F₀ = Term-setoid Θ
-        ; unit = λ A → record { _⟨$⟩_ = tm-var ; cong = λ ξ → ≈-≡ (cong tm-var ξ) }
+        ; unit = λ A → record { _⟨$⟩_ = idˢ ; cong = λ ξ → ≈-≡ (cong idˢ ξ) }
         ; extend = λ σ A → record { _⟨$⟩_ =  [ (σ _ ⟨$⟩_) ]ˢ_ ; cong = []ˢ-resp-≈ (σ _ ⟨$⟩_)}
         ; identityʳ = λ {_} {_} {σ} A {_} {_} ξ → func-cong (σ A) ξ
         ; identityˡ = λ A → ≈-trans [id]ˢ
@@ -285,19 +290,67 @@ module SecondOrder.Substitution
       { F = record
               { F₀ = λ Γ → Γ
               ; F₁ = λ σ A → record { _⟨$⟩_ = λ x → σ x ; cong = λ i≡j → ≈-≡ (cong σ i≡j) }
-              ; identity = λ A eq → ≈-≡ (cong (λ v → tm-var v) eq)
+              ; identity = λ A eq → ≈-≡ (cong idˢ eq)
               ; homomorphism = λ {Γ} {Δ} {Ξ} {σ} {τ} A eq → ≈-≡ (cong (λ x → [ τ ]ˢ σ x) eq)
               ; F-resp-≈ = λ {Γ} {Δ} {σ} {τ} hom_eq A eq
-                         → ≈-trans (congˢ hom_eq) (≈-≡ (cong (λ y → τ y) eq))
+                         → ≈-trans (congˢ hom_eq) (≈-≡ (cong τ eq))
               }
-      ; G = record
+      ; G =
+          let open Function.Equality using (_⟨$⟩_) renaming (cong to func-cong) in
+          record
               { F₀ = λ Γ → Γ
-              ; F₁ = λ {Γ} {Δ} σ {A} x → {!!}
-              ; identity = {!!}
-              ; homomorphism = {!!}
-              ; F-resp-≈ = {!!}
+              ; F₁ = λ {Γ} {Δ} σ {A} → λ x → σ A ⟨$⟩ x
+              ; identity = λ x → ≈-refl
+              ; homomorphism = λ x → ≈-refl
+              ; F-resp-≈ = λ {Γ} {Δ} {σ} {τ} σ≈τ {A} x → σ≈τ A refl
               }
-      ; weak-inverse = {!!} }
+      ; weak-inverse =
+          let open Function.Equality using (_⟨$⟩_) renaming (cong to func-cong) in
+          record
+          { F∘G≈id =
+                   record
+                   { F⇒G =
+                         record
+                         { η = λ Γ A → record { _⟨$⟩_ = idˢ
+                                               ; cong = λ i≡j → ≈-≡ (cong idˢ i≡j)
+                                               }
+                         ; commute = λ σ A x≡y → [id]ˢ-resp-≈ (≈-≡ (cong (λ x → σ A ⟨$⟩ x) x≡y))
+                         ; sym-commute = λ σ A x≡y
+                                       → ≈-sym ([id]ˢ-resp-≈ (≈-≡ (cong (λ x → σ A ⟨$⟩ x ) (sym x≡y))))
+                         }
+                   ; F⇐G =
+                         record
+                         { η = λ Γ A → record { _⟨$⟩_ = idˢ
+                                               ; cong = λ i≡j → ≈-≡ (cong idˢ i≡j)
+                                               }
+                         ; commute = λ σ A x≡y → [id]ˢ-resp-≈ (≈-≡ (cong (λ x → σ A ⟨$⟩ x) x≡y))
+                         ; sym-commute = λ σ A x≡y
+                                       → ≈-sym ([id]ˢ-resp-≈ (≈-≡ (cong (λ x → σ A ⟨$⟩ x ) (sym x≡y))))
+                         }
+                   ; iso = λ Γ → record { isoˡ = λ A x≡y → ≈-≡ (cong tm-var x≡y)
+                                         ; isoʳ = λ A x≡y → ≈-≡ (cong tm-var x≡y)
+                                         }
+                   }
+          ; G∘F≈id =
+                   record
+                   { F⇒G =
+                         record
+                         { η = λ Γ x → tm-var x
+                         ; commute = λ σ x → [id]ˢ
+                         ; sym-commute = λ σ x → ≈-sym [id]ˢ
+                         }
+                   ; F⇐G =
+                         record
+                         { η = λ Γ x → tm-var x
+                         ; commute = λ σ x → [id]ˢ
+                         ; sym-commute = λ σ x → ≈-sym [id]ˢ
+                         }
+                   ; iso = λ Γ → record { isoˡ = λ x → ≈-refl
+                                         ; isoʳ = λ x → ≈-refl
+                                         }
+                   }
+          }
+      }
 
     -- the binary coproduct structure on Terms
 
