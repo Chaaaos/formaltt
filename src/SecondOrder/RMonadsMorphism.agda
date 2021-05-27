@@ -24,7 +24,9 @@ module SecondOrder.RMonadsMorphism
       open Monad
       field
         morph : ∀ {X} → (F₀ M X) ⇒ (F₀ M’ X)
-        law-unit : ∀ {X} → morph ∘ (unit M {X}) ≡ unit M’ {X}
+        law-unit : ∀ {X} → morph ∘ (unit M {X}) ≈ unit M’ {X}
         law-extend : ∀ {X Y} {k : (Functor.F₀ J X) ⇒ (F₀ M Y)}
                 → (morph {Y}) ∘ (extend  M k)
-                  ≡ (extend M’ ((morph {Y}) ∘ k)) ∘ (morph {X})
+                  ≈ (extend M’ ((morph {Y}) ∘ k)) ∘ (morph {X})
+
+  -- here, the equality used is the equivalence relation between morphisms of the category D
