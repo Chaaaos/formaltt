@@ -9,6 +9,7 @@ import SecondOrder.Metavariable
 import SecondOrder.Renaming
 import SecondOrder.Term
 import SecondOrder.Substitution
+import SecondOrder.RMonadsMorphism
 
 module SecondOrder.Instantiation
   {ℓ}
@@ -21,6 +22,7 @@ module SecondOrder.Instantiation
   open SecondOrder.Term Σ
   open SecondOrder.Renaming Σ
   open SecondOrder.Substitution Σ
+  open import SecondOrder.RMonadsMorphism
 
   -- metavariable instantiation
 
@@ -104,22 +106,27 @@ module SecondOrder.Instantiation
   (I ∘ⁱ J) M =  [ I ]ⁱ J M
 
   -- composition of a renaming and an instantiation
+
   _ʳ∘ⁱ_ : ∀ {Θ ψ Γ Δ} → Γ ⇒ʳ Δ → Θ ⇒ⁱ ψ ⊕ Γ → Θ ⇒ⁱ ψ ⊕ Δ
   (ρ ʳ∘ⁱ I) M = [ ⇑ʳ ρ ]ʳ I M
 
   -- composition of a renaming and an instantiation preerve equality of instantiations
+
   [ʳ∘ⁱ]ⁱ-resp-≈ⁱ : ∀ {Θ ψ Γ Δ} (ρ : Γ ⇒ʳ Δ) (I J : Θ ⇒ⁱ ψ ⊕ Γ) → (I ≈ⁱ J) → (ρ ʳ∘ⁱ I) ≈ⁱ (ρ ʳ∘ⁱ J)
   [ʳ∘ⁱ]ⁱ-resp-≈ⁱ σ I J ξ M = []ʳ-resp-≈ (ξ M)
 
   -- composition of a substitution and an instantiation
+
   _ˢ∘ⁱ_ : ∀ {Θ ψ Γ Δ} → ψ ⊕ Γ ⇒ˢ Δ → Θ ⇒ⁱ ψ ⊕ Γ → Θ ⇒ⁱ ψ ⊕ Δ
   (σ ˢ∘ⁱ I) M = [ ⇑ˢ σ ]ˢ I M
 
   -- composition of a substitution and an instantiation preerve equality of instantiations
+
   [ˢ∘ⁱ]ⁱ-resp-≈ⁱ : ∀ {Θ ψ Γ Δ} (σ : ψ ⊕ Γ ⇒ˢ Δ) (I J : Θ ⇒ⁱ ψ ⊕ Γ) → (I ≈ⁱ J) → (σ ˢ∘ⁱ I) ≈ⁱ (σ ˢ∘ⁱ J)
   [ˢ∘ⁱ]ⁱ-resp-≈ⁱ σ I J ξ M = []ˢ-resp-≈ (⇑ˢ σ) (ξ M)
 
   -- composition of an instantiation and a substitution
+
   _ⁱ∘ˢ_ : ∀ {Θ ψ Γ Δ Ξ} → Θ ⇒ⁱ ψ ⊕ Ξ → Θ ⊕ Γ ⇒ˢ Δ →  ψ ⊕ (Ξ ,, Γ) ⇒ˢ (Ξ ,, Δ)
   (I ⁱ∘ˢ σ) (var-inl x) = inlˢ x
   (I ⁱ∘ˢ σ) (var-inr x) = [ I ]ⁱ ([ inrˢ ]ˢ σ x)
@@ -152,14 +159,71 @@ module SecondOrder.Instantiation
                                        (λ x → {!!}) {!I!}))
                                    {!!})
 
+  -- the application of [_]ⁱ_ to an instantiation is a morphism of relative monads
+  [_]ⁱ-morphism :  ∀ {Θ ψ Γ} (I : ψ ⇒ⁱ Θ ⊕ Γ) → RMonadMorph (⇑ᵗ-Term-Monad {Θ = Θ} Γ) (⇑ᵗ-Term-Monad {Θ = ψ} Γ)
+  [_]ⁱ-morphism = {!!}
+                  -- record
+                  --   { morph = λ {X = Γ′} A → record { _⟨$⟩_ = λ t → {![ I ]ⁱ ([ inrˢ ]ˢ t)!} ; cong = {!!} }
+                  --   ; law-unit = {!!}
+                  --   ; law-extend = {!!} }
+
+                  --  RMonadMorph (⇑ᵗ-Term-Monad {Θ = Θ} Γ) (⇑ᵗ-Term-Monad {Θ = ψ} Γ)
+                  -- RMonadMorph (Term-Monad {Θ = Θ}) (Term-Monad {Θ = ψ})
+
+
+
   -- the action of a composition
 
   [∘]ⁱ : ∀ {Θ Ξ Ω Γ} → {I : Θ ⇒ⁱ Ξ ⊕ Γ} → {J : Ξ ⇒ⁱ Ω ⊕ Γ} →
            ∀ {Δ A} → ∀ (t : Term Θ (Γ ,, Δ) A) → [ J ∘ⁱ I ]ⁱ t ≈ [ J ]ⁱ [ I ]ⁱ t
   [∘]ⁱ (tm-var x) = ≈-refl
-  [∘]ⁱ (tm-meta M ts) = {!!}
+  [∘]ⁱ {I = I} {J = J} (tm-meta M ts) =
+                      ≈-trans
+                        ([]ˢ-resp-≈ˢ
+                          ([ J ]ⁱ (I M))
+                          ([,]ˢ-resp-≈ˢ (λ x → ≈-refl) (λ i → [∘]ⁱ {I = I} {J = J} (ts i))))
+                        (≈-trans
+                          ([]ˢ-resp-≈ˢ
+                            ([ J ]ⁱ (I M))
+                            λ x → []ˢ-resp-≈ˢ {σ = [ inlˢ , (λ {A} i → [ J ]ⁱ [ I ]ⁱ ts i) ]ˢ} {τ = λ i → ((I ⇒ⁱ J ext[ ts ]) i)} (tm-var x) ((I ⇒ⁱ J ext[ ts ]-correct)))
+                          {!!})
+               where
+                 _⇒ⁱ_ext[_] : ∀ {Θ ψ Ω Γ Δ Ξ A} (I : Θ ⇒ⁱ ψ ⊕ Γ) (J : ψ ⇒ⁱ Ω ⊕ Γ)
+                          →  (∀ {B} (i : B ∈ Δ) → Term Θ (Γ ,, Ξ) B)
+                          → A ∈ Γ ,, Δ → Term Ω (Γ ,, Ξ) A
+                 (I ⇒ⁱ J ext[ ts ]) (var-inl x) = tm-var (var-inl x)
+                 (I ⇒ⁱ J ext[ ts ]) (var-inr x) =  [ J ]ⁱ [ I ]ⁱ (ts x)
+
+                 _⇒ⁱ_ext[_]-correct : ∀ {Θ ψ Ω Γ Δ Ξ}
+                                       (I : Θ ⇒ⁱ ψ ⊕ Γ) (J : ψ ⇒ⁱ Ω ⊕ Γ)
+                                       (ts : ∀ {B} (i : B ∈ Δ) → Term Θ (Γ ,, Ξ) B)
+                                      → ([ inlˢ , (λ i → ( [ J ]ⁱ [ I ]ⁱ (ts i))) ]ˢ) ≈ˢ (λ i → (I ⇒ⁱ J ext[ ts ]) i)
+                 (I ⇒ⁱ J ext[ ts ]-correct) (var-inl i) = ≈-refl
+                 (I ⇒ⁱ J ext[ ts ]-correct) (var-inr i) = ≈-refl
   [∘]ⁱ {I = I} {J = J} (tm-oper f es) =
-    ≈-oper (λ i → ≈-trans ([]ⁱ-resp-≈ⁱ (es i) (⇑ⁱ-resp-∘ⁱ {I = I} {J = J})) ([∘]ⁱ (es i)))
+            ≈-oper (λ i → ≈-trans ([]ⁱ-resp-≈ⁱ (es i) (⇑ⁱ-resp-∘ⁱ {I = I} {J = J})) ([∘]ⁱ (es i)))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- Goal: [
 --       (λ M₁ →

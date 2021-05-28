@@ -222,7 +222,7 @@ module SecondOrder.Substitution
 
   -- Terms form a relative monad
 
-  module _ {Θ : MContext} where
+  module _ where
     open Categories.Category
     open Categories.Functor using (Functor)
     open Categories.Category.Instance.Setoids
@@ -244,6 +244,28 @@ module SecondOrder.Substitution
               }
 
 
+     -- The embedding of extended contexts into setoids indexed by sorts
+
+    ⇑ᵗ-slots : ∀ (Γ : VContext) → Functor Contexts (IndexedCategory sort (Setoids ℓ ℓ))
+    ⇑ᵗ-slots Γ = record
+              { F₀ = λ Δ A → setoid (A ∈ (Δ ,, Γ))
+              ; F₁ = λ ρ A → record { _⟨$⟩_ = ⇑ʳ ρ ; cong = cong (⇑ʳ ρ) } -- λ ρ A → record { _⟨$⟩_ = ρ ; cong = cong ρ }
+              ; identity = λ A ξ → {!!} -- λ A ξ → ξ
+              ; homomorphism = {!!} -- λ {_} {_} {_} {ρ} {σ} A {_} {_} ξ → cong σ (cong ρ ξ)
+              ; F-resp-≈ = {!!} -- λ ξ A ζ → trans (ξ _) (cong _ ζ)
+              }
+
+  module _ {Θ : MContext} where
+    open Categories.Category
+    open Categories.Functor using (Functor)
+    open Categories.Category.Instance.Setoids
+    open Categories.Monad.Relative
+    open Function.Equality using () renaming (setoid to Π-setoid)
+    open Categories.Category.Equivalence using (StrongEquivalence)
+    open import SecondOrder.IndexedCategory
+    open import SecondOrder.RelativeKleisli
+
+
     -- The relative monad of terms over contexts
 
     Term-Monad : Monad slots
@@ -259,6 +281,21 @@ module SecondOrder.Substitution
         ; extend-≈ = λ {Γ} {Δ} {σ} {ρ} ζ B {s} {t} ξ → []ˢ-resp-≈ˢ-≈ (λ x → ζ _ refl) ξ
         }
 
+
+    -- The relative monad of terms over extended contexts
+
+    ⇑ᵗ-Term-Monad : ∀ (Γ : VContext) → Monad (⇑ᵗ-slots Γ)
+    ⇑ᵗ-Term-Monad Γ =
+      let open Function.Equality using (_⟨$⟩_) renaming (cong to func-cong) in
+      record
+        { F₀ = λ Δ A → Term-setoid Θ (Γ ,, Δ) A -- Term-setoid Θ
+        ; unit = {!!} -- λ A → record { _⟨$⟩_ = idˢ ; cong = λ ξ → ≈-≡ (cong idˢ ξ) }
+        ; extend = {!!} -- λ σ A → record { _⟨$⟩_ =  [ (σ _ ⟨$⟩_) ]ˢ_ ; cong = []ˢ-resp-≈ (σ _ ⟨$⟩_)}
+        ; identityʳ = {!!} -- λ {_} {_} {σ} A {_} {_} ξ → func-cong (σ A) ξ
+        ; identityˡ = {!!} -- λ A → ≈-trans [id]ˢ
+        ; assoc = {!!} -- λ {_} {_} {_} {σ} {ρ} A {_} {t} ξ → ≈-trans ([]ˢ-resp-≈ _ ξ) ([∘]ˢ t)
+        ; extend-≈ = {!!} -- λ {Γ} {Δ} {σ} {ρ} ζ B {s} {t} ξ → []ˢ-resp-≈ˢ-≈ (λ x → ζ _ refl) ξ
+        }
 
     -- the category of contexts and substitutions
 
