@@ -6,7 +6,8 @@ open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subs
 import SecondOrder.Arity
 import SecondOrder.Signature
 import SecondOrder.Metavariable
-import SecondOrder.Renaming
+import SecondOrder.VRenaming
+import SecondOrder.MRenaming
 import SecondOrder.Term
 import SecondOrder.Substitution
 import SecondOrder.RMonadsMorphism
@@ -20,7 +21,8 @@ module SecondOrder.Instantiation
   open SecondOrder.Signature.Signature Σ
   open SecondOrder.Metavariable Σ
   open SecondOrder.Term Σ
-  open SecondOrder.Renaming Σ
+  open SecondOrder.VRenaming Σ
+  open SecondOrder.MRenaming Σ
   open SecondOrder.Substitution Σ
   open import SecondOrder.RMonadsMorphism
 

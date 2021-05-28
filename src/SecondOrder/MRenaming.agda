@@ -13,7 +13,6 @@ import SecondOrder.Arity
 import SecondOrder.Signature
 import SecondOrder.Metavariable
 import SecondOrder.Term
-import SecondOrder.Instantiation
 
 module SecondOrder.MRenaming
   {ℓ}
@@ -24,7 +23,6 @@ module SecondOrder.MRenaming
   open SecondOrder.Signature.Signature Σ
   open SecondOrder.Metavariable Σ
   open SecondOrder.Term Σ
-  open SecondOrder.Instantiation Σ
 
   -- a metarenaming maps metavariables between contexts in an arity-preserving way
   _⇒ᵐʳ_ : ∀ (Θ ψ : MContext) → Set ℓ
