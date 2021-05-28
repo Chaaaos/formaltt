@@ -14,11 +14,11 @@ open import Categories.Category.Cocartesian
 
 module SecondOrder.RMonadsMorphism
   {o ℓ e o′ ℓ′ e′ : Level}
-  (C : Category o ℓ e)
-  (D : Category o′ ℓ′ e′)
+  {C : Category o ℓ e}
+  {D : Category o′ ℓ′ e′}
   where
 
-  record RMonadMorph {J : Functor C D} (M M’ : Monad J) : Set (lsuc (o ⊔ ℓ′))
+  record RMonadMorph {J : Functor C D} (M M’ : Monad J) : Set (lsuc (o ⊔ ℓ′ ⊔ e′))
     where
       open Category D
       open Monad
