@@ -1,4 +1,4 @@
--- {-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --allow-unsolved-metas #-}
 
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subst)
@@ -203,7 +203,16 @@ module SecondOrder.Instantiation
   [∘]ⁱ {I = I} {J = J} (tm-oper f es) =
             ≈-oper (λ i → ≈-trans ([]ⁱ-resp-≈ⁱ (es i) (⇑ⁱ-resp-∘ⁱ {I = I} {J = J})) ([∘]ⁱ (es i)))
 
+    -- -- The embedding of contexts into setoids indexed by sorts
 
+    -- slots : Functor Contexts (IndexedCategory sort (Setoids ℓ ℓ))
+    -- slots = record
+    --           { F₀ = λ Γ A → setoid (A ∈ Γ)
+    --           ; F₁ = λ ρ A → record { _⟨$⟩_ = ρ ; cong = cong ρ }
+    --           ; identity = λ A ξ → ξ
+    --           ; homomorphism = λ {_} {_} {_} {ρ} {σ} A {_} {_} ξ → cong σ (cong ρ ξ)
+    --           ; F-resp-≈ = λ ξ A ζ → trans (ξ _) (cong _ ζ)
+    --           }
 
 
 
