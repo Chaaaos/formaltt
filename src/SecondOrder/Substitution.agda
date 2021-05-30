@@ -15,7 +15,7 @@ import Categories.Category.Cocartesian
 import SecondOrder.Arity
 import SecondOrder.Signature
 import SecondOrder.Metavariable
-import SecondOrder.Renaming
+import SecondOrder.VRenaming
 import SecondOrder.Term
 import SecondOrder.IndexedCategory
 import SecondOrder.RelativeKleisli
@@ -29,7 +29,7 @@ module SecondOrder.Substitution
   open SecondOrder.Signature.Signature Σ
   open SecondOrder.Metavariable Σ
   open SecondOrder.Term Σ
-  open SecondOrder.Renaming Σ
+  open SecondOrder.VRenaming Σ
 
   -- substitution
 
@@ -108,7 +108,7 @@ module SecondOrder.Substitution
 
   -- the action of a substitution on a term
 
-  infixr 6 [_]ˢ_
+  infix 6 [_]ˢ_
 
   [_]ˢ_ : ∀ {Θ Γ Δ A} → Θ ⊕ Γ ⇒ˢ Δ → Term Θ Γ A → Term Θ Δ A
   [ σ ]ˢ (tm-var x) = σ x
@@ -161,7 +161,7 @@ module SecondOrder.Substitution
   -- the identity substitution preserves equality of terms
   [id]ˢ-resp-≈ : ∀ {Θ} {Γ} {A} {t s : Term Θ Γ A} → t ≈ s → [ idˢ ]ˢ t ≈ s
   [id]ˢ-resp-≈ t≈s = ≈-trans ([]ˢ-resp-≈ idˢ t≈s) [id]ˢ
-    
+
 
   -- if a substiution is equal to the identity then it acts trivially
   ≈ˢ-idˢ-[]ˢ : ∀ {Θ} {Γ} {A} {σ : Θ ⊕ Γ ⇒ˢ Γ} {t : Term Θ Γ A} → σ ≈ˢ idˢ → [ σ ]ˢ t ≈ t
@@ -191,8 +191,8 @@ module SecondOrder.Substitution
 
   -- functoriality of left renaming action
 
-  [ʳ∘ˢ]ˢ : ∀ {Θ} {A} {Γ Δ Ξ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {ρ : Δ ⇒ʳ Ξ} (t : Term Θ Γ A) →
-           [ ρ ʳ∘ˢ σ ]ˢ t ≈ [ ρ ]ʳ ([ σ ]ˢ t)
+  [ʳ∘ˢ]ˢ : ∀ {Θ} {A} {Γ Δ Ξ} {ρ : Δ ⇒ʳ Ξ} {σ : Θ ⊕ Γ ⇒ˢ Δ} (t : Term Θ Γ A) →
+           [ ρ ʳ∘ˢ σ ]ˢ t ≈ [ ρ ]ʳ [ σ ]ˢ t
   [ʳ∘ˢ]ˢ (tm-var x) = ≈-refl
   [ʳ∘ˢ]ˢ (tm-meta M ts) = ≈-meta (λ i → [ʳ∘ˢ]ˢ (ts i))
   [ʳ∘ˢ]ˢ (tm-oper f es) = ≈-oper (λ i → [⇑ʳ∘ˢ] (es i))
@@ -200,7 +200,7 @@ module SecondOrder.Substitution
   -- functoriality of right renaming action
 
   [ˢ∘ʳ]ˢ : ∀ {Θ} {A} {Γ Δ Ξ} {σ : Θ ⊕ Δ ⇒ˢ Ξ} {ρ : Γ ⇒ʳ Δ} (t : Term Θ Γ A) →
-           [ σ ˢ∘ʳ ρ ]ˢ t ≈ [ σ ]ˢ ([ ρ ]ʳ t)
+           [ σ ˢ∘ʳ ρ ]ˢ t ≈ [ σ ]ˢ [ ρ ]ʳ t
   [ˢ∘ʳ]ˢ (tm-var x) = ≈-refl
   [ˢ∘ʳ]ˢ (tm-meta M ts) = ≈-meta (λ i → [ˢ∘ʳ]ˢ (ts i))
   [ˢ∘ʳ]ˢ (tm-oper f es) = ≈-oper (λ i → [⇑ˢ∘ʳ] (es i))
