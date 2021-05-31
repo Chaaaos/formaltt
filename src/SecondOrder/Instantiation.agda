@@ -159,17 +159,34 @@ module SecondOrder.Instantiation
                    ([]ʳ-resp-≡ʳ (λ { (var-inl x) → refl ; (var-inr x) → refl }))
                    [∘]ʳ)))
 
+
+  -- interaction lemma
+  []ⁱ-[]ˢ : ∀ {Θ Ψ Γ Δ A} {I : Θ ⇒ⁱ Ψ ⊕ Δ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {ρ : Δ ⇒ʳ Γ} (t : Term Θ Γ A) →
+        σ ˢ∘ʳ ρ ≈ˢ idˢ → ([ I ]ⁱ ([ σ ]ˢ t)) ≈ ([ I ⁱ∘ˢ σ ]ˢ [ ρ ʳ∘ⁱ I ]ⁱ t)
+  []ⁱ-[]ˢ ξ = {!!}
+
   -- the action of a composition
 
   [∘]ⁱ : ∀ {Θ Ξ Ω Γ} → {I : Θ ⇒ⁱ Ξ ⊕ Γ} → {J : Ξ ⇒ⁱ Ω ⊕ Γ} →
            ∀ {A} → ∀ (t : Term Θ Γ A) → [ J ∘ⁱ I ]ⁱ t ≈ [ J ]ⁱ [ I ]ⁱ t
   [∘]ⁱ (tm-var x) = ≈-refl
-  [∘]ⁱ {I = I} {J = J} (tm-meta M ts) =
+  [∘]ⁱ {Θ = Θ} {Ξ = Ξ} {Γ = Γ} {I = I} {J = J} (tm-meta {Γᴹ = Γᴹ} M ts) =
     ≈-trans
       ([]ˢ-resp-≈ˢ
         ([ ⇑ⁱ J ]ⁱ (I M))
         ([,]ˢ-resp-≈ˢ (λ x → ≈-refl) (λ i → [∘]ⁱ {I = I} {J = J} (ts i))))
-      {!!}
+      (≈-trans
+        ([]ˢ-resp-≈ˢ {τ = λ i → [ J ]ⁱ var-or-ts i} ([ ⇑ⁱ J ]ⁱ (I M))
+        λ {(var-inl x) → ≈-refl ; (var-inr y) → ≈-refl})
+        (≈-trans
+           (≈-sym ([]ⁱ-[]ˢ {I = J} {σ = var-or-ts} {ρ = var-inl} (I M) ≈ˢ-refl))
+           ([]ⁱ-resp-≈ J {!!} {!!} {!!})))
+                 where
+                 var-or-ts : ∀ {A} → A ∈ (Γ ,, Γᴹ) → Term Ξ Γ A
+                 var-or-ts (var-inl x) = tm-var x
+                 var-or-ts (var-inr y) = [ I ]ⁱ ts y
+
+
                         -- (≈-trans
                         --   ([]ˢ-resp-≈ˢ
                         --     ([ ⇑ⁱ J ]ⁱ (I M))

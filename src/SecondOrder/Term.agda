@@ -23,8 +23,8 @@ module SecondOrder.Term
 
   data Term Θ where
     tm-var : ∀ {Γ} {A} (x : A ∈ Γ) → Term Θ Γ A
-    tm-meta : ∀ {α A} {Γ} (M : [ α , A ]∈ Θ)
-                (ts : ∀ {B} (i : B ∈ α) → Term Θ Γ B)
+    tm-meta : ∀ {Γᴹ A} {Γ} (M : [ Γᴹ , A ]∈ Θ)
+                (ts : ∀ {B} (i : B ∈ Γᴹ) → Term Θ Γ B)
                 → Term Θ Γ A
     tm-oper : ∀ {Γ} (f : oper) (es : ∀ (i : oper-arg f) → Arg Θ Γ (arg-sort f i) (arg-bind f i))
                 → Term Θ Γ (oper-sort f)
