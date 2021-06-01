@@ -66,6 +66,10 @@ module SecondOrder.VRenaming
                         }
       }
 
+  -- renaming preserves equality of variables
+  ρ-resp-≡ : ∀ {Γ Δ A} {x y : A ∈ Γ} {ρ : Γ ⇒ᵛʳ Δ} → x ≡ y → ρ x ≡ ρ y
+  ρ-resp-≡ refl = refl
+
   -- the identity renaming
 
   idᵛʳ : ∀ {Γ : VContext} → Γ ⇒ᵛʳ Γ
@@ -104,8 +108,8 @@ module SecondOrder.VRenaming
   module _ where
     open Categories.Category
 
-    Contexts : Category ℓ ℓ ℓ
-    Contexts =
+    VContexts : Category ℓ ℓ ℓ
+    VContexts =
       record
         { Obj = VContext
         ; _⇒_ = _⇒ᵛʳ_
@@ -144,7 +148,7 @@ module SecondOrder.VRenaming
     uniqueᵛʳ ξ ζ (var-inl x) = sym (ξ x)
     uniqueᵛʳ ξ ζ (var-inr y) = sym (ζ y)
 
-    Context-+ : Categories.Category.Cocartesian.BinaryCoproducts Contexts
+    Context-+ : Categories.Category.Cocartesian.BinaryCoproducts VContexts
     Context-+ =
       record {
         coproduct =
@@ -225,7 +229,7 @@ module SecondOrder.VRenaming
     open Categories.Functor
     open Categories.Category.Instance.Setoids
 
-    Term-Functor : Functor Contexts (Setoids ℓ ℓ)
+    Term-Functor : Functor VContexts (Setoids ℓ ℓ)
     Term-Functor =
       record
         { F₀ = λ Γ → Term-setoid Θ Γ A

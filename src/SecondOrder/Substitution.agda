@@ -234,7 +234,7 @@ module SecondOrder.Substitution
 
     -- The embedding of contexts into setoids indexed by sorts
 
-    slots : Functor Contexts (IndexedCategory sort (Setoids ℓ ℓ))
+    slots : Functor VContexts (IndexedCategory sort (Setoids ℓ ℓ))
     slots = record
               { F₀ = λ Γ A → setoid (A ∈ Γ)
               ; F₁ = λ ρ A → record { _⟨$⟩_ = ρ ; cong = cong ρ }
