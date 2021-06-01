@@ -38,7 +38,7 @@ module SecondOrder.Instantiation
   _≈ⁱ_ : ∀ {Θ Ψ Γ} (I J : Θ ⇒ⁱ Ψ ⊕ Γ) → Set ℓ
   _≈ⁱ_ {Θ} I J = ∀ {Γᴹ Aᴹ} (M : [ Γᴹ , Aᴹ ]∈ Θ) → I M ≈ J M
 
-  -- syntactic equality is an equivalence relation
+  -- equality of instantiations is an equivalence relation
 
   ≈ⁱ-refl : ∀ {Θ Ψ Γ} {I : Θ ⇒ⁱ Ψ ⊕ Γ} → I ≈ⁱ I
   ≈ⁱ-refl M = ≈-refl
@@ -52,12 +52,12 @@ module SecondOrder.Instantiation
   -- extension of an instantiation
 
   ⇑ⁱ : ∀ {Θ Ψ Γ Δ} → Θ ⇒ⁱ Ψ ⊕ Γ → Θ ⇒ⁱ Ψ ⊕ (Γ ,, Δ)
-  ⇑ⁱ I M =  [ ⇑ʳ var-inl ]ʳ I M
+  ⇑ⁱ I M =  [ ⇑ᵛʳ var-inl ]ᵛʳ I M
 
   -- extension of instantiations preserve equality of instantiations
 
   ⇑ⁱ-resp-≈ⁱ : ∀ {Θ Ψ Γ Δ} (I J : Θ ⇒ⁱ Ψ ⊕ Γ) → (I ≈ⁱ J) → (⇑ⁱ {Δ = Δ} I ≈ⁱ ⇑ⁱ J)
-  ⇑ⁱ-resp-≈ⁱ I J ξ M = []ʳ-resp-≈ (ξ M)
+  ⇑ⁱ-resp-≈ⁱ I J ξ M = []ᵛʳ-resp-≈ (ξ M)
 
   -- action of a metavariable instantiation on terms
 
@@ -96,8 +96,10 @@ module SecondOrder.Instantiation
                 [ ⇑ⁱ {Δ = Γᴹ} I ]ⁱ tm-meta-generic M ≈ I M
   []ⁱ-generic {Θ = Θ} {Ξ = Ξ} {Γ = Γ} {I = I} {Γᴹ = Γᴹ} {M = M} =
     ≈-trans
-      (≈-sym ([ˢ∘ʳ]ˢ (I M)))
+      (≈-sym ([ˢ∘ᵛʳ]ˢ (I M)))
       (≈ˢ-idˢ-[]ˢ (λ { (var-inl _) → ≈-refl ; (var-inr _) → ≈-refl}))
+
+
 
   -- Interactions involving instantiations
 
@@ -115,28 +117,29 @@ module SecondOrder.Instantiation
 
   -- composition of a renaming and an instantiation
 
-  _ʳ∘ⁱ_ : ∀ {Θ ψ Γ Δ} → Γ ⇒ʳ Δ → Θ ⇒ⁱ ψ ⊕ Γ → Θ ⇒ⁱ ψ ⊕ Δ
-  (ρ ʳ∘ⁱ I) M = [ ⇑ʳ ρ ]ʳ I M
-
-  -- composition of a renaming and an instantiation preerve equality of instantiations
-
-  [ʳ∘ⁱ]ⁱ-resp-≈ⁱ : ∀ {Θ ψ Γ Δ} (ρ : Γ ⇒ʳ Δ) (I J : Θ ⇒ⁱ ψ ⊕ Γ) → (I ≈ⁱ J) → (ρ ʳ∘ⁱ I) ≈ⁱ (ρ ʳ∘ⁱ J)
-  [ʳ∘ⁱ]ⁱ-resp-≈ⁱ σ I J ξ M = []ʳ-resp-≈ (ξ M)
+  _ᵛʳ∘ⁱ_ : ∀ {Θ ψ Γ Δ} → Γ ⇒ᵛʳ Δ → Θ ⇒ⁱ ψ ⊕ Γ → Θ ⇒ⁱ ψ ⊕ Δ
+  (ρ ᵛʳ∘ⁱ I) M = [ ⇑ᵛʳ ρ ]ᵛʳ I M
 
   -- composition of a substitution and an instantiation
 
   _ˢ∘ⁱ_ : ∀ {Θ ψ Γ Δ} → ψ ⊕ Γ ⇒ˢ Δ → Θ ⇒ⁱ ψ ⊕ Γ → Θ ⇒ⁱ ψ ⊕ Δ
   (σ ˢ∘ⁱ I) M = [ ⇑ˢ σ ]ˢ I M
 
+  -- composition of an instantiation and a substitution
+
+  _ⁱ∘ˢ_ : ∀ {Θ ψ Γ Δ} → Θ ⇒ⁱ ψ ⊕ Δ → Θ ⊕ Γ ⇒ˢ Δ →  ψ ⊕ Γ ⇒ˢ Δ
+  (I ⁱ∘ˢ σ) x = [ I ]ⁱ σ x
+
+  -- composition of a renaming and an instantiation preerve equality of instantiations
+
+  [ᵛʳ∘ⁱ]ⁱ-resp-≈ⁱ : ∀ {Θ ψ Γ Δ} (ρ : Γ ⇒ᵛʳ Δ) (I J : Θ ⇒ⁱ ψ ⊕ Γ) → (I ≈ⁱ J) → (ρ ᵛʳ∘ⁱ I) ≈ⁱ (ρ ᵛʳ∘ⁱ J)
+  [ᵛʳ∘ⁱ]ⁱ-resp-≈ⁱ σ I J ξ M = []ᵛʳ-resp-≈ (ξ M)
+
   -- composition of a renaming and an instantiation preserve equality of instantiations
 
   [ˢ∘ⁱ]ⁱ-resp-≈ⁱ : ∀ {Θ ψ Γ Δ} (σ : ψ ⊕ Γ ⇒ˢ Δ) (I J : Θ ⇒ⁱ ψ ⊕ Γ) → (I ≈ⁱ J) → (σ ˢ∘ⁱ I) ≈ⁱ (σ ˢ∘ⁱ J)
   [ˢ∘ⁱ]ⁱ-resp-≈ⁱ σ I J ξ M = []ˢ-resp-≈ (⇑ˢ σ) (ξ M)
 
-  -- composition of an instantiation and a substitution
-
-  _ⁱ∘ˢ_ : ∀ {Θ ψ Γ Δ} → Θ ⇒ⁱ ψ ⊕ Δ → Θ ⊕ Γ ⇒ˢ Δ →  ψ ⊕ Γ ⇒ˢ Δ
-  (I ⁱ∘ˢ σ) x = [ I ]ⁱ σ x
 
   -- Actions correspondig to the interactions
 
@@ -149,23 +152,23 @@ module SecondOrder.Instantiation
 
   -- extension commutes with composition of renaming and substitution
 
-  ⇑ⁱ-resp-ʳ∘ⁱ : ∀ {Θ ψ} {Γ Δ Ξ} {I : Θ ⇒ⁱ ψ ⊕ Γ} {ρ : Γ ⇒ʳ Δ}
-               → ⇑ⁱ {Δ = Ξ} (ρ ʳ∘ⁱ I) ≈ⁱ ⇑ʳ ρ ʳ∘ⁱ ⇑ⁱ I
-  ⇑ⁱ-resp-ʳ∘ⁱ {ρ = ρ} M = ≈-trans (≈-sym [∘]ʳ) (≈-trans ([]ʳ-resp-≡ʳ λ {(var-inl _) → refl ; (var-inr x) → refl}) [∘]ʳ)
+  ⇑ⁱ-resp-ᵛʳ∘ⁱ : ∀ {Θ ψ} {Γ Δ Ξ} {I : Θ ⇒ⁱ ψ ⊕ Γ} {ρ : Γ ⇒ᵛʳ Δ}
+               → ⇑ⁱ {Δ = Ξ} (ρ ᵛʳ∘ⁱ I) ≈ⁱ ⇑ᵛʳ ρ ᵛʳ∘ⁱ ⇑ⁱ I
+  ⇑ⁱ-resp-ᵛʳ∘ⁱ {ρ = ρ} M = ≈-trans (≈-sym [∘]ᵛʳ) (≈-trans ([]ᵛʳ-resp-≡ᵛʳ λ {(var-inl _) → refl ; (var-inr x) → refl}) [∘]ᵛʳ)
 
   -- the action of the composition of an instantiation and a renaming
 
-  [ʳ∘ⁱ]ⁱ : ∀ {Θ Ψ Γ Δ A} {ρ : Γ ⇒ʳ Δ} {I : Θ ⇒ⁱ Ψ ⊕ Γ} (t : Term Θ Γ A) →
-           [ ρ ]ʳ [ I ]ⁱ t ≈ [ ρ ʳ∘ⁱ I ]ⁱ [ ρ ]ʳ t
-  [ʳ∘ⁱ]ⁱ (tm-var x) = ≈-refl
-  [ʳ∘ⁱ]ⁱ {I = I} (tm-meta M ts) =
+  [ᵛʳ∘ⁱ]ⁱ : ∀ {Θ Ψ Γ Δ A} {ρ : Γ ⇒ᵛʳ Δ} {I : Θ ⇒ⁱ Ψ ⊕ Γ} (t : Term Θ Γ A) →
+           [ ρ ]ᵛʳ [ I ]ⁱ t ≈ [ ρ ᵛʳ∘ⁱ I ]ⁱ [ ρ ]ᵛʳ t
+  [ᵛʳ∘ⁱ]ⁱ (tm-var x) = ≈-refl
+  [ᵛʳ∘ⁱ]ⁱ {I = I} (tm-meta M ts) =
     ≈-trans
-     (≈-sym ([ʳ∘ˢ]ˢ (I M)))
+     (≈-sym ([ᵛʳ∘ˢ]ˢ (I M)))
      (≈-trans
-       ([]ˢ-resp-≈ˢ (I M) (λ { (var-inl _) → ≈-refl ; (var-inr j) → [ʳ∘ⁱ]ⁱ (ts j)}))
-       ([ˢ∘ʳ]ˢ (I M)))
-  [ʳ∘ⁱ]ⁱ {ρ = ρ} {I = I} (tm-oper f es) =
-    ≈-oper λ i → ≈-trans ([ʳ∘ⁱ]ⁱ (es i)) ([]ⁱ-resp-≈ⁱ ([ ⇑ʳ ρ ]ʳ es i) (≈ⁱ-sym (⇑ⁱ-resp-ʳ∘ⁱ {I = I})))
+       ([]ˢ-resp-≈ˢ (I M) (λ { (var-inl _) → ≈-refl ; (var-inr j) → [ᵛʳ∘ⁱ]ⁱ (ts j)}))
+       ([ˢ∘ᵛʳ]ˢ (I M)))
+  [ᵛʳ∘ⁱ]ⁱ {ρ = ρ} {I = I} (tm-oper f es) =
+    ≈-oper λ i → ≈-trans ([ᵛʳ∘ⁱ]ⁱ (es i)) ([]ⁱ-resp-≈ⁱ ([ ⇑ᵛʳ ρ ]ᵛʳ es i) (≈ⁱ-sym (⇑ⁱ-resp-ᵛʳ∘ⁱ {I = I})))
 
   -- extension commutes with composition
 
@@ -173,43 +176,44 @@ module SecondOrder.Instantiation
                ⇑ⁱ {Δ = Δ} (J ∘ⁱ I) ≈ⁱ ⇑ⁱ J ∘ⁱ ⇑ⁱ I
   ⇑ⁱ-resp-∘ⁱ {I = I} {J = J} M =
     ≈-trans
-     ([ʳ∘ⁱ]ⁱ (I M))
+     ([ᵛʳ∘ⁱ]ⁱ (I M))
      ([]ⁱ-resp-≈ⁱ
-        ([ ⇑ʳ var-inl ]ʳ I M)
+        ([ ⇑ᵛʳ var-inl ]ᵛʳ I M)
         (λ N → ≈-trans
-                 (≈-sym [∘]ʳ)
+                 (≈-sym [∘]ᵛʳ)
                  (≈-trans
-                   ([]ʳ-resp-≡ʳ (λ { (var-inl x) → refl ; (var-inr x) → refl }))
-                   [∘]ʳ)))
+                   ([]ᵛʳ-resp-≡ᵛʳ (λ { (var-inl x) → refl ; (var-inr x) → refl }))
+                   [∘]ᵛʳ)))
 
   ⇑ˢ-resp-ⁱ∘ˢ : ∀ {Θ ψ Γ Δ Ξ} → {I : Θ ⇒ⁱ ψ ⊕ Δ} → {σ : Θ ⊕ Γ ⇒ˢ Δ} → ⇑ˢ {Ξ = Ξ} (I ⁱ∘ˢ σ) ≈ˢ ⇑ⁱ I ⁱ∘ˢ ⇑ˢ σ
-  ⇑ˢ-resp-ⁱ∘ˢ = {!!}
+  ⇑ˢ-resp-ⁱ∘ˢ {σ = σ} (var-inl x) = [ᵛʳ∘ⁱ]ⁱ (σ x)
+  ⇑ˢ-resp-ⁱ∘ˢ (var-inr x) = ≈-refl
 
   -- interaction lemma
-  []ⁱ-[]ˢ : ∀ {Θ Ψ Γ Δ A} {I : Θ ⇒ⁱ Ψ ⊕ Δ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {ρ : Δ ⇒ʳ Γ} (t : Term Θ Γ A) →
-        σ ˢ∘ʳ ρ ≈ˢ idˢ → ([ I ]ⁱ ([ σ ]ˢ t)) ≈ ([ I ⁱ∘ˢ σ ]ˢ [ ρ ʳ∘ⁱ I ]ⁱ t)
+  []ⁱ-[]ˢ : ∀ {Θ Ψ Γ Δ A} {I : Θ ⇒ⁱ Ψ ⊕ Δ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {ρ : Δ ⇒ᵛʳ Γ} (t : Term Θ Γ A) →
+        σ ˢ∘ᵛʳ ρ ≈ˢ idˢ → ([ I ]ⁱ ([ σ ]ˢ t)) ≈ ([ I ⁱ∘ˢ σ ]ˢ [ ρ ᵛʳ∘ⁱ I ]ⁱ t)
   []ⁱ-[]ˢ (tm-var x) ξ = ≈-refl
   []ⁱ-[]ˢ {I = I} {σ = σ} {ρ = ρ} (tm-meta M ts) ξ =
    ≈-trans
      ([]ˢ-resp-≈ˢ (I M)
         (λ { (var-inl i) → []ⁱ-resp-≈ I (≈-sym (ξ i)) ; (var-inr j) → []ⁱ-[]ˢ (ts j) ξ}))
      (≈-trans
-       ([ˢ∘ʳ]ˢ (I M))
-       ([∘]ˢ ((ρ ʳ∘ⁱ I) M)))
+       ([ˢ∘ᵛʳ]ˢ (I M))
+       ([∘]ˢ ((ρ ᵛʳ∘ⁱ I) M)))
   []ⁱ-[]ˢ {I = I} {σ = σ} {ρ = ρ} (tm-oper f es) ξ =
     ≈-oper λ i →
       ≈-trans
-       ([]ⁱ-[]ˢ {σ = ⇑ˢ σ} {ρ = ⇑ʳ ρ} (es i)
+       ([]ⁱ-[]ˢ {σ = ⇑ˢ σ} {ρ = ⇑ᵛʳ ρ} (es i)
          (≈ˢ-trans
-           (≈ˢ-sym (⇑ˢ-ˢ∘ʳ  {ρ = ρ} {σ = σ}))
+           (≈ˢ-sym (⇑ˢ-ˢ∘ᵛʳ  {ρ = ρ} {σ = σ}))
            (≈ˢ-trans (⇑ˢ-resp-≈ˢ ξ) ⇑ˢ-idˢ)))
        ([]ˢ-resp-≈ˢ-≈
           {σ = ⇑ⁱ I ⁱ∘ˢ ⇑ˢ σ }
           {τ = ⇑ˢ (I ⁱ∘ˢ σ)}
-          {t = ([ ⇑ʳ ρ ʳ∘ⁱ ⇑ⁱ I ]ⁱ es i)}
-          {u = ([ ⇑ⁱ (ρ ʳ∘ⁱ I) ]ⁱ es i)}
+          {t = ([ ⇑ᵛʳ ρ ᵛʳ∘ⁱ ⇑ⁱ I ]ⁱ es i)}
+          {u = ([ ⇑ⁱ (ρ ᵛʳ∘ⁱ I) ]ⁱ es i)}
           (≈ˢ-sym ⇑ˢ-resp-ⁱ∘ˢ)
-          ([]ⁱ-resp-≈ⁱ (es i) (≈ⁱ-sym (⇑ⁱ-resp-ʳ∘ⁱ {I = I}))))
+          ([]ⁱ-resp-≈ⁱ (es i) (≈ⁱ-sym (⇑ⁱ-resp-ᵛʳ∘ⁱ {I = I}))))
 
   -- the action of a composition
 
@@ -237,40 +241,3 @@ module SecondOrder.Instantiation
             ≈-oper (λ i → ≈-trans ([]ⁱ-resp-≈ⁱ (es i) (⇑ⁱ-resp-∘ⁱ {I = I})) ([∘]ⁱ (es i)))
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  -- the application of [_]ⁱ_ to an instantiation is a morphism of relative monads
-  [_]ⁱ-morphism :  ∀ {Θ ψ Γ} (I : ψ ⇒ⁱ Θ ⊕ Γ) → RMonadMorph (⇑ᵗ-Term-Monad {Θ = Θ} Γ) (⇑ᵗ-Term-Monad {Θ = ψ} Γ)
-  [_]ⁱ-morphism = {!!}
-                  -- record
-                  --   { morph = λ {X = Γ′} A → record { _⟨$⟩_ = λ t → {![ I ]ⁱ ([ inrˢ ]ˢ t)!} ; cong = {!!} }
-                  --   ; law-unit = {!!}
-                  --   ; law-extend = {!!} }
-
-                  --  RMonadMorph (⇑ᵗ-Term-Monad {Θ = Θ} Γ) (⇑ᵗ-Term-Monad {Θ = ψ} Γ)
-                  -- RMonadMorph (Term-Monad {Θ = Θ}) (Term-Monad {Θ = ψ})
-
-    -- -- The embedding of contexts into setoids indexed by sorts
-
-    -- slots : Functor Contexts (IndexedCategory sort (Setoids ℓ ℓ))
-    -- slots = record
-    --           { F₀ = λ Γ A → setoid (A ∈ Γ)
-    --           ; F₁ = λ ρ A → record { _⟨$⟩_ = ρ ; cong = cong ρ }
-    --           ; identity = λ A ξ → ξ
-    --           ; homomorphism = λ {_} {_} {_} {ρ} {σ} A {_} {_} ξ → cong σ (cong ρ ξ)
-    --           ; F-resp-≈ = λ ξ A ζ → trans (ξ _) (cong _ ζ)
-    --           }

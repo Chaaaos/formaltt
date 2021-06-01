@@ -1,6 +1,6 @@
 open import Agda.Primitive using (_⊔_; lsuc)
 
-open import Categories.Category 
+open import Categories.Category
 open import Categories.Functor
 import Categories.Category.Cartesian as Cartesian
 open import Categories.Monad.Relative
@@ -27,7 +27,7 @@ RelMon =
     { Obj = Monad J
     ; _⇒_ = λ M N → RMonadMorph M N
     ; _≈_ = λ {M} {N} φ ψ → ∀ X → morph φ {X} ≈ morph ψ {X}
-    ; id = λ {M} → 
+    ; id = λ {M} →
            record
            { morph = λ {X} → id_D {F₀ M X}
            ; law-unit = λ {X} → identˡ
