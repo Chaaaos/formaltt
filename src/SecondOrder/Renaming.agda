@@ -104,8 +104,8 @@ module SecondOrder.Renaming
   module _ where
     open Categories.Category
 
-    Contexts : Category ℓ ℓ ℓ
-    Contexts =
+    VContexts : Category ℓ ℓ ℓ
+    VContexts =
       record
         { Obj = VContext
         ; _⇒_ = _⇒ʳ_
@@ -144,7 +144,7 @@ module SecondOrder.Renaming
     uniqueʳ ξ ζ (var-inl x) = sym (ξ x)
     uniqueʳ ξ ζ (var-inr y) = sym (ζ y)
 
-    Context-+ : Categories.Category.Cocartesian.BinaryCoproducts Contexts
+    Context-+ : Categories.Category.Cocartesian.BinaryCoproducts VContexts
     Context-+ =
       record {
         coproduct =
@@ -225,7 +225,7 @@ module SecondOrder.Renaming
     open Categories.Functor
     open Categories.Category.Instance.Setoids
 
-    Term-Functor : Functor Contexts (Setoids ℓ ℓ)
+    Term-Functor : Functor VContexts (Setoids ℓ ℓ)
     Term-Functor =
       record
         { F₀ = λ Γ → Term-setoid Θ Γ A
