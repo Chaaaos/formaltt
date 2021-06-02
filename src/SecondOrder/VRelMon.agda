@@ -60,15 +60,15 @@ module SecondOrder.VRelMon
       open Category (Setoids ℓ ℓ)
       open Setoid
       field
-        F₀ :  VContext → MContext → sort → Obj -- Obj (IndexedCategory sort (Setoids (lsuc ℓ) (lsuc ℓ)))
-        F₁ : ∀ {Θ ψ Δ Ξ} (ρ : Δ ⇒ᵛʳ Ξ) (ι : Θ ⇒ᵐʳ ψ)  (A : sort)
-             → (F₀ Δ Θ A) ⇒ (F₀ Ξ ψ A)
-        identity : ∀ {Θ Δ A}
-                   → Category._≈_ (Setoids ℓ ℓ) (F₁ (idᵛʳ {Δ}) (idᵐʳ {Θ}) A) (id {F₀ Δ Θ A})
-        homomorphism : ∀ {Θ ψ Ω Γ Δ Ξ A} {ρ : Γ ⇒ᵛʳ Δ} {ι : Θ ⇒ᵐʳ ψ} {τ : Δ ⇒ᵛʳ Ξ} {μ : ψ ⇒ᵐʳ Ω}
-                       → Category._≈_ (Setoids ℓ ℓ) (F₁ (τ ∘ᵛʳ ρ) (μ ∘ᵐʳ ι) A) ((F₁ τ μ A) ∘ (F₁ ρ ι A))
-        F-resp-≈ : ∀ {Θ ψ Γ Δ A} {ρ τ : Γ ⇒ᵛʳ Δ} {ι μ : Θ ⇒ᵐʳ ψ}
-                   → (ρ ≡ᵛʳ τ) → (ι ≡ᵐʳ μ) → (Category._≈_ (Setoids ℓ ℓ) (F₁ ρ ι A) (F₁ τ μ A))
+        F₀ :  VContext → MContext → Obj
+        F₁ : ∀ {Θ ψ Δ Ξ} (ρ : Δ ⇒ᵛʳ Ξ) (ι : Θ ⇒ᵐʳ ψ)
+             → (F₀ Δ Θ) ⇒ (F₀ Ξ ψ)
+        identity : ∀ {Θ Δ}
+                   → Category._≈_ (Setoids ℓ ℓ) (F₁ (idᵛʳ {Δ}) (idᵐʳ {Θ})) (id {F₀ Δ Θ})
+        homomorphism : ∀ {Θ ψ Ω Γ Δ Ξ} {ρ : Γ ⇒ᵛʳ Δ} {ι : Θ ⇒ᵐʳ ψ} {τ : Δ ⇒ᵛʳ Ξ} {μ : ψ ⇒ᵐʳ Ω}
+                       → Category._≈_ (Setoids ℓ ℓ) (F₁ (τ ∘ᵛʳ ρ) (μ ∘ᵐʳ ι)) ((F₁ τ μ) ∘ (F₁ ρ ι))
+        F-resp-≈ : ∀ {Θ ψ Γ Δ} {ρ τ : Γ ⇒ᵛʳ Δ} {ι μ : Θ ⇒ᵐʳ ψ}
+                   → (ρ ≡ᵛʳ τ) → (ι ≡ᵐʳ μ) → (Category._≈_ (Setoids ℓ ℓ) (F₁ ρ ι) (F₁ τ μ))
 
     -- definition of transformation analogue to natural transformations, for Functors-Jⱽ
 
@@ -80,9 +80,9 @@ module SecondOrder.VRelMon
         open Fⱽ using (F₀; F₁)
         open Category (Setoids ℓ ℓ)
         field
-          η : ∀ Θ Γ A → (F₀ Γ Θ A) ⇒ (Gⱽ.F₀ Γ Θ A)
-          commute : ∀ {Θ ψ Γ Δ A} (ρ : Γ ⇒ᵛʳ Δ) (ι : Θ ⇒ᵐʳ ψ)
-                    → Category._≈_ (Setoids ℓ ℓ) ((η ψ Δ A) ∘ (F₁ ρ ι A)) ((Gⱽ.F₁ ρ ι A) ∘ (η Θ Γ A))
+          η : ∀ Θ Γ → (F₀ Γ Θ) ⇒ (Gⱽ.F₀ Γ Θ)
+          commute : ∀ {Θ ψ Γ Δ} (ρ : Γ ⇒ᵛʳ Δ) (ι : Θ ⇒ᵐʳ ψ)
+                    → Category._≈_ (Setoids ℓ ℓ) ((η ψ Δ) ∘ (F₁ ρ ι)) ((Gⱽ.F₁ ρ ι) ∘ (η Θ Γ))
 
 
     -- definition of an equivalence of transformation analogue to the one
@@ -91,22 +91,73 @@ module SecondOrder.VRelMon
     infix 4 _≃Jⱽ_
 
     _≃Jⱽ_ : ∀ {Fⱽ Gⱽ : Functor-Jⱽ} → Rel (NaturalTransformation-Jⱽ Fⱽ Gⱽ) ℓ
-    𝒩 ≃Jⱽ ℳ  = ∀ {Θ Γ A} → Category._≈_ (Setoids ℓ ℓ)
-                            (NaturalTransformation-Jⱽ.η 𝒩 Θ Γ A)
-                            (NaturalTransformation-Jⱽ.η ℳ Θ Γ A)
+    𝒩 ≃Jⱽ ℳ  = ∀ {Θ Γ} → Category._≈_ (Setoids ℓ ℓ)
+                            (NaturalTransformation-Jⱽ.η 𝒩 Θ Γ)
+                            (NaturalTransformation-Jⱽ.η ℳ Θ Γ)
 
 
-    -- definition of an identityt transformation analogue to the one
+    -- definition of an identity transformation analogue to the one
     -- of the natural transformations, for NaturalTransformation-Jⱽ
 
-    idN-Jⱽ : ∀ {A : Functor-Jⱽ} → NaturalTransformation-Jⱽ A A
-    idN-Jⱽ =
+    idN-Jⱽ : ∀ {Fⱽ : Functor-Jⱽ} → NaturalTransformation-Jⱽ Fⱽ Fⱽ
+    idN-Jⱽ {Fⱽ} =
            record
-             { η = λ Θ Γ A →
+             { η = λ Θ Γ →
                record
                  { _⟨$⟩_ = λ x → x
                  ; cong = λ x → x }
-             ; commute = {!!} }
+             ; commute = λ {Θ} {ψ} {Γ} {Δ} ρ ι ξ
+                         → Functor-Jⱽ.F-resp-≈  Fⱽ {Θ} {ψ} {Γ} {Δ} {ρ} {ρ} {ι} {ι}
+                                                (λ x₁ → refl) (λ M → refl) ξ }
+
+
+    -- definition of the composition of transformations analogue to the one
+    -- of the natural transformations, for NaturalTransformation-Jⱽ
+
+    -- open import Function.Equality hiding (_∘_)
+    -- open import Relation.Binary.Indexed.Heterogeneous.Bundles
+    -- _≈⟨$⟩≈_ : ∀ {A : Setoid ℓ ℓ}
+    --            {B : IndexedSetoid (Setoid.Carrier A) ℓ ℓ}
+    --            {x y : Setoid.Carrier A}
+    --            {f g : Π A B}
+    --            → (∀ x → IndexedSetoid._≈_ B (f ⟨$⟩ x) (g ⟨$⟩ x)) → (Setoid._≈_ A x y) →  IndexedSetoid._≈_ B (g ⟨$⟩ y) (f ⟨$⟩ x)
+    -- _≈⟨$⟩≈_ = {!!}
+
+    _∘-Jⱽ_ : ∀ {Fⱽ Gⱽ Hⱽ : Functor-Jⱽ} (𝒩 : NaturalTransformation-Jⱽ Gⱽ Hⱽ) (ℳ : NaturalTransformation-Jⱽ Fⱽ Gⱽ) → NaturalTransformation-Jⱽ Fⱽ Hⱽ
+    _∘-Jⱽ_ {Fⱽ} {Gⱽ} {Hⱽ} 𝒩 ℳ =
+             let open Category (Setoids ℓ ℓ) in
+             let open NaturalTransformation-Jⱽ in
+             let open Functor-Jⱽ in
+             record
+                 { η = λ Θ Γ → η 𝒩 Θ Γ ∘ η ℳ Θ Γ
+                 ; commute = λ {Θ} {ψ} {Γ} {Δ} ρ ι → {!!} }
+-- Essentially, what I want to say is :
+-- ((η 𝒩 ψ Δ ∘ η ℳ ψ Δ) ∘ (F₁ Fⱽ ρ ι)) =[assoc] (η 𝒩 ψ Δ ∘ (η ℳ ψ Δ) ∘ (F₁ Fⱽ ρ ι))
+--                                       =[commute 𝒩] (η 𝒩 ψ Δ ∘ ((F₁ Gⱽ ρ ι) ∘ (η ℳ Θ Γ)))
+--                                       =[sym-assoc] ((η 𝒩 ψ Δ ∘ (F₁ Gⱽ ρ ι)) ∘ (η ℳ Θ Γ))
+--                                       =[commute ℳ] (((F₁ Hⱽ ρ ι) ∘ (η 𝒩 Θ Γ)) ∘ (η ℳ Θ Γ))
+--                                       =[assoc] (((F₁ Hⱽ ρ ι) ∘ (η 𝒩 Θ Γ)) ∘ (η ℳ Θ Γ))
+-- But it stops working at the first associativity step.
+-- It looks like Agda doesn't understand what equality I want to use.
+-- I tried to make it explicit, but didn't succeed.
+
+
+    -- proof that the category of Functors-Jⱽ and NaturalTransformation-Jⱽ is indeed a category
+
+    -- associativity NaturalTransformation-Jⱽ.η 𝒩 Θ Γ
+    assoc-Jⱽ : {A B C D : Functor-Jⱽ}
+               {ℒ : NaturalTransformation-Jⱽ A B}
+               {ℳ : NaturalTransformation-Jⱽ B C}
+               {𝒩 : NaturalTransformation-Jⱽ C D}
+               → ((𝒩 ∘-Jⱽ ℳ) ∘-Jⱽ ℒ) ≃Jⱽ (𝒩 ∘-Jⱽ (ℳ ∘-Jⱽ ℒ))
+    assoc-Jⱽ  {A} {B} {C} {D} {ℒ} {ℳ} {𝒩} {Θ} {Γ} = λ ξ → {!!}
+
+    sym-assoc-Jⱽ : {A B C D : Functor-Jⱽ}
+                {f : NaturalTransformation-Jⱽ A B}
+                {g : NaturalTransformation-Jⱽ B C}
+                {h : NaturalTransformation-Jⱽ C D}
+                → (h ∘-Jⱽ (g ∘-Jⱽ f)) ≃Jⱽ ((h ∘-Jⱽ g) ∘-Jⱽ f)
+    sym-assoc-Jⱽ = {!!}
 
     -- Codomain of Jⱽ (the category with Functor-Jⱽ as objects and NaturalTransformation-Jⱽ as maps)
     Functors-Jⱽ : Category (lsuc ℓ) (lsuc ℓ)  ℓ
@@ -115,9 +166,9 @@ module SecondOrder.VRelMon
                     ; _⇒_ = NaturalTransformation-Jⱽ
                     ; _≈_ = _≃Jⱽ_
                     ; id = idN-Jⱽ
-                    ; _∘_ = {!!}
-                    ; assoc = {!!}
-                    ; sym-assoc = {!!}
+                    ; _∘_ = _∘-Jⱽ_
+                    ; assoc = {!assoc-Jⱽ!}
+                    ; sym-assoc = {!sym-assoc-Jⱽ!}
                     ; identityˡ = {!!}
                     ; identityʳ = {!!}
                     ; identity² = {!!}
@@ -129,15 +180,15 @@ module SecondOrder.VRelMon
 
     -- The embedding of contexts into setoids indexed by sorts, metavariable telescope and variable telescope
 
-    Jⱽ : Functor VContexts (Functors-Jⱽ)
+    Jⱽ : Functor VContexts (IndexedCategory sort Functors-Jⱽ)
     Jⱽ = record
-              { F₀ = λ Γ →
+              { F₀ = λ Γ A →
                        record
-                         { F₀ = λ Δ Θ A → setoid (A ∈ (Γ ,, Δ))
-                         ; F₁ = λ ρ ι A → record
+                         { F₀ = λ Δ Θ → setoid (A ∈ (Γ ,, Δ))
+                         ; F₁ = λ ρ ι → record
                                             { _⟨$⟩_ = [ inlᵛʳ , inrᵛʳ ∘ᵛʳ ρ ]ᵛʳ
                                             ; cong = λ {x} {y} ξ →  ρ-resp-≡ {ρ = [ var-inl , var-inr ∘ᵛʳ ρ ]ᵛʳ} ξ}
-                         ; identity = {!!}
+                         ; identity = λ {x = x} {y = y} ξ → trans {![]ᵛʳ-resp!} {!!}
                          ; homomorphism = {!!}
                          ; F-resp-≈ = {!!}
                          }
