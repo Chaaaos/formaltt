@@ -188,15 +188,36 @@ module SecondOrder.VRelMon
                          ; F₁ = λ ρ ι → record
                                             { _⟨$⟩_ = [ inlᵛʳ , inrᵛʳ ∘ᵛʳ ρ ]ᵛʳ
                                             ; cong = λ {x} {y} ξ →  ρ-resp-≡ {ρ = [ var-inl , var-inr ∘ᵛʳ ρ ]ᵛʳ} ξ}
-                         ; identity = λ {x = x} {y = y} ξ → trans {![]ᵛʳ-resp!} {!!}
-                         ; homomorphism = {!!}
-                         ; F-resp-≈ = {!!}
+                         ; identity = λ ξ → id-aux ξ
+                         ; homomorphism = λ ξ → hom-aux ξ
+                         ; F-resp-≈ = λ ξᵛʳ ξᵐʳ ξ → {!!}
                          }
               ; F₁ = {!!} -- λ ρ A → record { _⟨$⟩_ = ρ ; cong = cong ρ }
               ; identity = {!!} -- λ A ξ → ξ
               ; homomorphism = {!!} -- λ {_} {_} {_} {ρ} {σ} A {_} {_} ξ → cong σ (cong ρ ξ)
               ; F-resp-≈ = {!!} -- λ ξ A ζ → trans (ξ _) (cong _ ζ)
               }
+
+                           where
+                             id-aux : ∀ {Γ} {Δ} {A} {x : A ∈ (Γ ,, Δ)} {y} (ξ : x ≡ y) → [ var-inl {Γ = Γ} {Δ = Δ} , (λ x₁ → var-inr x₁) ]ᵛʳ x ≡ y
+                             id-aux {x = var-inl x} refl = refl
+                             id-aux {x = var-inr x} refl = refl
+
+                             hom-aux :  ∀ {Ξ Γ Δ Λ A} {ρ : Ξ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Λ} {x : A ∈ (Γ ,, Ξ)} {y} (ξ : x ≡ y)
+                                        → [ var-inl , (λ x₁ → var-inr (τ (ρ x₁))) ]ᵛʳ x
+                                          ≡ [ var-inl {Γ = Γ} , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ ([ var-inl , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ y)
+                             hom-aux {x = var-inl x} refl = refl
+                             hom-aux {x = var-inr x} refl = refl
+
+                             F-≈-aux :  ∀ {Ξ Γ Δ A} {ρ τ : Ξ ⇒ᵛʳ Δ} {x : A ∈ (Γ ,, Ξ)} {y}
+                                        (ξᵛʳ : ρ ≡ᵛʳ τ) (ξ : x ≡ y)
+                                        → [ var-inl {Γ = Γ} , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ x ≡ [ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ y
+                             F-≈-aux {x = var-inl x} ξᵛʳ refl = refl
+                             F-≈-aux {x = var-inr x} ξᵛʳ refl = {!!}
+
+-- [ var-inl , (λ x₁ → var-inr (τ (ρ x₁))) ]ᵛʳ x ≡
+--       [ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ
+--       ([ var-inl , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ y)
 
 
   -- The relative monad over Jⱽ
