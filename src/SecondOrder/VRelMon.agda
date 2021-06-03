@@ -73,8 +73,6 @@ module SecondOrder.VRelMon
 
 
 
-
-
     -- Transformation for Functors-Jⱽ (analogue to natural transformations)
 
     record NaturalTransformation-Jⱽ (Fⱽ Gⱽ : Functor-Jⱽ) : Set (lsuc ℓ)
@@ -90,8 +88,6 @@ module SecondOrder.VRelMon
                     → Category._≈_ (Setoids ℓ ℓ) ((η ψ Δ) ∘ (F₁ ρ ι)) ((Gⱽ.F₁ ρ ι) ∘ (η Θ Γ))
 
     open NaturalTransformation-Jⱽ
-
-
 
 
 
@@ -215,14 +211,17 @@ module SecondOrder.VRelMon
                                             { _⟨$⟩_ = [ inlᵛʳ , inrᵛʳ ∘ᵛʳ ρ ]ᵛʳ
                                             ; cong = λ {x} {y} ξ →  ρ-resp-≡ {ρ = [ var-inl , var-inr ∘ᵛʳ ρ ]ᵛʳ} ξ}
                          ; identity = λ ξ → id-aux ξ
-                         ; homomorphism = λ ξ → hom-aux ξ
-                         ; F-resp-≈ = λ ξᵛʳ ξᵐʳ ξ → F-≈-aux ξᵛʳ ξ
+                         ; homomorphism = λ ξ → hom-auxʳ ξ
+                         ; F-resp-≈ = λ ξᵛʳ ξᵐʳ ξ → F-≈-auxʳ ξᵛʳ ξ
                          }
-              ; F₁ = λ ρ A → {!!} -- λ ρ A → record { _⟨$⟩_ = ρ ; cong = cong ρ }
-              ; identity = {!!} -- λ A ξ → ξ
-              ; homomorphism = {!!} -- λ {_} {_} {_} {ρ} {σ} A {_} {_} ξ → cong σ (cong ρ ξ)
-              ; F-resp-≈ = {!!} -- λ ξ A ζ → trans (ξ _) (cong _ ζ)
+              ; F₁ = λ ρ A → record
+                               { η = λ Θ Γ → record { _⟨$⟩_ = ⇑ᵛʳ ρ ; cong = cong (⇑ᵛʳ ρ) }
+                               ; commute = λ τ ι ξ → com-aux ξ }
+              ; identity = λ A ξ → id-aux ξ
+              ; homomorphism = λ A ξ → hom-auxˡ ξ
+              ; F-resp-≈ = λ ξρ A ξ → F-≈-auxˡ ξρ ξ
               }
+
 
                            where
                              -- annoying auxiliary functions, needed because we have to split on variables
@@ -230,17 +229,38 @@ module SecondOrder.VRelMon
                              id-aux {x = var-inl x} refl = refl
                              id-aux {x = var-inr x} refl = refl
 
-                             hom-aux :  ∀ {Ξ Γ Δ Λ A} {ρ : Ξ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Λ} {x : A ∈ (Γ ,, Ξ)} {y} (ξ : x ≡ y)
+                             hom-auxʳ :  ∀ {Ξ Γ Δ Λ A} {ρ : Ξ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Λ} {x : A ∈ (Γ ,, Ξ)} {y} (ξ : x ≡ y)
                                         → [ var-inl , (λ x₁ → var-inr (τ (ρ x₁))) ]ᵛʳ x
                                           ≡ [ var-inl {Γ = Γ} , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ ([ var-inl , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ y)
-                             hom-aux {x = var-inl x} refl = refl
-                             hom-aux {x = var-inr x} refl = refl
+                             hom-auxʳ {x = var-inl x} refl = refl
+                             hom-auxʳ {x = var-inr x} refl = refl
 
-                             F-≈-aux :  ∀ {Ξ Γ Δ A} {ρ τ : Ξ ⇒ᵛʳ Δ} {x : A ∈ (Γ ,, Ξ)} {y}
+                             hom-auxˡ :  ∀ {Ξ Γ Δ Λ A} {ρ : Γ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Λ} {x : A ∈ (Γ ,, Ξ)} {y} (ξ : x ≡ y)
+                                        → [  (λ x₁ → var-inl (τ (ρ x₁))) , var-inr ]ᵛʳ x
+                                          ≡ [ (λ x₁ → var-inl (τ x₁)) , var-inr {Γ = Λ} ]ᵛʳ ([ (λ x₁ → var-inl (ρ x₁)) , var-inr ]ᵛʳ y)
+                             hom-auxˡ {x = var-inl x} refl = refl
+                             hom-auxˡ {x = var-inr x} refl = refl
+
+                             F-≈-auxʳ :  ∀ {Ξ Γ Δ A} {ρ τ : Ξ ⇒ᵛʳ Δ} {x : A ∈ (Γ ,, Ξ)} {y}
                                         (ξᵛʳ : ρ ≡ᵛʳ τ) (ξ : x ≡ y)
                                         → [ var-inl {Γ = Γ} , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ x ≡ [ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ y
-                             F-≈-aux {x = var-inl x} ξᵛʳ refl = refl
-                             F-≈-aux {x = var-inr x} ξᵛʳ refl = {!!}
+                             F-≈-auxʳ {x = var-inl x} ξᵛʳ refl = refl
+                             F-≈-auxʳ {x = var-inr x} ξᵛʳ refl = ρ-resp-≡ {ρ = inrᵛʳ}(ξᵛʳ x)
+
+                             F-≈-auxˡ :  ∀ {Ξ Γ Δ A} {ρ τ : Γ ⇒ᵛʳ Δ} {x : A ∈ (Γ ,, Ξ)} {y}
+                                        (ξᵛʳ : ρ ≡ᵛʳ τ) (ξ : x ≡ y)
+                                        → [ (λ x₁ → var-inl (ρ x₁)) , var-inr {Γ = Δ} ]ᵛʳ x ≡ [ (λ x₁ → var-inl (τ x₁)) ,  var-inr ]ᵛʳ y
+                             F-≈-auxˡ {x = var-inr x} ξᵛʳ refl = refl
+                             F-≈-auxˡ {x = var-inl x} ξᵛʳ refl = ρ-resp-≡ {ρ = inlᵛʳ} (ξᵛʳ x)
+
+                             com-aux : ∀ {Ξ Γ Δ Λ A} {ρ : Γ ⇒ᵛʳ Δ} {τ : Ξ ⇒ᵛʳ Λ} {x : A ∈ (Γ ,, Ξ)} {y} (ξ : x ≡ y)
+                                       → [ (λ x₁ → var-inl (ρ x₁)) , (λ x₁ → var-inr x₁) ]ᵛʳ
+                                       ([ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ x)
+                                       ≡ [ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ
+                                       ([ (λ x₁ → var-inl (ρ x₁)) , (λ x₁ → var-inr x₁) ]ᵛʳ y)
+                             com-aux {x = var-inl x} refl = refl
+                             com-aux {x = var-inr x} refl = refl
+
 
 
   -- The relative monad over Jⱽ
