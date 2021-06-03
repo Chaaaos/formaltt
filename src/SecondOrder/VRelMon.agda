@@ -39,7 +39,9 @@ module SecondOrder.VRelMon
   open SecondOrder.Substitution Σ
 
 
-  -- Terms form a relative monad
+  -- TERMS FORM A RELATIVE MONAD
+  -- (FOR A FUNCTOR WHOSE DOMAIN IS THE
+  -- CATEGORY OF VARIABLE CONTEXTS AND RENAMINGS)
 
   module _ where
     open Categories.Category
@@ -55,7 +57,6 @@ module SecondOrder.VRelMon
     open Relation.Binary.Core hiding (_⇒_)
 
     -- The carrier of the codomain of Jⱽ (morally ∀ Γ → A ∈ Δ ,, Γ)
-
     record Functor-Jⱽ : Set ((lsuc ℓ)) where
       open Category (Setoids ℓ ℓ)
       open Setoid
@@ -70,7 +71,11 @@ module SecondOrder.VRelMon
         F-resp-≈ : ∀ {Θ ψ Γ Δ} {ρ τ : Γ ⇒ᵛʳ Δ} {ι μ : Θ ⇒ᵐʳ ψ}
                    → (ρ ≡ᵛʳ τ) → (ι ≡ᵐʳ μ) → (Category._≈_ (Setoids ℓ ℓ) (F₁ ρ ι) (F₁ τ μ))
 
-    -- definition of transformation analogue to natural transformations, for Functors-Jⱽ
+
+
+
+
+    -- Transformation for Functors-Jⱽ (analogue to natural transformations)
 
     record NaturalTransformation-Jⱽ (Fⱽ Gⱽ : Functor-Jⱽ) : Set (lsuc ℓ)
       where
@@ -84,19 +89,24 @@ module SecondOrder.VRelMon
           commute : ∀ {Θ ψ Γ Δ} (ρ : Γ ⇒ᵛʳ Δ) (ι : Θ ⇒ᵐʳ ψ)
                     → Category._≈_ (Setoids ℓ ℓ) ((η ψ Δ) ∘ (F₁ ρ ι)) ((Gⱽ.F₁ ρ ι) ∘ (η Θ Γ))
 
+    open NaturalTransformation-Jⱽ
 
-    -- definition of an equivalence of transformation analogue to the one
-    -- of the natural transformations, for NaturalTransformation-Jⱽ
+
+
+
+
+    -- Equivalence of NaturalTransformation-Jⱽ (analogue to the one
+    -- of the natural transformations)
 
     infix 4 _≃Jⱽ_
 
     _≃Jⱽ_ : ∀ {Fⱽ Gⱽ : Functor-Jⱽ} → Rel (NaturalTransformation-Jⱽ Fⱽ Gⱽ) ℓ
     𝒩 ≃Jⱽ ℳ  = ∀ {Θ Γ} → Category._≈_ (Setoids ℓ ℓ)
-                            (NaturalTransformation-Jⱽ.η 𝒩 Θ Γ)
-                            (NaturalTransformation-Jⱽ.η ℳ Θ Γ)
+                            (η 𝒩 Θ Γ)
+                            (η ℳ Θ Γ)
 
 
-    -- definition of an identity transformation analogue to the one
+    -- Identity transformation analogue to the one
     -- of the natural transformations, for NaturalTransformation-Jⱽ
 
     idN-Jⱽ : ∀ {Fⱽ : Functor-Jⱽ} → NaturalTransformation-Jⱽ Fⱽ Fⱽ
@@ -111,17 +121,10 @@ module SecondOrder.VRelMon
                                                 (λ x₁ → refl) (λ M → refl) ξ }
 
 
-    -- definition of the composition of transformations analogue to the one
-    -- of the natural transformations, for NaturalTransformation-Jⱽ
 
-    -- open import Function.Equality hiding (_∘_)
-    -- open import Relation.Binary.Indexed.Heterogeneous.Bundles
-    -- _≈⟨$⟩≈_ : ∀ {A : Setoid ℓ ℓ}
-    --            {B : IndexedSetoid (Setoid.Carrier A) ℓ ℓ}
-    --            {x y : Setoid.Carrier A}
-    --            {f g : Π A B}
-    --            → (∀ x → IndexedSetoid._≈_ B (f ⟨$⟩ x) (g ⟨$⟩ x)) → (Setoid._≈_ A x y) →  IndexedSetoid._≈_ B (g ⟨$⟩ y) (f ⟨$⟩ x)
-    -- _≈⟨$⟩≈_ = {!!}
+
+    -- Composition of NaturalTransformation-Jⱽ (analogue to the one
+    -- of the natural transformations)
 
     _∘-Jⱽ_ : ∀ {Fⱽ Gⱽ Hⱽ : Functor-Jⱽ} (𝒩 : NaturalTransformation-Jⱽ Gⱽ Hⱽ) (ℳ : NaturalTransformation-Jⱽ Fⱽ Gⱽ) → NaturalTransformation-Jⱽ Fⱽ Hⱽ
     _∘-Jⱽ_ {Fⱽ} {Gⱽ} {Hⱽ} 𝒩 ℳ =
@@ -130,34 +133,44 @@ module SecondOrder.VRelMon
              let open Functor-Jⱽ in
              record
                  { η = λ Θ Γ → η 𝒩 Θ Γ ∘ η ℳ Θ Γ
-                 ; commute = λ {Θ} {ψ} {Γ} {Δ} ρ ι → {!!} }
--- Essentially, what I want to say is :
--- ((η 𝒩 ψ Δ ∘ η ℳ ψ Δ) ∘ (F₁ Fⱽ ρ ι)) =[assoc] (η 𝒩 ψ Δ ∘ (η ℳ ψ Δ) ∘ (F₁ Fⱽ ρ ι))
---                                       =[commute 𝒩] (η 𝒩 ψ Δ ∘ ((F₁ Gⱽ ρ ι) ∘ (η ℳ Θ Γ)))
---                                       =[sym-assoc] ((η 𝒩 ψ Δ ∘ (F₁ Gⱽ ρ ι)) ∘ (η ℳ Θ Γ))
---                                       =[commute ℳ] (((F₁ Hⱽ ρ ι) ∘ (η 𝒩 Θ Γ)) ∘ (η ℳ Θ Γ))
---                                       =[assoc] (((F₁ Hⱽ ρ ι) ∘ (η 𝒩 Θ Γ)) ∘ (η ℳ Θ Γ))
--- But it stops working at the first associativity step.
--- It looks like Agda doesn't understand what equality I want to use.
--- I tried to make it explicit, but didn't succeed.
+                 ; commute = λ {Θ} {ψ} {Γ} {Δ} ρ ι →
+                             let open HomReasoning {F₀ Fⱽ Γ Θ} {F₀ Hⱽ Δ ψ} in
+                             begin
+                             (Category._∘_ (Setoids ℓ ℓ) (η {Gⱽ} {Hⱽ} 𝒩 ψ Δ) ((η {Fⱽ} {Gⱽ} ℳ ψ Δ) ∘ (F₁ Fⱽ ρ ι))) ≈⟨ assoc {f = F₁ Fⱽ ρ ι} {g = η ℳ ψ Δ} {h = η 𝒩 ψ Δ} ⟩
+                             (η 𝒩 ψ Δ ∘ (η ℳ ψ Δ) ∘ (F₁ Fⱽ ρ ι)) ≈⟨ refl⟩∘⟨_
+                                                                      {f = η 𝒩 ψ Δ} {g = (η ℳ ψ Δ) ∘ (F₁ Fⱽ ρ ι)}
+                                                                      {i = (F₁ Gⱽ ρ ι) ∘ (η ℳ Θ Γ)}
+                                                                      (commute ℳ ρ ι) ⟩
+                             (η 𝒩 ψ Δ ∘ ((F₁ Gⱽ ρ ι) ∘ (η ℳ Θ Γ))) ≈⟨ sym-assoc {f = η ℳ Θ Γ} {g = F₁ Gⱽ ρ ι} {h = η 𝒩 ψ Δ}⟩
+                             ((η 𝒩 ψ Δ) ∘ (F₁ Gⱽ ρ ι)) ∘ (η ℳ Θ Γ) ≈⟨ _⟩∘⟨refl
+                                                                      {f = (η 𝒩 ψ Δ) ∘ (F₁ Gⱽ ρ ι)} {h = (F₁ Hⱽ ρ ι) ∘ (η 𝒩 Θ Γ)}
+                                                                      {g = η ℳ Θ Γ}
+                                                                      (commute 𝒩 ρ ι) ⟩
+                             (((F₁ Hⱽ ρ ι) ∘ (η 𝒩 Θ Γ)) ∘ (η ℳ Θ Γ)) ≈⟨ assoc {f = η ℳ Θ Γ} {g = η 𝒩 Θ Γ} {h = F₁ Hⱽ ρ ι} ⟩
+                             (((F₁ Hⱽ ρ ι) ∘ (η 𝒩 Θ Γ)) ∘ (η ℳ Θ Γ)) ∎}
 
 
-    -- proof that the category of Functors-Jⱽ and NaturalTransformation-Jⱽ is indeed a category
 
-    -- associativity NaturalTransformation-Jⱽ.η 𝒩 Θ Γ
+    -- Proof that the category of Functors-Jⱽ and NaturalTransformation-Jⱽ is indeed a category
+
+    -- associativity of composition
+    -- (surprisingly enough, the proof of "sym-assoc-Jⱽ" is exactly the same :
+    -- Is there a problem in the definitions ?)
     assoc-Jⱽ : {A B C D : Functor-Jⱽ}
                {ℒ : NaturalTransformation-Jⱽ A B}
                {ℳ : NaturalTransformation-Jⱽ B C}
                {𝒩 : NaturalTransformation-Jⱽ C D}
                → ((𝒩 ∘-Jⱽ ℳ) ∘-Jⱽ ℒ) ≃Jⱽ (𝒩 ∘-Jⱽ (ℳ ∘-Jⱽ ℒ))
-    assoc-Jⱽ  {A} {B} {C} {D} {ℒ} {ℳ} {𝒩} {Θ} {Γ} = λ ξ → {!!}
+    assoc-Jⱽ  {A} {B} {C} {D} {ℒ} {ℳ} {𝒩} {Θ} {Γ} ξ = Function.Equality.Π.cong (η 𝒩 Θ Γ)
+                                                          (Function.Equality.Π.cong (η ℳ Θ Γ)
+                                                            (Function.Equality.cong (η ℒ Θ Γ) ξ))
 
-    sym-assoc-Jⱽ : {A B C D : Functor-Jⱽ}
-                {f : NaturalTransformation-Jⱽ A B}
-                {g : NaturalTransformation-Jⱽ B C}
-                {h : NaturalTransformation-Jⱽ C D}
-                → (h ∘-Jⱽ (g ∘-Jⱽ f)) ≃Jⱽ ((h ∘-Jⱽ g) ∘-Jⱽ f)
-    sym-assoc-Jⱽ = {!!}
+    -- identity is identity
+    identityˡ-Jⱽ : {A B : Functor-Jⱽ}
+                  {𝒩 : NaturalTransformation-Jⱽ A B}
+                  → (idN-Jⱽ ∘-Jⱽ 𝒩) ≃Jⱽ 𝒩
+    identityˡ-Jⱽ  {𝒩 = 𝒩} {Θ = Θ} {Γ = Γ} ξ = Function.Equality.cong (η 𝒩 Θ Γ) ξ
+
 
     -- Codomain of Jⱽ (the category with Functor-Jⱽ as objects and NaturalTransformation-Jⱽ as maps)
     Functors-Jⱽ : Category (lsuc ℓ) (lsuc ℓ)  ℓ
@@ -167,13 +180,26 @@ module SecondOrder.VRelMon
                     ; _≈_ = _≃Jⱽ_
                     ; id = idN-Jⱽ
                     ; _∘_ = _∘-Jⱽ_
-                    ; assoc = {!assoc-Jⱽ!}
-                    ; sym-assoc = {!sym-assoc-Jⱽ!}
-                    ; identityˡ = {!!}
-                    ; identityʳ = {!!}
-                    ; identity² = {!!}
-                    ; equiv = {!!}
-                    ; ∘-resp-≈ = {!!}
+                    ; assoc = λ {Fⱽ} {Gⱽ} {Hⱽ} {Kⱽ} {𝒩} {ℳ} {ℒ} → assoc-Jⱽ  {ℒ = 𝒩} {ℳ = ℳ} {𝒩 = ℒ}
+                    ; sym-assoc = λ {Fⱽ} {Gⱽ} {Hⱽ} {Kⱽ} {𝒩} {ℳ} {ℒ} → assoc-Jⱽ  {ℒ = 𝒩} {ℳ = ℳ} {𝒩 = ℒ}
+                    ; identityˡ = λ {Fⱽ} {Gⱽ} {𝒩} → identityˡ-Jⱽ {𝒩 = 𝒩}
+                    ; identityʳ = λ {Fⱽ} {Gⱽ} {𝒩} → identityˡ-Jⱽ {𝒩 = 𝒩}
+                    ; identity² = λ {Fⱽ} ξ → ξ
+                    ; equiv = λ {Fⱽ} {Gⱽ}
+                              → record
+                                  { refl = λ {𝒩 = 𝒩} {Θ = Θ} {Γ = Γ} {x} {y} ξ
+                                           → Function.Equality.cong (η 𝒩 Θ Γ) ξ
+                                  ; sym = λ {𝒩} {ℳ} ξᴺ {Θ} {Γ} ξ
+                                          → Category.Equiv.sym (Setoids ℓ ℓ)
+                                          {_} {_} {η 𝒩 Θ Γ} {η ℳ Θ Γ} ξᴺ ξ
+                                  ; trans =  λ {𝒩} {ℳ} {ℒ} ξᴺ₂ ξᴺ₁ {Θ} {Γ} ξ
+                                             → Category.Equiv.trans (Setoids ℓ ℓ)
+                                             {_} {_} {η 𝒩 Θ Γ} {η ℳ Θ Γ} {η ℒ Θ Γ} ξᴺ₂ ξᴺ₁ ξ}
+                    ; ∘-resp-≈ = λ {Fⱽ} {Gⱽ} {Hⱽ} {𝒩} {ℳ} {ℒ} {𝒦} ξᴺ₁ ξᴺ₂ {Θ} {Γ} ξ
+                                 → Category.∘-resp-≈ (Setoids ℓ ℓ)
+                                   {_} {_}  {_}
+                                   {η 𝒩 Θ Γ} {η ℳ Θ Γ} {η ℒ Θ Γ} {η 𝒦 Θ Γ}
+                                   ξᴺ₁ ξᴺ₂ ξ
                     }
 
 
@@ -190,15 +216,16 @@ module SecondOrder.VRelMon
                                             ; cong = λ {x} {y} ξ →  ρ-resp-≡ {ρ = [ var-inl , var-inr ∘ᵛʳ ρ ]ᵛʳ} ξ}
                          ; identity = λ ξ → id-aux ξ
                          ; homomorphism = λ ξ → hom-aux ξ
-                         ; F-resp-≈ = λ ξᵛʳ ξᵐʳ ξ → {!!}
+                         ; F-resp-≈ = λ ξᵛʳ ξᵐʳ ξ → F-≈-aux ξᵛʳ ξ
                          }
-              ; F₁ = {!!} -- λ ρ A → record { _⟨$⟩_ = ρ ; cong = cong ρ }
+              ; F₁ = λ ρ A → {!!} -- λ ρ A → record { _⟨$⟩_ = ρ ; cong = cong ρ }
               ; identity = {!!} -- λ A ξ → ξ
               ; homomorphism = {!!} -- λ {_} {_} {_} {ρ} {σ} A {_} {_} ξ → cong σ (cong ρ ξ)
               ; F-resp-≈ = {!!} -- λ ξ A ζ → trans (ξ _) (cong _ ζ)
               }
 
                            where
+                             -- annoying auxiliary functions, needed because we have to split on variables
                              id-aux : ∀ {Γ} {Δ} {A} {x : A ∈ (Γ ,, Δ)} {y} (ξ : x ≡ y) → [ var-inl {Γ = Γ} {Δ = Δ} , (λ x₁ → var-inr x₁) ]ᵛʳ x ≡ y
                              id-aux {x = var-inl x} refl = refl
                              id-aux {x = var-inr x} refl = refl
@@ -214,10 +241,6 @@ module SecondOrder.VRelMon
                                         → [ var-inl {Γ = Γ} , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ x ≡ [ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ y
                              F-≈-aux {x = var-inl x} ξᵛʳ refl = refl
                              F-≈-aux {x = var-inr x} ξᵛʳ refl = {!!}
-
--- [ var-inl , (λ x₁ → var-inr (τ (ρ x₁))) ]ᵛʳ x ≡
---       [ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ
---       ([ var-inl , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ y)
 
 
   -- The relative monad over Jⱽ
