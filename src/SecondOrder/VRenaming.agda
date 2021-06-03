@@ -176,8 +176,8 @@ module SecondOrder.VRenaming
   ⇑ᵛʳ ρ = ρ +₁ idᵛʳ
 
   -- -- a renaming can also be extended on the right
-  -- ᵛʳ⇑ᵛʳ : ∀ {Γ Δ} → Γ ⇒ᵛʳ Δ → ∀ {Ξ} → Ξ ,, Γ ⇒ᵛʳ Ξ ,, Δ
-  -- ᵛʳ⇑ᵛʳ ρ = idᵛʳ +₁ ρ
+  ʳ⇑ᵛʳ : ∀ {Γ Δ} → Γ ⇒ᵛʳ Δ → ∀ {Ξ} → Ξ ,, Γ ⇒ᵛʳ Ξ ,, Δ
+  ʳ⇑ᵛʳ ρ = idᵛʳ +₁ ρ
 
 
   -- the action of a renaming on terms

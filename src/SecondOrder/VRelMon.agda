@@ -210,56 +210,59 @@ module SecondOrder.VRelMon
                          ; F₁ = λ ρ ι → record
                                             { _⟨$⟩_ = [ inlᵛʳ , inrᵛʳ ∘ᵛʳ ρ ]ᵛʳ
                                             ; cong = λ {x} {y} ξ →  ρ-resp-≡ {ρ = [ var-inl , var-inr ∘ᵛʳ ρ ]ᵛʳ} ξ}
-                         ; identity = λ ξ → id-aux ξ
-                         ; homomorphism = λ ξ → hom-auxʳ ξ
-                         ; F-resp-≈ = λ ξᵛʳ ξᵐʳ ξ → F-≈-auxʳ ξᵛʳ ξ
+                         ; identity = λ {Θ} {Δ} {x} ξ → trans (idᵛʳ+idᵛʳ x) ξ
+                         ; homomorphism = λ {Θ} {ψ} {Ω} {Δ} {Ξ} {Λ} {ρ} {ι} {τ} ξ
+                                          → trans
+                                            {!!}
+                                            (ρ-resp-≡ {ρ = [ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ}
+                                              (ρ-resp-≡ {ρ = [ var-inl , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ} ξ))
+                         ; F-resp-≈ = λ ξᵛʳ ξᵐʳ ξ → {!!} -- F-≈-auxʳ ξᵛʳ ξ
                          }
+
               ; F₁ = λ ρ A → record
                                { η = λ Θ Γ → record { _⟨$⟩_ = ⇑ᵛʳ ρ ; cong = cong (⇑ᵛʳ ρ) }
-                               ; commute = λ τ ι ξ → com-aux ξ }
-              ; identity = λ A ξ → id-aux ξ
-              ; homomorphism = λ A ξ → hom-auxˡ ξ
-              ; F-resp-≈ = λ ξρ A ξ → F-≈-auxˡ ξρ ξ
+                               ; commute = λ τ ι ξ → {!!}} -- com-aux ξ }
+              ; identity =  λ A {Θ} {Γ} {x} ξ → trans (idᵛʳ+idᵛʳ x) ξ
+              ; homomorphism = λ A ξ → {!!} -- hom-auxˡ ξ -- ok
+              ; F-resp-≈ = λ ξρ A ξ → {!!} -- F-≈-auxˡ ξρ ξ
               }
 
 
                            where
                              -- annoying auxiliary functions, needed because we have to split on variables
-                             id-aux : ∀ {Γ} {Δ} {A} {x : A ∈ (Γ ,, Δ)} {y} (ξ : x ≡ y) → [ var-inl {Γ = Γ} {Δ = Δ} , (λ x₁ → var-inr x₁) ]ᵛʳ x ≡ y
-                             id-aux {x = var-inl x} refl = refl
-                             id-aux {x = var-inr x} refl = refl
+                             -- (I see now that I don't need them, I'll clean this as soon as I have the time to do so)
 
-                             hom-auxʳ :  ∀ {Ξ Γ Δ Λ A} {ρ : Ξ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Λ} {x : A ∈ (Γ ,, Ξ)} {y} (ξ : x ≡ y)
-                                        → [ var-inl , (λ x₁ → var-inr (τ (ρ x₁))) ]ᵛʳ x
-                                          ≡ [ var-inl {Γ = Γ} , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ ([ var-inl , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ y)
-                             hom-auxʳ {x = var-inl x} refl = refl
-                             hom-auxʳ {x = var-inr x} refl = refl
+                             -- hom-auxʳ :  ∀ {Ξ Γ Δ Λ A} {ρ : Ξ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Λ} {x : A ∈ (Γ ,, Ξ)} {y} (ξ : x ≡ y)
+                             --            → [ var-inl , (λ x₁ → var-inr (τ (ρ x₁))) ]ᵛʳ x
+                             --              ≡ [ var-inl {Γ = Γ} , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ ([ var-inl , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ y)
+                             -- hom-auxʳ {x = var-inl x} refl = refl
+                             -- hom-auxʳ {x = var-inr x} refl = refl
 
-                             hom-auxˡ :  ∀ {Ξ Γ Δ Λ A} {ρ : Γ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Λ} {x : A ∈ (Γ ,, Ξ)} {y} (ξ : x ≡ y)
-                                        → [  (λ x₁ → var-inl (τ (ρ x₁))) , var-inr ]ᵛʳ x
-                                          ≡ [ (λ x₁ → var-inl (τ x₁)) , var-inr {Γ = Λ} ]ᵛʳ ([ (λ x₁ → var-inl (ρ x₁)) , var-inr ]ᵛʳ y)
-                             hom-auxˡ {x = var-inl x} refl = refl
-                             hom-auxˡ {x = var-inr x} refl = refl
+                             -- hom-auxˡ :  ∀ {Ξ Γ Δ Λ A} {ρ : Γ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Λ} {x : A ∈ (Γ ,, Ξ)} {y} (ξ : x ≡ y)
+                             --            → [  (λ x₁ → var-inl (τ (ρ x₁))) , var-inr ]ᵛʳ x
+                             --              ≡ [ (λ x₁ → var-inl (τ x₁)) , var-inr {Γ = Λ} ]ᵛʳ ([ (λ x₁ → var-inl (ρ x₁)) , var-inr ]ᵛʳ y)
+                             -- hom-auxˡ {x = var-inl x} refl = refl
+                             -- hom-auxˡ {x = var-inr x} refl = refl
 
-                             F-≈-auxʳ :  ∀ {Ξ Γ Δ A} {ρ τ : Ξ ⇒ᵛʳ Δ} {x : A ∈ (Γ ,, Ξ)} {y}
-                                        (ξᵛʳ : ρ ≡ᵛʳ τ) (ξ : x ≡ y)
-                                        → [ var-inl {Γ = Γ} , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ x ≡ [ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ y
-                             F-≈-auxʳ {x = var-inl x} ξᵛʳ refl = refl
-                             F-≈-auxʳ {x = var-inr x} ξᵛʳ refl = ρ-resp-≡ {ρ = inrᵛʳ}(ξᵛʳ x)
+                             -- F-≈-auxʳ :  ∀ {Ξ Γ Δ A} {ρ τ : Ξ ⇒ᵛʳ Δ} {x : A ∈ (Γ ,, Ξ)} {y}
+                             --            (ξᵛʳ : ρ ≡ᵛʳ τ) (ξ : x ≡ y)
+                             --            → [ var-inl {Γ = Γ} , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ x ≡ [ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ y
+                             -- F-≈-auxʳ {x = var-inl x} ξᵛʳ refl = refl
+                             -- F-≈-auxʳ {x = var-inr x} ξᵛʳ refl = ρ-resp-≡ {ρ = inrᵛʳ}(ξᵛʳ x)
 
-                             F-≈-auxˡ :  ∀ {Ξ Γ Δ A} {ρ τ : Γ ⇒ᵛʳ Δ} {x : A ∈ (Γ ,, Ξ)} {y}
-                                        (ξᵛʳ : ρ ≡ᵛʳ τ) (ξ : x ≡ y)
-                                        → [ (λ x₁ → var-inl (ρ x₁)) , var-inr {Γ = Δ} ]ᵛʳ x ≡ [ (λ x₁ → var-inl (τ x₁)) ,  var-inr ]ᵛʳ y
-                             F-≈-auxˡ {x = var-inr x} ξᵛʳ refl = refl
-                             F-≈-auxˡ {x = var-inl x} ξᵛʳ refl = ρ-resp-≡ {ρ = inlᵛʳ} (ξᵛʳ x)
+                             -- F-≈-auxˡ :  ∀ {Ξ Γ Δ A} {ρ τ : Γ ⇒ᵛʳ Δ} {x : A ∈ (Γ ,, Ξ)} {y}
+                             --            (ξᵛʳ : ρ ≡ᵛʳ τ) (ξ : x ≡ y)
+                             --            → [ (λ x₁ → var-inl (ρ x₁)) , var-inr {Γ = Δ} ]ᵛʳ x ≡ [ (λ x₁ → var-inl (τ x₁)) ,  var-inr ]ᵛʳ y
+                             -- F-≈-auxˡ {x = var-inr x} ξᵛʳ refl = refl
+                             -- F-≈-auxˡ {x = var-inl x} ξᵛʳ refl = ρ-resp-≡ {ρ = inlᵛʳ} (ξᵛʳ x)
 
-                             com-aux : ∀ {Ξ Γ Δ Λ A} {ρ : Γ ⇒ᵛʳ Δ} {τ : Ξ ⇒ᵛʳ Λ} {x : A ∈ (Γ ,, Ξ)} {y} (ξ : x ≡ y)
-                                       → [ (λ x₁ → var-inl (ρ x₁)) , (λ x₁ → var-inr x₁) ]ᵛʳ
-                                       ([ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ x)
-                                       ≡ [ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ
-                                       ([ (λ x₁ → var-inl (ρ x₁)) , (λ x₁ → var-inr x₁) ]ᵛʳ y)
-                             com-aux {x = var-inl x} refl = refl
-                             com-aux {x = var-inr x} refl = refl
+                             -- com-aux : ∀ {Ξ Γ Δ Λ A} {ρ : Γ ⇒ᵛʳ Δ} {τ : Ξ ⇒ᵛʳ Λ} {x : A ∈ (Γ ,, Ξ)} {y} (ξ : x ≡ y)
+                             --           → [ (λ x₁ → var-inl (ρ x₁)) , (λ x₁ → var-inr x₁) ]ᵛʳ
+                             --           ([ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ x)
+                             --           ≡ [ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ
+                             --           ([ (λ x₁ → var-inl (ρ x₁)) , (λ x₁ → var-inr x₁) ]ᵛʳ y)
+                             -- com-aux {x = var-inl x} refl = refl
+                             -- com-aux {x = var-inr x} refl = refl
 
 
 
@@ -278,7 +281,13 @@ module SecondOrder.VRelMon
     VMonad =
       let open Function.Equality using (_⟨$⟩_) renaming (cong to func-cong) in
       record
-        { F₀ = {!!}
+        { F₀ = λ Γ A → record
+                         { F₀ = λ Δ ψ → Term-setoid Θ (Γ ,, Δ) A
+                         ; F₁ = λ ρ ι → record { _⟨$⟩_ = [_]ᵛʳ_ (ʳ⇑ᵛʳ ρ) ; cong = λ ξ → []ᵛʳ-resp-≈ ξ }
+                         ; identity = λ ξ → ≈-trans ([]ᵛʳ-resp-≡ᵛʳ idᵛʳ+idᵛʳ) (≈-trans [id]ᵛʳ ξ)
+                         ; homomorphism = λ ξ → ≈-trans ([]ᵛʳ-resp-≈ ξ) (≈-trans [∘]ᵛʳ {!!}) -- ok
+                         ; F-resp-≈ = λ ξᵛʳ ξᵐʳ ξ → ≈-trans ([]ᵛʳ-resp-≈ ξ) ([]ᵛʳ-resp-≡ᵛʳ {!!}) -- ok
+                         }
         ; unit = {!!}
         ; extend = {!!}
         ; identityʳ = {!!}
