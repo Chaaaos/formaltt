@@ -247,7 +247,6 @@ module SecondOrder.VRelMon
                              (ρ-resp-≡ {ρ = ⇑ᵛʳ τ} ξ)
               }
 
--- ⇑ᵛʳ ρ x₁ ≡ ⇑ᵛʳ τ x₁
 
   -- The relative monad over Jⱽ
 
@@ -260,6 +259,7 @@ module SecondOrder.VRelMon
     open Categories.Category.Equivalence using (StrongEquivalence)
     open import SecondOrder.IndexedCategory
     open import SecondOrder.RelativeKleisli
+    open NaturalTransformation-Jⱽ
 
     VMonad : Monad Jⱽ
     VMonad =
@@ -269,18 +269,32 @@ module SecondOrder.VRelMon
                          { F₀ = λ Δ ψ → Term-setoid Θ (Γ ,, Δ) A
                          ; F₁ = λ ρ ι → record { _⟨$⟩_ = [_]ᵛʳ_ (ʳ⇑ᵛʳ ρ) ; cong = λ ξ → []ᵛʳ-resp-≈ ξ }
                          ; identity = λ ξ → ≈-trans ([]ᵛʳ-resp-≡ᵛʳ idᵛʳ+idᵛʳ) (≈-trans [id]ᵛʳ ξ)
-                         ; homomorphism = λ ξ → ≈-trans ([]ᵛʳ-resp-≈ ξ) (≈-trans [∘]ᵛʳ {!!}) -- ok
-                         ; F-resp-≈ = λ ξᵛʳ ξᵐʳ ξ → ≈-trans ([]ᵛʳ-resp-≈ ξ) ([]ᵛʳ-resp-≡ᵛʳ {!!}) -- ok
+                         ; homomorphism = λ {_} {_} {_} {_} {_} {_} {ρ} {_} {τ} ξ
+                                          → ≈-trans
+                                          ([]ᵛʳ-resp-≈ ξ)
+                                          (≈-trans
+                                            ([]ᵛʳ-resp-≡ᵛʳ λ x₁
+                                              → uniqueᵛʳ²
+                                                {τ = [ (λ x₂ → var-inl x₂) , (λ x₂ → var-inr (τ (ρ x₂))) ]ᵛʳ}
+                                                {σ = [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ  ∘ᵛʳ [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ }
+                                                (λ x₂ → refl) (λ x₂ → refl) x₁)
+                                            [∘]ᵛʳ)
+
+                         ; F-resp-≈ = λ ξᵛʳ ξᵐʳ ξ → ≈-trans ([]ᵛʳ-resp-≈ ξ) ([]ᵛʳ-resp-≡ᵛʳ λ x → [,]ᵛʳ-resp-≡ᵛʳ (λ x₁ → refl) (λ x₁ → ρ-resp-≡ {ρ = var-inr} (ξᵛʳ x₁)) x )
                          }
-        ; unit = {!!}
+        ; unit = λ A
+                   → record
+                     { η = λ ψ Γ
+                       → record
+                         { _⟨$⟩_ = λ x → tm-var x
+                         ; cong = λ ξ → congˢ-var {σ = tm-var} ξ }
+                       ; commute = λ ρ ι ξ → congˢ-var {σ = tm-var} (ρ-resp-≡ {ρ = [ var-inl , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ} ξ) }
         ; extend = {!!}
-        ; identityʳ = {!!}
+        ; identityʳ = λ A ξ → {!!}
         ; identityˡ = {!!}
         ; assoc = {!!}
         ; extend-≈ = {!!}
         }
-
-
 
 
     -- Other possibility, if the above doesn't work :
