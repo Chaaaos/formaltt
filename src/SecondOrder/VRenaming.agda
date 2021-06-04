@@ -1,3 +1,5 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+
 open import Level
 open import Relation.Binary.PropositionalEquality
 open import Relation.Binary using (Setoid)
@@ -135,6 +137,10 @@ module SecondOrder.VRenaming
     [ σ , τ ]ᵛʳ (var-inl x) = σ x
     [ σ , τ ]ᵛʳ (var-inr y) = τ y
 
+    [,]ᵛʳ-resp-≡ᵛʳ : ∀ {Γ Δ Ξ} {ρ₁ ρ₂ : Γ ⇒ᵛʳ Ξ} {τ₁ τ₂ : Δ ⇒ᵛʳ Ξ} → ρ₁ ≡ᵛʳ ρ₂ → τ₁ ≡ᵛʳ τ₂ → [ ρ₁ , τ₁ ]ᵛʳ ≡ᵛʳ [ ρ₂ , τ₂ ]ᵛʳ
+    [,]ᵛʳ-resp-≡ᵛʳ pρ pτ (var-inl x) = pρ x
+    [,]ᵛʳ-resp-≡ᵛʳ pρ pτ (var-inr x) = pτ x
+
     inlᵛʳ : ∀ {Γ Δ} → Γ ⇒ᵛʳ Γ ,, Δ
     inlᵛʳ = var-inl
 
@@ -147,6 +153,13 @@ module SecondOrder.VRenaming
               → [ ρ , σ ]ᵛʳ ≡ᵛʳ τ
     uniqueᵛʳ ξ ζ (var-inl x) = sym (ξ x)
     uniqueᵛʳ ξ ζ (var-inr y) = sym (ζ y)
+
+    uniqueᵛʳ² : ∀ {Γ Δ Ξ} {τ σ : Γ ,, Δ ⇒ᵛʳ Ξ}
+              → τ ∘ᵛʳ inlᵛʳ ≡ᵛʳ σ ∘ᵛʳ inlᵛʳ
+              → τ ∘ᵛʳ inrᵛʳ ≡ᵛʳ σ ∘ᵛʳ inrᵛʳ
+              → τ ≡ᵛʳ σ
+    uniqueᵛʳ² ξ ζ (var-inl x) = {!!}
+    uniqueᵛʳ² ξ ζ (var-inr y) = {!!}
 
     Context-+ : Categories.Category.Cocartesian.BinaryCoproducts VContexts
     Context-+ =
@@ -175,10 +188,15 @@ module SecondOrder.VRenaming
   ⇑ᵛʳ : ∀ {Γ Δ Ξ} → Γ ⇒ᵛʳ Δ → Γ ,, Ξ ⇒ᵛʳ Δ ,, Ξ
   ⇑ᵛʳ ρ = ρ +₁ idᵛʳ
 
-  -- -- a renaming can also be extended on the right
+  -- a renaming can also be extended on the right
   ʳ⇑ᵛʳ : ∀ {Γ Δ} → Γ ⇒ᵛʳ Δ → ∀ {Ξ} → Ξ ,, Γ ⇒ᵛʳ Ξ ,, Δ
   ʳ⇑ᵛʳ ρ = idᵛʳ +₁ ρ
 
+  -- right extension of renamings commutes with right injection
+  ʳ⇑ᵛʳ-comm-inrᵛʳ : ∀ {Γ Δ Ξ} (ρ : Γ ⇒ᵛʳ Δ) → (ʳ⇑ᵛʳ ρ {Ξ = Ξ}) ∘ᵛʳ (inrᵛʳ {Δ = Γ}) ≡ᵛʳ inrᵛʳ ∘ᵛʳ ρ
+  ʳ⇑ᵛʳ-comm-inrᵛʳ ρ var-slot = refl
+  ʳ⇑ᵛʳ-comm-inrᵛʳ ρ (var-inl x) = refl
+  ʳ⇑ᵛʳ-comm-inrᵛʳ ρ (var-inr x) = refl
 
   -- the action of a renaming on terms
   module _ {Θ : MContext} where
@@ -217,6 +235,11 @@ module SecondOrder.VRenaming
   ⇑ᵛʳ-∘ᵛʳ : ∀ {Γ Δ Ξ Ψ} {ρ : Γ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Ξ} → ⇑ᵛʳ {Ξ = Ψ} (τ ∘ᵛʳ ρ) ≡ᵛʳ (⇑ᵛʳ τ) ∘ᵛʳ (⇑ᵛʳ ρ)
   ⇑ᵛʳ-∘ᵛʳ (var-inl x) = refl
   ⇑ᵛʳ-∘ᵛʳ (var-inr y) = refl
+
+  -- Right extension respects composition
+  ʳ⇑ᵛʳ-∘ᵛʳ : ∀ {Γ Δ Ξ Ψ} {ρ : Γ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Ξ} → ʳ⇑ᵛʳ (τ ∘ᵛʳ ρ) {Ξ = Ψ} ≡ᵛʳ (ʳ⇑ᵛʳ τ) ∘ᵛʳ (ʳ⇑ᵛʳ ρ)
+  ʳ⇑ᵛʳ-∘ᵛʳ (var-inl x) = refl
+  ʳ⇑ᵛʳ-∘ᵛʳ (var-inr y) = refl
 
   -- The action of a renaming is functorial
   [∘]ᵛʳ : ∀ {Θ Γ Δ Ξ} {ρ : Γ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Ξ} {A} {t : Term Θ Γ A} → [ τ ∘ᵛʳ ρ ]ᵛʳ t ≈ [ τ ]ᵛʳ ([ ρ ]ᵛʳ t)
