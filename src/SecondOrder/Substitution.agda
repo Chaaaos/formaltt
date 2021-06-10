@@ -76,6 +76,9 @@ module SecondOrder.Substitution
   congˢ : ∀ {Θ} {Γ Δ} {A} {σ τ : Θ ⊕ Γ ⇒ˢ Δ} {x : A ∈ Γ} → σ ≈ˢ τ → σ x ≈ τ x
   congˢ {x = x} eq = eq x
 
+  congˢ-var :  ∀ {Θ} {Γ Δ} {A} {σ : Θ ⊕ Γ ⇒ˢ Δ} {x y : A ∈ Γ} → x ≡ y → σ x ≈ σ y
+  congˢ-var refl = ≈-refl
+
   -- extension of a substitution
 
   ⇑ˢ : ∀ {Θ Γ Δ Ξ} → Θ ⊕ Γ ⇒ˢ Δ → Θ ⊕ (Γ ,, Ξ) ⇒ˢ (Δ ,, Ξ)
@@ -402,7 +405,7 @@ module SecondOrder.Substitution
             ; [_,_] = [_,_]ˢ
             ; inject₁ = λ x → ≈-≡ refl
             ; inject₂ = λ x → ≈-≡ refl
-            ; unique = λ {σ = σ} {h} p₁ p₂ → uniqueˢ {τ = h} p₁ p₂
+            ; unique = λ {Ξ} {h} p₁ p₂ → uniqueˢ {τ = h} p₁ p₂
             }
       }
 
