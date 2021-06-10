@@ -12,5 +12,5 @@ module SecondOrder.MContext {ℓ} (arity : Set ℓ) (sort : Set ℓ)  where
   -- the meta-variables of a given type in a context
   data [_,_]∈_ (Λ : arity) (A : sort) : MContext → Set ℓ where
     var-slot : [ Λ , A ]∈ ctx-slot Λ A
-    var-inl : ∀ {Θ ψ} (M : [ Λ , A ]∈ Θ) → [ Λ , A ]∈ Θ ,, ψ
-    var-inr : ∀ {Θ ψ} (N : [ Λ , A ]∈ ψ) → [ Λ , A ]∈ Θ ,, ψ
+    var-inl : ∀ {Θ ψ} (x : [ Λ , A ]∈ Θ) → [ Λ , A ]∈ Θ ,, ψ
+    var-inr : ∀ {Θ ψ} (y : [ Λ , A ]∈ ψ) → [ Λ , A ]∈ Θ ,, ψ
