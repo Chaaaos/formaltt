@@ -26,7 +26,7 @@ import SecondOrder.MRenaming
 import SecondOrder.Term
 import SecondOrder.Substitution
 import SecondOrder.RMonadsMorphism
-import SecondOrder.Instantiation
+-- import SecondOrder.Instantiation
 import SecondOrder.IndexedCategory
 import SecondOrder.RelativeKleisli
 
