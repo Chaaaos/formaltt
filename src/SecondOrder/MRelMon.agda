@@ -201,13 +201,13 @@ module SecondOrder.MRelMon
                             ; commute = commute (MRenaming-NT (⇑ᵐʳ ι))
                             ; sym-commute = sym-commute (MRenaming-NT (⇑ᵐʳ ι))
                             }
-                 ; commute = λ {Ψ} {Ξ} ι {Γ} {t} {s} t≈s
-                           → ≈-trans ([]ᵐʳ-resp-≈ ([]ᵐʳ-resp-≈ t≈s)) (≈-sym {!split-sum-terms!})
-                 ; sym-commute = {!!}
+                 ; commute = λ ι t≈s
+                           → ≈-trans ([]ᵐʳ-resp-≈ ([]ᵐʳ-resp-≈ t≈s)) ⇑-resp-+
+                 ; sym-commute = λ ι t≈s → ≈-trans (≈-sym ⇑-resp-+) (([]ᵐʳ-resp-≈ ([]ᵐʳ-resp-≈ t≈s)))
                  }
             ; identity = λ Θ ψ Γ t≈s
               → ≈-trans ([]ᵐʳ-resp-≈ t≈s) (≈-trans ([]ᵐʳ-resp-≡ᵐʳ ⇑ᵐʳid≡ᵐʳidᵐʳ) [id]ᵐʳ)
             ; homomorphism = λ A ψ Γ t≈s
-              → ≈-trans ([]ᵐʳ-resp-≈ t≈s) (≈-trans {!!} {!!})
+              → ≈-trans ([]ᵐʳ-resp-≈ t≈s) ∘ᵐʳ-resp-⇑-term
             ; F-resp-≈ = λ ι≡μ A ψ Γ t≈s → ≈-trans ([]ᵐʳ-resp-≈ t≈s) ([]ᵐʳ-resp-≡ᵐʳ (⇑ᵐʳ-resp-≡ᵐʳ ι≡μ))
             }

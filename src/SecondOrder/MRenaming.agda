@@ -268,10 +268,38 @@ module SecondOrder.MRenaming
   split-sum (var-inl M) = refl
   split-sum (var-inr N) = refl
 
-  split-sum-terms : ∀ {Θ Ψ Ξ Ω Γ A} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ξ ⇒ᵐʳ Ω} {t : Term (Ξ + Θ) Γ A}
-    → [ (μ +₁ ι) ]ᵐʳ t ≈ [ (⇑ᵐʳ μ) ∘ᵐʳ (ᵐʳ⇑ᵐʳ ι) ]ᵐʳ t
-  split-sum-terms {t} = []ᵐʳ-resp-≡ᵐʳ split-sum
-  
+  split-sum2 : ∀ {Θ Ψ Ξ Ω} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ξ ⇒ᵐʳ Ω}
+    → (μ +₁ ι) ≡ᵐʳ (ᵐʳ⇑ᵐʳ ι) ∘ᵐʳ (⇑ᵐʳ μ)
+  split-sum2 (var-inl M) = refl
+  split-sum2 (var-inr N) = refl
+
+  ⇑-resp-+ : ∀ {Θ Ψ Ξ Ω Γ A} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ξ ⇒ᵐʳ Ω} {t : Term (Ξ + Θ) Γ A}
+    → [ (⇑ᵐʳ μ) ]ᵐʳ ([ (ᵐʳ⇑ᵐʳ ι) ]ᵐʳ t) ≈ [ (ᵐʳ⇑ᵐʳ ι) ]ᵐʳ ([ (⇑ᵐʳ μ) ]ᵐʳ t)
+  ⇑-resp-+ {Θ} {Ψ} {Ξ} {Ω} {Γ} {A} {ι} {μ} {t = t} =
+    let open SetoidR (Term-setoid (Ω ,, Ψ) Γ A) in
+    begin
+    [ ⇑ᵐʳ μ ]ᵐʳ ([ ᵐʳ⇑ᵐʳ ι ]ᵐʳ t) ≈⟨ ≈-sym [∘]ᵐʳ ⟩
+    [ (⇑ᵐʳ μ) ∘ᵐʳ (ᵐʳ⇑ᵐʳ ι) ]ᵐʳ t  ≈⟨ ≈-sym ([]ᵐʳ-resp-≡ᵐʳ split-sum) ⟩
+    [ (μ +₁ ι) ]ᵐʳ t ≈⟨ []ᵐʳ-resp-≡ᵐʳ split-sum2 ⟩
+    [(ᵐʳ⇑ᵐʳ ι) ∘ᵐʳ (⇑ᵐʳ μ)  ]ᵐʳ t ≈⟨ [∘]ᵐʳ ⟩
+    [ ᵐʳ⇑ᵐʳ ι ]ᵐʳ ([ ⇑ᵐʳ μ ]ᵐʳ t)
+    ∎
+
+  ∘ᵐʳ-resp-⇑ : ∀ {Θ Ψ Ξ Ω} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ψ ⇒ᵐʳ Ω} 
+    → ⇑ᵐʳ {Ω = Ξ}  (μ ∘ᵐʳ ι) ≡ᵐʳ ⇑ᵐʳ μ ∘ᵐʳ ⇑ᵐʳ ι
+  ∘ᵐʳ-resp-⇑ (var-inl M) = refl
+  ∘ᵐʳ-resp-⇑ (var-inr N) = refl
+
+  ∘ᵐʳ-resp-⇑-term : ∀ {Θ Ψ Ξ Ω Γ A} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ψ ⇒ᵐʳ Ω} {t : Term (Θ ,, Ξ) Γ A}
+    → [ ⇑ᵐʳ {Ω = Ξ} (μ ∘ᵐʳ ι) ]ᵐʳ t ≈  [ ⇑ᵐʳ μ ]ᵐʳ ([ ⇑ᵐʳ ι ]ᵐʳ t)
+  ∘ᵐʳ-resp-⇑-term {Θ} {Ψ} {Ξ} {Ω} {Γ} {A} {ι} {μ} {t = t} =
+      let open SetoidR (Term-setoid (Ω ,, Ξ) Γ A) in
+      begin
+      [ ⇑ᵐʳ {Ω = Ξ} (μ ∘ᵐʳ ι) ]ᵐʳ t ≈⟨ []ᵐʳ-resp-≡ᵐʳ ∘ᵐʳ-resp-⇑ ⟩
+      [ ⇑ᵐʳ μ ∘ᵐʳ ⇑ᵐʳ ι ]ᵐʳ t ≈⟨ [∘]ᵐʳ ⟩
+      [ ⇑ᵐʳ μ ]ᵐʳ ([ ⇑ᵐʳ ι ]ᵐʳ t)
+      ∎
+
   module _ {Θ Ψ : MContext} {A : sort} where
     open Categories.Category
     open Categories.Category.Instance.Setoids
