@@ -2,6 +2,7 @@ open import Level
 open import Relation.Binary.PropositionalEquality
 open import Relation.Binary using (Setoid)
 import Function.Equality
+import Relation.Binary.Reasoning.Setoid as SetoidR
 
 import Categories.Category
 import Categories.Functor
@@ -174,11 +175,11 @@ module SecondOrder.MRenaming
   inᵐʳ ()
 
   -- extension of a renaming is summing with identity
-  ⇑ᵐʳ : ∀ {Γ Δ Ξ} → Γ ⇒ᵐʳ Δ → Γ ,, Ξ ⇒ᵐʳ Δ ,, Ξ
+  ⇑ᵐʳ : ∀ {Θ Ψ Ω} → Θ ⇒ᵐʳ Ψ → Θ ,, Ω ⇒ᵐʳ Ψ ,, Ω
   ⇑ᵐʳ ρ = ρ +₁ idᵐʳ
 
   -- a renaming can also be extended on the right
-  ᵐʳ⇑ᵐʳ : ∀ {Γ Δ} → Γ ⇒ᵐʳ Δ → ∀ {Ξ} → Ξ ,, Γ ⇒ᵐʳ Ξ ,, Δ
+  ᵐʳ⇑ᵐʳ : ∀ {Θ Ψ} → Θ ⇒ᵐʳ Ψ → ∀ {Ω} → Ω ,, Θ ⇒ᵐʳ Ω ,, Ψ
   ᵐʳ⇑ᵐʳ ρ = idᵐʳ +₁ ρ
 
 
@@ -187,8 +188,8 @@ module SecondOrder.MRenaming
 
   [_]ᵐʳ_ : ∀ {Θ Ψ Γ A} → Θ ⇒ᵐʳ Ψ → Term Θ Γ A → Term Ψ Γ A
   [ ι ]ᵐʳ (tm-var x) = tm-var x
-  [ ι ]ᵐʳ (tm-meta M ts) = tm-meta (ι M) λ i → [ ι ]ᵐʳ ts i
-  [ ι ]ᵐʳ (tm-oper f es) = tm-oper f λ i → [ ι ]ᵐʳ es i
+  [ ι ]ᵐʳ (tm-meta M ts) = tm-meta (ι M) (λ i → [ ι ]ᵐʳ ts i)
+  [ ι ]ᵐʳ (tm-oper f es) = tm-oper f (λ i → [ ι ]ᵐʳ es i)
 
   -- The sum of identities is an identity
   idᵐʳ+idᵐʳ : ∀ {Θ Ψ} → idᵐʳ {Θ = Θ} +₁ idᵐʳ {Θ = Ψ} ≡ᵐʳ idᵐʳ {Θ = Θ ,, Ψ}
@@ -204,7 +205,14 @@ module SecondOrder.MRenaming
   -- The action of a renaming respects equality of renamings
   []ᵐʳ-resp-≡ᵐʳ : ∀ {Θ Ψ Γ A} {ι μ : Θ ⇒ᵐʳ Ψ} {t : Term Θ Γ A} → ι ≡ᵐʳ μ → [ ι ]ᵐʳ t ≈ [ μ ]ᵐʳ t
   []ᵐʳ-resp-≡ᵐʳ {t = tm-var x} ξ = ≈-≡ refl
-  []ᵐʳ-resp-≡ᵐʳ {ι = ι} {μ = μ} {t = tm-meta M ts} ξ = {!!}
+  []ᵐʳ-resp-≡ᵐʳ {Θ} {Ψ} {Γ} {A} {ι = ι} {μ = μ} {t = tm-meta M ts} ξ =
+    let open SetoidR (Term-setoid Ψ Γ A) in
+    begin
+    tm-meta (ι M) (λ i → [ ι ]ᵐʳ ts i) ≈⟨ ≈-meta (λ i → []ᵐʳ-resp-≡ᵐʳ ξ) ⟩
+    tm-meta (ι M) (λ i → [ μ ]ᵐʳ ts i) ≈⟨ ≈-≡ ((cong λ N → tm-meta N (λ i → [ μ ]ᵐʳ ts i)) (ξ M)) ⟩
+    tm-meta (μ M) (λ i → [ μ ]ᵐʳ ts i) ≈⟨ ≈-≡ refl ⟩
+    tm-meta (μ M) (λ i → [ μ ]ᵐʳ ts i)
+    ∎
   []ᵐʳ-resp-≡ᵐʳ {t = tm-oper f es} ξ = ≈-oper λ i → []ᵐʳ-resp-≡ᵐʳ ξ
 
   -- The action of the identity is trival
@@ -214,9 +222,33 @@ module SecondOrder.MRenaming
   [id]ᵐʳ {t = tm-oper f es} = ≈-oper λ i → [id]ᵐʳ
 
   -- Extension respects composition
-  ⇑ᵐʳ-∘ᵐʳ : ∀ {Γ Δ Ξ Ψ} {ρ : Γ ⇒ᵐʳ Δ} {τ : Δ ⇒ᵐʳ Ξ} → ⇑ᵐʳ {Ξ = Ψ} (τ ∘ᵐʳ ρ) ≡ᵐʳ (⇑ᵐʳ τ) ∘ᵐʳ (⇑ᵐʳ ρ)
+  ⇑ᵐʳ-∘ᵐʳ : ∀ {Γ Δ Ξ Ψ} {ρ : Γ ⇒ᵐʳ Δ} {τ : Δ ⇒ᵐʳ Ξ} → ⇑ᵐʳ {Ω = Ψ} (τ ∘ᵐʳ ρ) ≡ᵐʳ (⇑ᵐʳ τ) ∘ᵐʳ (⇑ᵐʳ ρ)
   ⇑ᵐʳ-∘ᵐʳ (var-inl x) = refl
   ⇑ᵐʳ-∘ᵐʳ (var-inr y) = refl
+
+  ᵐʳ⇑ᵐʳ-∘ᵐʳ : ∀ {Θ Ψ Ω Ξ} {ρ : Θ ⇒ᵐʳ Ψ} {τ : Ψ ⇒ᵐʳ Ω}
+    → ᵐʳ⇑ᵐʳ {Θ} {Ω} (τ ∘ᵐʳ ρ) {Ξ} ≡ᵐʳ (ᵐʳ⇑ᵐʳ τ) ∘ᵐʳ (ᵐʳ⇑ᵐʳ ρ)
+  ᵐʳ⇑ᵐʳ-∘ᵐʳ (var-inl M) = refl
+  ᵐʳ⇑ᵐʳ-∘ᵐʳ (var-inr N) = refl
+
+  -- Extension of the identity renaming is the identity
+  ⇑ᵐʳid≡ᵐʳidᵐʳ : ∀ {Θ Ψ} → (⇑ᵐʳ {Θ} {Θ} {Ψ}) (idᵐʳ {Θ}) ≡ᵐʳ idᵐʳ
+  ⇑ᵐʳid≡ᵐʳidᵐʳ (var-inl M) = refl
+  ⇑ᵐʳid≡ᵐʳidᵐʳ (var-inr N) = refl
+
+  ᵐʳ⇑ᵐʳid≡ᵐʳidᵐʳ : ∀ {Θ Ψ} → (ᵐʳ⇑ᵐʳ {Θ} {Θ}) (idᵐʳ {Θ}) {Ψ} ≡ᵐʳ idᵐʳ
+  ᵐʳ⇑ᵐʳid≡ᵐʳidᵐʳ (var-inl M) = refl
+  ᵐʳ⇑ᵐʳid≡ᵐʳidᵐʳ (var-inr N) = refl
+
+  -- Extension preserves equality of metavariable renamings
+  ᵐʳ⇑ᵐʳ-resp-≡ᵐʳ : ∀ {Θ Ψ Ω} {ι μ : Θ ⇒ᵐʳ Ψ} → ι ≡ᵐʳ μ → ᵐʳ⇑ᵐʳ ι {Ω} ≡ᵐʳ ᵐʳ⇑ᵐʳ μ
+  ᵐʳ⇑ᵐʳ-resp-≡ᵐʳ ι≡μ (var-inl M) = refl
+  ᵐʳ⇑ᵐʳ-resp-≡ᵐʳ {ι = ι} ι≡μ (var-inr N) = cong (inrᵐʳ) (ι≡μ N)
+
+  ⇑ᵐʳ-resp-≡ᵐʳ : ∀ {Θ Ψ Ω} {ι μ : Θ ⇒ᵐʳ Ψ} → ι ≡ᵐʳ μ → ⇑ᵐʳ {Ω = Ω} ι ≡ᵐʳ ⇑ᵐʳ μ
+  ⇑ᵐʳ-resp-≡ᵐʳ ι≡μ (var-inl M) = cong var-inl (ι≡μ M)
+  ⇑ᵐʳ-resp-≡ᵐʳ {ι = ι} ι≡μ (var-inr N) = refl
+
 
   -- The action of a renaming is functorial
   [∘]ᵐʳ : ∀ {Θ Ψ Ω Γ} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ψ ⇒ᵐʳ Ω} {A} {t : Term Θ Γ A}
@@ -230,6 +262,15 @@ module SecondOrder.MRenaming
   ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ {t = tm-var x} = ≈-refl
   ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ {t = tm-meta M ts} = ≈-meta (λ i → ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ {t = ts i})
   ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ {t = tm-oper f es} = ≈-oper (λ i → ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ {t = es i})
+
+  split-sum : ∀ {Θ Ψ Ξ Ω} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ξ ⇒ᵐʳ Ω}
+    → (μ +₁ ι) ≡ᵐʳ (⇑ᵐʳ μ) ∘ᵐʳ (ᵐʳ⇑ᵐʳ ι)
+  split-sum (var-inl M) = refl
+  split-sum (var-inr N) = refl
+
+  split-sum-terms : ∀ {Θ Ψ Ξ Ω Γ A} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ξ ⇒ᵐʳ Ω} {t : Term (Ξ + Θ) Γ A}
+    → [ (μ +₁ ι) ]ᵐʳ t ≈ [ (⇑ᵐʳ μ) ∘ᵐʳ (ᵐʳ⇑ᵐʳ ι) ]ᵐʳ t
+  split-sum-terms {t} = []ᵐʳ-resp-≡ᵐʳ split-sum
   
   module _ {Θ Ψ : MContext} {A : sort} where
     open Categories.Category
@@ -237,10 +278,11 @@ module SecondOrder.MRenaming
     open Categories.Functor
     open Categories.NaturalTransformation
 
-    MRenaming-NaturalTransformation : ∀ (ι : Θ ⇒ᵐʳ Ψ) → NaturalTransformation (Term-Functor {Θ} {A}) (Term-Functor {Ψ} {A})
-    MRenaming-NaturalTransformation ι =
+    MRenaming-NT : ∀ (ι : Θ ⇒ᵐʳ Ψ) → NaturalTransformation (Term-Functor {Θ} {A}) (Term-Functor {Ψ} {A})
+    MRenaming-NT ι =
       record
       { η = λ Γ → record { _⟨$⟩_ = [ ι ]ᵐʳ_ ; cong = []ᵐʳ-resp-≈ }
       ; commute = λ ρ t≈s → ≈-trans ([]ᵐʳ-resp-≈ ([]ᵛʳ-resp-≈ t≈s)) (ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ)
       ; sym-commute = λ ρ t≈s → ≈-trans (≈-sym ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ) ([]ᵐʳ-resp-≈ ([]ᵛʳ-resp-≈ t≈s))
       }
+

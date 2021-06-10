@@ -11,6 +11,9 @@ import Categories.Category.Instance.Setoids
 import Categories.Monad.Relative
 import Categories.Category.Equivalence
 import Categories.Category.Cocartesian
+import Categories.Category.Cartesian
+import Categories.Category.Construction.Functors
+
 
 import SecondOrder.Arity
 import SecondOrder.Signature
@@ -228,6 +231,8 @@ module SecondOrder.Substitution
   module _ where
     open Categories.Category
     open Categories.Functor using (Functor)
+    open Categories.Category.Construction.Functors
+    open Categories.Category.Cartesian.BinaryProducts
     open Categories.Category.Instance.Setoids
     open Categories.Monad.Relative
     open Function.Equality using () renaming (setoid to Π-setoid)
@@ -235,17 +240,42 @@ module SecondOrder.Substitution
     open import SecondOrder.IndexedCategory
     open import SecondOrder.RelativeKleisli
 
-    -- The embedding of contexts into setoids indexed by sorts
 
-    slots : Functor VContexts (IndexedCategory sort (Setoids ℓ ℓ))
-    slots = record
-              { F₀ = λ Γ A → setoid (A ∈ Γ)
-              ; F₁ = λ ρ A → record { _⟨$⟩_ = ρ ; cong = cong ρ }
+    VCat : ∀ (Θ : MContext) (Δ : VContext) (A : sort) → Category ℓ ℓ ℓ
+    VCat = λ Θ Δ A → record
+                        { Obj = A ∈ Δ
+                        ; _⇒_ = λ x y → {!!}
+                        ; _≈_ = {!!}
+                        ; id = {!!}
+                        ; _∘_ = {!!}
+                        ; assoc = {!!}
+                        ; sym-assoc = {!!}
+                        ; identityˡ = {!!}
+                        ; identityʳ = {!!}
+                        ; identity² = {!!}
+                        ; equiv = {!!}
+                        ; ∘-resp-≈ = {!!}
+                        }
+
+    Vslots : Functor (VContexts) (IndexedCategory sort (Setoids ℓ ℓ))
+    Vslots = record
+              { F₀ = {!!}
+              ; F₁ = {!!}
               ; identity = λ A ξ → ξ
               ; homomorphism = λ {_} {_} {_} {ρ} {σ} A {_} {_} ξ → cong σ (cong ρ ξ)
               ; F-resp-≈ = λ ξ A ζ → trans (ξ _) (cong _ ζ)
               }
 
+     -- The embedding of extended contexts into setoids indexed by sorts
+
+    ⇑ᵗ-Vslots : ∀ (Γ : VContext) → Functor VContexts (IndexedCategory sort (Setoids ℓ ℓ))
+    ⇑ᵗ-Vslots Γ = record
+              { F₀ = λ Δ A → setoid (A ∈ (Δ ,, Γ))
+              ; F₁ = λ ρ A → record { _⟨$⟩_ = ⇑ʳ ρ ; cong = cong (⇑ʳ ρ) } -- λ ρ A → record { _⟨$⟩_ = ρ ; cong = cong ρ }
+              ; identity = λ A ξ → {!!} -- λ A ξ → ξ
+              ; homomorphism = {!!} -- λ {_} {_} {_} {ρ} {σ} A {_} {_} ξ → cong σ (cong ρ ξ)
+              ; F-resp-≈ = {!!} -- λ ξ A ζ → trans (ξ _) (cong _ ζ)
+              }
 
   module _ {Θ : MContext} where
     open Categories.Category
@@ -260,7 +290,7 @@ module SecondOrder.Substitution
 
     -- The relative monad of terms over contexts
 
-    Term-Monad : Monad slots
+    Term-Monad : Monad Vslots
     Term-Monad =
       let open Function.Equality using (_⟨$⟩_) renaming (cong to func-cong) in
       record
@@ -273,6 +303,21 @@ module SecondOrder.Substitution
         ; extend-≈ = λ {Γ} {Δ} {σ} {ρ} ζ B {s} {t} ξ → []ˢ-resp-≈ˢ-≈ (λ x → ζ _ refl) ξ
         }
 
+
+    -- The relative monad of terms over extended contexts
+
+    ⇑ᵗ-Term-Monad : ∀ (Γ : VContext) → Monad (⇑ᵗ-Vslots Γ)
+    ⇑ᵗ-Term-Monad Γ =
+      let open Function.Equality using (_⟨$⟩_) renaming (cong to func-cong) in
+      record
+        { F₀ = λ Δ A → Term-setoid Θ (Γ ,, Δ) A -- Term-setoid Θ
+        ; unit = {!!} -- λ A → record { _⟨$⟩_ = idˢ ; cong = λ ξ → ≈-≡ (cong idˢ ξ) }
+        ; extend = {!!} -- λ σ A → record { _⟨$⟩_ =  [ (σ _ ⟨$⟩_) ]ˢ_ ; cong = []ˢ-resp-≈ (σ _ ⟨$⟩_)}
+        ; identityʳ = {!!} -- λ {_} {_} {σ} A {_} {_} ξ → func-cong (σ A) ξ
+        ; identityˡ = {!!} -- λ A → ≈-trans [id]ˢ
+        ; assoc = {!!} -- λ {_} {_} {_} {σ} {ρ} A {_} {t} ξ → ≈-trans ([]ˢ-resp-≈ _ ξ) ([∘]ˢ t)
+        ; extend-≈ = {!!} -- λ {Γ} {Δ} {σ} {ρ} ζ B {s} {t} ξ → []ˢ-resp-≈ˢ-≈ (λ x → ζ _ refl) ξ
+        }
 
     -- the category of contexts and substitutions
 
