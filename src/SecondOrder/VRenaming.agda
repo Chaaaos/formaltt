@@ -198,6 +198,12 @@ module SecondOrder.VRenaming
   ʳ⇑ᵛʳ-comm-inrᵛʳ ρ (var-inl x) = refl
   ʳ⇑ᵛʳ-comm-inrᵛʳ ρ (var-inr x) = refl
 
+  -- left extension of renamings commutes with left injection
+  ⇑ᵛʳ-comm-inlᵛʳ : ∀ {Γ Δ Ξ} (ρ : Γ ⇒ᵛʳ Δ) → (⇑ᵛʳ {Ξ = Ξ} ρ) ∘ᵛʳ (inlᵛʳ {Δ = Ξ}) ≡ᵛʳ inlᵛʳ ∘ᵛʳ ρ
+  ⇑ᵛʳ-comm-inlᵛʳ ρ var-slot = refl
+  ⇑ᵛʳ-comm-inlᵛʳ ρ (var-inl x) = refl
+  ⇑ᵛʳ-comm-inlᵛʳ ρ (var-inr x) = refl
+
   -- the action of a renaming on terms
   module _ {Θ : MContext} where
 
