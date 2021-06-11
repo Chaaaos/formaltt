@@ -26,7 +26,7 @@ import SecondOrder.MRenaming
 import SecondOrder.Term
 import SecondOrder.Substitution
 import SecondOrder.RMonadsMorphism
--- import SecondOrder.Instantiation
+import SecondOrder.Instantiation
 import SecondOrder.IndexedCategory
 import SecondOrder.RelativeKleisli
 import SecondOrder.Mslot
@@ -44,9 +44,9 @@ module SecondOrder.MRelMon
   open SecondOrder.VRenaming Σ
   open SecondOrder.MRenaming Σ
   open SecondOrder.Mslot Σ
-  -- open SecondOrder.Substitution Σ
-  -- open import SecondOrder.RMonadsMorphism
-  -- open SecondOrder.Instantiation 
+  open SecondOrder.Substitution Σ
+  open SecondOrder.Instantiation Σ
+  open import SecondOrder.RMonadsMorphism
   open Categories.Category
   open Categories.Functor using (Functor)
   open Categories.NaturalTransformation renaming (id to idNt)
@@ -99,7 +99,16 @@ module SecondOrder.MRelMon
                       ; commute = λ f t≈s → ≈-trans ([]ᵛʳ-resp-≈ ([]ᵐʳ-resp-≈ t≈s)) mr-comm-vr
                       ; sym-commute = λ f t≈s → ≈-trans ? ([]ᵛʳ-resp-≈ ([]ᵐʳ-resp-≈ t≈s))
                       }
-      ; extend = {!!}
+      ; extend = λ I A → record
+                          { η = λ Θ →
+                              record
+                              { η = λ Ψ → record { _⟨$⟩_ = [_]ⁱ_ {!!} ; cong = {!!} }
+                              ; commute = {!!}
+                              ; sym-commute = {!!}
+                              }
+                          ; commute = {!!}
+                          ; sym-commute = {!!}
+                          }
       ; identityʳ = {!!}
       ; identityˡ = {!!}
       ; assoc = {!!}

@@ -220,143 +220,22 @@ module SecondOrder.Instantiation
   [∘]ⁱ : ∀ {Θ Ξ Ω Γ} → {I : Θ ⇒ⁱ Ξ ⊕ Γ} → {J : Ξ ⇒ⁱ Ω ⊕ Γ} →
            ∀ {A} → ∀ (t : Term Θ Γ A) → [ J ∘ⁱ I ]ⁱ t ≈ [ J ]ⁱ [ I ]ⁱ t
   [∘]ⁱ (tm-var x) = ≈-refl
-  [∘]ⁱ {I = I} {J = J} (tm-meta M ts) =
-                      ≈-trans
-                        ([]ˢ-resp-≈ˢ
-                          ([ J ]ⁱ (I M))
-                          ([,]ˢ-resp-≈ˢ (λ x → ≈-refl) (λ i → [∘]ⁱ {I = I} {J = J} (ts i))))
-                        (≈-trans
-                          ([]ˢ-resp-≈ˢ
-                            ([ J ]ⁱ (I M))
-                            λ x → []ˢ-resp-≈ˢ {σ = [ inlˢ , (λ {A} i → [ J ]ⁱ [ I ]ⁱ ts i) ]ˢ} {τ = λ i → ((I ⇒ⁱ J ext[ ts ]) i)} (tm-var x) ((I ⇒ⁱ J ext[ ts ]-correct)))
-                          {!!})
-               where
-                 _⇒ⁱ_ext[_] : ∀ {Θ ψ Ω Γ Δ Ξ A} (I : Θ ⇒ⁱ ψ ⊕ Γ) (J : ψ ⇒ⁱ Ω ⊕ Γ)
-                          →  (∀ {B} (i : B ∈ Δ) → Term Θ (Γ ,, Ξ) B)
-                          → A ∈ Γ ,, Δ → Term Ω (Γ ,, Ξ) A
-                 (I ⇒ⁱ J ext[ ts ]) (var-inl x) = tm-var (var-inl x)
-                 (I ⇒ⁱ J ext[ ts ]) (var-inr x) =  [ J ]ⁱ [ I ]ⁱ (ts x)
-
-                 _⇒ⁱ_ext[_]-correct : ∀ {Θ ψ Ω Γ Δ Ξ}
-                                       (I : Θ ⇒ⁱ ψ ⊕ Γ) (J : ψ ⇒ⁱ Ω ⊕ Γ)
-                                       (ts : ∀ {B} (i : B ∈ Δ) → Term Θ (Γ ,, Ξ) B)
-                                      → ([ inlˢ , (λ i → ( [ J ]ⁱ [ I ]ⁱ (ts i))) ]ˢ) ≈ˢ (λ i → (I ⇒ⁱ J ext[ ts ]) i)
-                 (I ⇒ⁱ J ext[ ts ]-correct) (var-inl i) = ≈-refl
-                 (I ⇒ⁱ J ext[ ts ]-correct) (var-inr i) = ≈-refl
-  [∘]ⁱ {I = I} {J = J} (tm-oper f es) =
-            ≈-oper (λ i → ≈-trans ([]ⁱ-resp-≈ⁱ (es i) (⇑ⁱ-resp-∘ⁱ {I = I} {J = J})) ([∘]ⁱ (es i)))
-
-    -- -- The embedding of contexts into setoids indexed by sorts
-
-    -- slots : Functor VContexts (IndexedCategory sort (Setoids ℓ ℓ))
-    -- slots = record
-    --           { F₀ = λ Γ A → setoid (A ∈ Γ)
-    --           ; F₁ = λ ρ A → record { _⟨$⟩_ = ρ ; cong = cong ρ }
-    --           ; identity = λ A ξ → ξ
-    --           ; homomorphism = λ {_} {_} {_} {ρ} {σ} A {_} {_} ξ → cong σ (cong ρ ξ)
-    --           ; F-resp-≈ = λ ξ A ζ → trans (ξ _) (cong _ ζ)
-    --           }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- Goal: [
---       (λ M₁ →
---          [
---          [ (λ x → tm-var (var-inl (var-inl x))) , (λ x → tm-var (var-inr x))
---          ]ˢ
---          ]ˢ J M₁)
---       ]ⁱ
---       [
---       [ (λ x → tm-var (var-inl (var-inl x))) , (λ x → tm-var (var-inr x))
---       ]ˢ
---       ]ˢ I M
---       ≈ _u_800
-
-
--- --   -- as a special case we define instantiation of a closed term such that
--- --   -- the empty context does not appear. This is used when axioms are instantiated.
--- --   instantiate-closed-term : ∀ {Θ Ξ Γ A} (I : Θ ⇒ⁱ Ξ ⊕ Γ) → Term Θ ctx-empty A → Term Ξ Γ A
--- --   instantiate-closed-term I t =  [ sum-ctx-empty-r ]ˢ ([ I ]ⁱ t)
-
-
--- --   --------------------------------------------------------------------------------------------------
--- --   ----------------------------------------------------------------------
--- --   --          Interactions with renamings and substitutions           --
--- --   ----------------------------------------------------------------------
-
--- --   -- action of a renaming on an instantiation
--- --   _ʳ∘ⁱ_ : ∀ {Θ ψ Γ Δ} → Γ ⇒ʳ Δ → Θ ⇒ⁱ ψ ⊕ Γ → Θ ⇒ⁱ ψ ⊕ Δ
--- --   (ρ ʳ∘ⁱ I) M = [ (⇑ʳ ρ) ]ʳ I M
-
--- --   -- action of a substitution on an instantiation
--- --   _ˢ∘ⁱ_ : ∀ {Θ ψ Γ Δ} → ψ ⊕ Γ ⇒ˢ Δ → Θ ⇒ⁱ ψ ⊕ Γ → Θ ⇒ⁱ ψ ⊕ Δ
--- --   (σ ˢ∘ⁱ I) M = [ ⇑ˢ σ ]ˢ I M
-
--- --   -- action of an instantiation on a substitution
--- --   _ⁱ∘ˢ_ : ∀ {Θ ψ Γ Δ Ξ} → Θ ⇒ⁱ ψ ⊕ Ξ → Θ ⊕ Γ ⇒ˢ Δ →  ψ ⊕ (Ξ ,, Γ) ⇒ˢ (Ξ ,, Δ)
--- --   (I ⁱ∘ˢ σ) (var-inl x) = tm-var (var-inl x)
--- --   (I ⁱ∘ˢ σ) (var-inr x) = [ I ]ⁱ (σ x)
-
-
--- -- --========================================================================================
--- -- --∥                              ========================                                ∥
--- -- --∥                              ∥  ** METATHEOREMS **  ∥                                ∥
--- -- --∥                              ========================                                ∥
--- -- --========================================================================================
-
--- --   --------------------------------------------------------------------------------------------------
--- --   ----------------------------------------------------------
--- --   --          Basic lemmas about instantiations           --
--- --   ----------------------------------------------------------
-
-
--- --   -- ** Two equal instantiations have the same action **
--- --   []ⁱ-resp-≈ⁱ : ∀ {Θ Ω Γ Δ A} (t : Term Θ Δ A) {I J : Θ ⇒ⁱ Ω ⊕ Γ}
--- --         → I ≈ⁱ J → [ I ]ⁱ t ≈ [ J ]ⁱ t
--- --   []ⁱ-resp-≈ⁱ (tm-var x) p = ≈-refl
--- --   []ⁱ-resp-≈ⁱ (tm-meta M ts) {I = I} {J = J} p = []ˢ-resp-≈ˢ-≈ ([,]ˢ-resp-≈ˢ (λ x → ≈-refl) (λ i → []ⁱ-resp-≈ⁱ (ts i) p)) (p M)
--- --   []ⁱ-resp-≈ⁱ (tm-oper f es) p = ≈-oper λ i → []ˢ-resp-≈ assoc-r ([]ⁱ-resp-≈ⁱ (es i) p)
-
--- --   -- interaction
-
--- --   -- action of instantiation is functirial wrt. composition
-
--- --   ∘ⁱ-≈ : ∀ {Θ Ω ψ Γ Δ Ξ A} (t : Term Θ Ξ A) (I : Ω ⇒ⁱ ψ ⊕ Δ) (J : Θ ⇒ⁱ Ω ⊕ Γ)
--- --         → [ I ∘ⁱ J ]ⁱ t ≈ [ assoc-r ]ˢ ([ I ]ⁱ ([ J ]ⁱ t))
--- --   ∘ⁱ-≈ (tm-var x) I J = ≈-≡ refl
--- --   ∘ⁱ-≈ (tm-meta M ts) I J = ≈-sym ( ≈-trans ([]ˢ-resp-≈ assoc-r {!!}) {!!} )
--- --   ∘ⁱ-≈ (tm-oper f es) I J = ≈-oper (λ i → {!!})
-
--- --   -- reassociation of a composition
--- --   reassoc-∘ⁱ : ∀ {Θ Ω ψ Γ Δ Ξ Λ A} (t : Term Θ (Ξ ,, Λ) A) (I : Ω ⇒ⁱ ψ ⊕ Δ) (J : Θ ⇒ⁱ Ω ⊕ Γ)
--- --               → [ assoc-r ]ˢ ([ I ∘ⁱ J ]ⁱ t) ≈  [ assoc-r ]ˢ ([ assoc-r ]ˢ ([ I ]ⁱ ([ J ]ⁱ t)))
--- --   reassoc-∘ⁱ t I J = []ˢ-resp-≈ assoc-r (∘ⁱ-≈ t I J)
-
--- --   -- auxiliary function, to deal with extensions in the oper case
--- --   ∘ⁱ-≈-oper : ∀ {Θ Ω ψ Γ Δ Ξ Λ A} (t : Term Θ (Ξ ,, Λ) A) (I : Ω ⇒ⁱ ψ ⊕ Δ) (J : Θ ⇒ⁱ Ω ⊕ Γ)
--- --               → [ assoc-r ]ˢ ([ I ∘ⁱ J ]ⁱ t) ≈ [ ⇑ˢ assoc-r ]ˢ [ assoc-r ]ˢ ([ I ]ⁱ [ assoc-r ]ˢ ([ J ]ⁱ t))
--- --   ∘ⁱ-≈-oper (tm-var (var-inl x)) I J = ≈-refl
--- --   ∘ⁱ-≈-oper (tm-var (var-inr x)) I J = ≈-refl
--- --   ∘ⁱ-≈-oper (tm-meta M ts) I J = {!!}
--- --   ∘ⁱ-≈-oper (tm-oper f es) I J = {!!}
+  [∘]ⁱ {Θ = Θ} {Ξ = Ξ} {Γ = Γ} {I = I} {J = J} (tm-meta {Γᴹ = Γᴹ} M ts) =
+    ≈-trans
+      ([]ˢ-resp-≈ˢ
+        ([ ⇑ⁱ J ]ⁱ (I M))
+        ([,]ˢ-resp-≈ˢ (λ x → ≈-refl) (λ i → [∘]ⁱ {I = I} {J = J} (ts i))))
+      (≈-trans
+        ([]ˢ-resp-≈ˢ {τ = λ i → [ J ]ⁱ var-or-ts i} ([ ⇑ⁱ J ]ⁱ (I M))
+        λ {(var-inl x) → ≈-refl ; (var-inr y) → ≈-refl})
+        (≈-trans
+           (≈-sym ([]ⁱ-[]ˢ {I = J} {σ = var-or-ts} {ρ = var-inl} (I M) λ x → ≈-refl))
+            ([]ⁱ-resp-≈ J
+                       ([]ˢ-resp-≈ˢ (I M) λ { (var-inl x) → ≈-refl ; (var-inr x) → ≈-refl}))))
+                 where
+                 var-or-ts : ∀ {A} → A ∈ (Γ ,, Γᴹ) → Term Ξ Γ A
+                 var-or-ts (var-inl x) = tm-var x
+                 var-or-ts (var-inr y) = [ I ]ⁱ ts y
 
   [∘]ⁱ {I = I} {J = J} (tm-oper f es) =
             ≈-oper (λ i → ≈-trans ([]ⁱ-resp-≈ⁱ (es i) (⇑ⁱ-resp-∘ⁱ {I = I})) ([∘]ⁱ (es i)))
