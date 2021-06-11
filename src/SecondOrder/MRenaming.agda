@@ -300,6 +300,34 @@ module SecondOrder.MRenaming
       [ ⇑ᵐʳ μ ]ᵐʳ ([ ⇑ᵐʳ ι ]ᵐʳ t)
       ∎
 
+  ∘ᵐʳ-resp-ᵐʳ⇑ : ∀ {Θ Ψ Ξ Ω} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ψ ⇒ᵐʳ Ω} 
+    → ᵐʳ⇑ᵐʳ (μ ∘ᵐʳ ι) {Ω = Ξ} ≡ᵐʳ ᵐʳ⇑ᵐʳ μ ∘ᵐʳ ᵐʳ⇑ᵐʳ ι
+  ∘ᵐʳ-resp-ᵐʳ⇑ (var-inl M) = refl
+  ∘ᵐʳ-resp-ᵐʳ⇑ (var-inr N) = refl
+
+  ∘ᵐʳ-resp-ᵐʳ⇑-term : ∀ {Θ Ψ Ξ Ω Γ A} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ψ ⇒ᵐʳ Ω} {t : Term (Ξ ,, Θ) Γ A}
+    → [ ᵐʳ⇑ᵐʳ  (μ ∘ᵐʳ ι) {Ω = Ξ} ]ᵐʳ t ≈  [ ᵐʳ⇑ᵐʳ μ ]ᵐʳ ([ ᵐʳ⇑ᵐʳ ι ]ᵐʳ t)
+  ∘ᵐʳ-resp-ᵐʳ⇑-term {Θ} {Ψ} {Ξ} {Ω} {Γ} {A} {ι} {μ} {t = t} =
+      let open SetoidR (Term-setoid (Ξ ,, Ω) Γ A) in
+      begin
+      [ ᵐʳ⇑ᵐʳ (μ ∘ᵐʳ ι) {Ω = Ξ} ]ᵐʳ t ≈⟨ []ᵐʳ-resp-≡ᵐʳ ∘ᵐʳ-resp-ᵐʳ⇑ ⟩
+      [ ᵐʳ⇑ᵐʳ μ ∘ᵐʳ ᵐʳ⇑ᵐʳ ι ]ᵐʳ t ≈⟨ [∘]ᵐʳ ⟩
+      [ ᵐʳ⇑ᵐʳ μ ]ᵐʳ ([ ᵐʳ⇑ᵐʳ ι ]ᵐʳ t)
+      ∎
+
+
+  vr-comm-mr : ∀ {Θ Ψ Γ Δ A} {ρ : Γ ⇒ᵛʳ Δ} {ι : Θ ⇒ᵐʳ Ψ} {t : Term Θ Γ A}
+    → [ ι ]ᵐʳ ([ ρ ]ᵛʳ t) ≈ [ ρ ]ᵛʳ ([ ι ]ᵐʳ t)
+  vr-comm-mr {t = tm-var x} = ≈-refl
+  vr-comm-mr {t = tm-meta M ts} = ≈-meta (λ i → vr-comm-mr)
+  vr-comm-mr {t = tm-oper f es} = ≈-oper (λ i → vr-comm-mr)
+
+  mr-comm-vr : ∀ {Θ Ψ Γ Δ A} {ρ : Γ ⇒ᵛʳ Δ} {ι : Θ ⇒ᵐʳ Ψ} {t : Term Θ Γ A}
+    → [ ρ ]ᵛʳ ([ ι ]ᵐʳ t) ≈  [ ι ]ᵐʳ ([ ρ ]ᵛʳ t)
+  mr-comm-vr {t = tm-var x} = ≈-refl
+  mr-comm-vr {t = tm-meta M ts} = ≈-meta (λ i → mr-comm-vr)
+  mr-comm-vr {t = tm-oper f es} = ≈-oper (λ i → mr-comm-vr)
+
   module _ {Θ Ψ : MContext} {A : sort} where
     open Categories.Category
     open Categories.Category.Instance.Setoids
