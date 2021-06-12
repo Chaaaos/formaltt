@@ -26,7 +26,7 @@ import SecondOrder.MRenaming
 import SecondOrder.Term
 import SecondOrder.Substitution
 import SecondOrder.RMonadsMorphism
--- import SecondOrder.Instantiation
+import SecondOrder.Instantiation
 import SecondOrder.IndexedCategory
 import SecondOrder.RelativeKleisli
 
@@ -64,21 +64,6 @@ module SecondOrder.Mslot
   -- objects are functors, which are really pairs of functions, one on objects
   -- one on morphisms
   -- morphisms in this category are natural transformations
-  -- MCodom : ∀ {Θ : MContext} {A : sort} → Category (lsuc ℓ) ℓ ℓ
-  -- MCodom {Θ} {A} = record
-  --                { Obj = Functor (Product MTele VTele) (Setoids ℓ ℓ)
-  --                ; _⇒_ = NaturalTransformation
-  --                ; _≈_ = {!!}
-  --                ; id = {!!}
-  --                ; _∘_ = {!!}
-  --                ; assoc = {!!}
-  --                ; sym-assoc = {!!}
-  --                ; identityˡ = {!!}
-  --                ; identityʳ = {!!}
-  --                ; identity² = {!!}
-  --                ; equiv = {!!}
-  --                ; ∘-resp-≈ = {!!}
-  --                }
 
   module _ where
     open Category
@@ -94,40 +79,8 @@ module SecondOrder.Mslot
     ∘ᵥ-resp-≈ {𝒟 = 𝒟} α≈β γ≈δ {X = X} = ∘-resp-≈ 𝒟 γ≈δ α≈β
 
 
-    setoid-resp-≡ : ∀ {c l c' l' c'' l''} {A : Setoid c l} {B : Setoid c' l'} {C : Setoid c'' l''} {f g : A ⟶ B} {h k : B ⟶ C} → f ≡ g → h ≡ k → h ∙ f ≡ k ∙ g
-    setoid-resp-≡ eq1 eq2 = {!!}
-
-
---   MCodom' : Category (lsuc ℓ) ℓ ℓ
---   MCodom' =
---     let open Category in
---     let open NaturalTransformation in
---     let open Function.Equality using (_⟨$⟩_) renaming (cong to func-cong) in
---     let open Relation.Binary.PropositionalEquality.≡-Reasoning in
--- --     let open ≡-Reasoning in 
---     record
---     { Obj = Functor MTele (Functors VTele (Setoids ℓ ℓ))
---     ; _⇒_ = NaturalTransformation
---     ; _≈_ = λ {F} {G} α β
---           → (∀ (ψ : Obj MTele) (Γ : Obj VTele)
---           → η (η α ψ) Γ ≡ η (η β ψ) Γ) -- this might not be the correct equality to use
---     ; id = idNt
---     ; _∘_ = _∘ᵥ_
---     ; assoc = λ ψ Γ → refl
---     ; sym-assoc = λ ψ Γ → refl
---     ; identityˡ = λ ψ Γ → refl
---     ; identityʳ = λ ψ Γ → refl
---     ; identity² = λ ψ Γ → refl
---     ; equiv = record
---               { refl = λ ψ Γ → refl 
---               ; sym = λ α≡β ψ Γ → sym (α≡β ψ Γ) 
---               ; trans = λ α≡β β≡γ ψ Γ → trans (α≡β ψ Γ) (β≡γ ψ Γ)
---               }
---     ; ∘-resp-≈ = λ {F} {G} {H} {α} {β} {γ} {δ} α≡β γ≡δ ψ Γ → setoid-resp-≡ (γ≡δ ψ Γ) (α≡β ψ Γ)
---     }
-
-  MCodom' : Category (lsuc ℓ) ℓ ℓ
-  MCodom' =
+  MCodom : Category (lsuc ℓ) ℓ ℓ
+  MCodom =
     let open Category in
     let open Functor in
     let open NaturalTransformation in
@@ -154,7 +107,7 @@ module SecondOrder.Mslot
       → ∘ᵥ-resp-≈ {α = γ} {δ} {γ = α} {β} (γ≈δ _ _) (α≈β _ _)
     }
 
-  Mslots : Functor MContexts (IndexedCategory sort (MCodom'))
+  Mslots : Functor MContexts (IndexedCategory sort (MCodom))
   Mslots =
     let open Categories.NaturalTransformation in
     let open NaturalTransformation in
@@ -184,13 +137,3 @@ module SecondOrder.Mslot
               → ≈-trans ([]ᵐʳ-resp-≈ t≈s) ∘ᵐʳ-resp-⇑-term
             ; F-resp-≈ = λ ι≡μ A ψ Γ t≈s → ≈-trans ([]ᵐʳ-resp-≈ t≈s) ([]ᵐʳ-resp-≡ᵐʳ (⇑ᵐʳ-resp-≡ᵐʳ ι≡μ))
             }
-
-
-  -- Mslots' : Functor MContexts (IndexedCategory sort (Functors (Product MTele VTele) (Setoids ℓ ℓ)))
-  -- Mslots' = record
-  --           { F₀ = λ Θ A → {!!}
-  --           ; F₁ = {!!}
-  --           ; identity = {!!}
-  --           ; homomorphism = {!!}
-  --           ; F-resp-≈ = {!!}
-  --           }
