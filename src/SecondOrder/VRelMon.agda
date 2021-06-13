@@ -1,5 +1,3 @@
--- {-# OPTIONS --allow-unsolved-metas #-}
-
 open import Agda.Primitive using (lzero; lsuc; _⊔_ ;Level)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; setoid; cong; trans)
 import Function.Equality
