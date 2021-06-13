@@ -42,17 +42,18 @@ or something similar that doesn't produce exceedingly long lines with unecessary
 
 #### Naming conventions
 
-1. We use subscripts to indicate entities, as follows:
+1. Use full names: `RelativeMonad` instead of `RelMon`, `RelativeMorphism` instead of `RelMorph`. Abbreviations should be use very sparingly.
+2. We use subscripts to indicate entities, as follows:
    * `ᵛʳ` for *variable renaming*
    * `ˢ` for *substitition*
    * `ⁱ` for *instantiation*
-2. Composition of entities is written as `∘ˣ` where `x` is a supscript indicating the kind, e.g.,
+3. Composition of entities is written as `∘ˣ` where `x` is a supscript indicating the kind, e.g.,
    `σ ∘ˢ τ` is composition of subtitutions. There are also mixed compositions `ʸ∘ˣ` which compose
    an entity of kind `y` with an entitiy of kind `x`.
-3. The action of `f` on a term `t` is written as `[ f ]ˣ t` where `x` is a supscript indicating the kind of `f`.
+4. The action of `f` on a term `t` is written as `[ f ]ˣ t` where `x` is a supscript indicating the kind of `f`.
    For example, `[ σ ]ˢ t` is the action of the substitution `σ` on term `t`.
-4. A theorem explaining how an action interacts with composition are named `[∘ˣ]` or `[ˣ∘ʸ]`.
-5. A theorem stating that an action `[]ˣ` respects equality `≈ʸ` are named `[]ˣ-resp-≈ʸ`.
+5. A theorem explaining how an action interacts with composition are named `[∘ˣ]` or `[ˣ∘ʸ]`.
+6. A theorem stating that an action `[]ˣ` respects equality `≈ʸ` are named `[]ˣ-resp-≈ʸ`.
 
 
 ## Outline of the ideas we are pursing
