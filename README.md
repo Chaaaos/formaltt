@@ -7,9 +7,22 @@ We collect here some coding standards.
 1. Only `import` what is necessary.
 2. Avoid global `open` and prefer local `open` statements.
 3. Do not have excessively long lines.
-4. Do not rename things in the standard library without a very good reason.
-   If you discover that something already exists in the library, use it directly, not via renaming.
-   Yes, that means more work with renaming things in your code, but it also avoids creating spaghetti.
+4. Use standard library instead of reinventing the wheel.
+
+### Naming conventions
+
+1. We use subscripts to indicate entities, as follows:
+   * `ᵛʳ` for *variable renaming*
+   * `ˢ` for *substitition*
+   * `ⁱ` for *instantiation*
+2. Composition of entities is written as `∘ˣ` where `x` is a supscript indicating the kind, e.g.,
+   `σ ∘ˢ τ` is composition of subtitutions. There are also mixed compositions `ʸ∘ˣ` which compose
+   an entity of kind `y` with an entitiy of kind `x`.
+3. The action of `f` on a term `t` is written as `[ f ]ˣ t` where `x` is a supscript indicating the kind of `f`.
+   For example, `[ σ ]ˢ t` is the action of the substitution `σ` on term `t`.
+4. A theorem explaining how an action interacts with composition are named `[∘ˣ]` or `[ˣ∘ʸ]`.
+5. A theorem stating that an action `[]ˣ` respects equality `≈ʸ` are named `[]ˣ-resp-≈ʸ`.
+
 
 ## Outline of the ideas we are pursing
 
