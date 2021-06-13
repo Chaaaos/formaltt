@@ -4,12 +4,43 @@
 
 We collect here some coding standards.
 
-1. Only `import` what is necessary.
-2. Avoid global `open` and prefer local `open` statements.
-3. Do not have excessively long lines.
-4. Use standard library instead of reinventing the wheel.
+#### `import` and `open`
 
-### Naming conventions
+Only `import` what is necessary. Avoid global `open` and prefer local `open` statements.
+
+#### Standard and categories libraries
+
+Use the standard and categories libraries instead of reinventing the wheel.
+
+#### Indentation level and line length
+
+Use indentation level 2. Instead of
+
+```
+    Functor-Jⱽ.F-resp-≈  (Monad.F₀ VMonad Γ A) {ψ} {Ω} {Δ} {Ξ} {ρ} {τ} {ι} {μ} ξᵛʳ ξᵐʳ {t} {u} ξ  =
+                                                          begin⟨ Term-setoid Θ _ _ ⟩
+                                                          ([ [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ ]ᵛʳ t) ≈⟨ []ᵛʳ-resp-≈ ξ ⟩
+                                                          ([ [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ ]ᵛʳ u)
+                                                                                   ≈⟨ []ᵛʳ-resp-≡ᵛʳ ([,]ᵛʳ-resp-≡ᵛʳ (λ x → refl) λ x → ρ-resp-≡ {ρ = var-inr} (ξᵛʳ x)) ⟩
+                                                          ([ [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ ]ᵛʳ u) ∎
+```
+
+you should write
+
+```
+    Functor-Jⱽ.F-resp-≈  (Monad.F₀ VMonad Γ A) {ψ} {Ω} {Δ} {Ξ} {ρ} {τ} {ι} {μ} ξᵛʳ ξᵐʳ {t} {u} ξ  =
+      begin⟨ Term-setoid Θ _ _ ⟩
+        ([ [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ ]ᵛʳ t)
+          ≈⟨ []ᵛʳ-resp-≈ ξ ⟩
+        ([ [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ ]ᵛʳ u)
+          ≈⟨ []ᵛʳ-resp-≡ᵛʳ ([,]ᵛʳ-resp-≡ᵛʳ (λ x → refl) λ x → ρ-resp-≡ {ρ = var-inr} (ξᵛʳ x)) ⟩
+      ([ [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ ]ᵛʳ u) ∎
+```
+
+or something similar that doesn't produce exceedingly long lines with unecessary indentation.
+
+
+#### Naming conventions
 
 1. We use subscripts to indicate entities, as follows:
    * `ᵛʳ` for *variable renaming*
