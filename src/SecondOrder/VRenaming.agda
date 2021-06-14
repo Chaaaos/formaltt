@@ -1,5 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-
 open import Level
 open import Relation.Binary.PropositionalEquality
 open import Relation.Binary using (Setoid)
@@ -159,8 +157,8 @@ module SecondOrder.VRenaming
               → τ ∘ᵛʳ inlᵛʳ ≡ᵛʳ σ ∘ᵛʳ inlᵛʳ
               → τ ∘ᵛʳ inrᵛʳ ≡ᵛʳ σ ∘ᵛʳ inrᵛʳ
               → τ ≡ᵛʳ σ
-    uniqueᵛʳ² ξ ζ (var-inl x) = {!!}
-    uniqueᵛʳ² ξ ζ (var-inr y) = {!!}
+    uniqueᵛʳ² ξ ζ (var-inl x) = ξ x
+    uniqueᵛʳ² ξ ζ (var-inr y) = ζ y
 
     Context-+ : Categories.Category.Cocartesian.BinaryCoproducts VContexts
     Context-+ =

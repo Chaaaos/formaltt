@@ -4,12 +4,57 @@
 
 We collect here some coding standards.
 
-1. Only `import` what is necessary.
-2. Avoid global `open` and prefer local `open` statements.
-3. Do not have excessively long lines.
-4. Do not rename things in the standard library without a very good reason.
-   If you discover that something already exists in the library, use it directly, not via renaming.
-   Yes, that means more work with renaming things in your code, but it also avoids creating spaghetti.
+#### `import` and `open`
+
+Only `import` what is necessary. Avoid global `open` and prefer local `open` statements.
+
+#### Standard and categories libraries
+
+Use the standard and categories libraries instead of reinventing the wheel.
+
+#### Indentation level and line length
+
+Use indentation level 2. Instead of
+
+```
+    Functor-Jⱽ.F-resp-≈  (Monad.F₀ VMonad Γ A) {ψ} {Ω} {Δ} {Ξ} {ρ} {τ} {ι} {μ} ξᵛʳ ξᵐʳ {t} {u} ξ  =
+                                                          begin⟨ Term-setoid Θ _ _ ⟩
+                                                          ([ [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ ]ᵛʳ t) ≈⟨ []ᵛʳ-resp-≈ ξ ⟩
+                                                          ([ [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ ]ᵛʳ u)
+                                                                                   ≈⟨ []ᵛʳ-resp-≡ᵛʳ ([,]ᵛʳ-resp-≡ᵛʳ (λ x → refl) λ x → ρ-resp-≡ {ρ = var-inr} (ξᵛʳ x)) ⟩
+                                                          ([ [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ ]ᵛʳ u) ∎
+```
+
+you should write
+
+```
+    Functor-Jⱽ.F-resp-≈  (Monad.F₀ VMonad Γ A) {ψ} {Ω} {Δ} {Ξ} {ρ} {τ} {ι} {μ} ξᵛʳ ξᵐʳ {t} {u} ξ  =
+      begin⟨ Term-setoid Θ _ _ ⟩
+        ([ [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ ]ᵛʳ t)
+          ≈⟨ []ᵛʳ-resp-≈ ξ ⟩
+        ([ [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (ρ x₁)) ]ᵛʳ ]ᵛʳ u)
+          ≈⟨ []ᵛʳ-resp-≡ᵛʳ ([,]ᵛʳ-resp-≡ᵛʳ (λ x → refl) λ x → ρ-resp-≡ {ρ = var-inr} (ξᵛʳ x)) ⟩
+      ([ [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (τ x₁)) ]ᵛʳ ]ᵛʳ u) ∎
+```
+
+or something similar that doesn't produce exceedingly long lines with unecessary indentation.
+
+
+#### Naming conventions
+
+1. Use full names: `RelativeMonad` instead of `RelMon`, `RelativeMorphism` instead of `RelMorph`. Abbreviations should be use very sparingly.
+2. We use subscripts to indicate entities, as follows:
+   * `ᵛʳ` for *variable renaming*
+   * `ˢ` for *substitition*
+   * `ⁱ` for *instantiation*
+3. Composition of entities is written as `∘ˣ` where `x` is a supscript indicating the kind, e.g.,
+   `σ ∘ˢ τ` is composition of subtitutions. There are also mixed compositions `ʸ∘ˣ` which compose
+   an entity of kind `y` with an entitiy of kind `x`.
+4. The action of `f` on a term `t` is written as `[ f ]ˣ t` where `x` is a supscript indicating the kind of `f`.
+   For example, `[ σ ]ˢ t` is the action of the substitution `σ` on term `t`.
+5. A theorem explaining how an action interacts with composition are named `[∘ˣ]` or `[ˣ∘ʸ]`.
+6. A theorem stating that an action `[]ˣ` respects equality `≈ʸ` are named `[]ˣ-resp-≈ʸ`.
+
 
 ## Outline of the ideas we are pursing
 
