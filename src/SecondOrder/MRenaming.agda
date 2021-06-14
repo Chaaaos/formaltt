@@ -2,9 +2,11 @@ open import Level
 open import Relation.Binary.PropositionalEquality
 open import Relation.Binary using (Setoid)
 import Function.Equality
+import Relation.Binary.Reasoning.Setoid as SetoidR
 
 import Categories.Category
 import Categories.Functor
+import Categories.NaturalTransformation
 import Categories.Category.Instance.Setoids
 
 import Categories.Category.Cocartesian
@@ -13,6 +15,7 @@ import SecondOrder.Arity
 import SecondOrder.Signature
 import SecondOrder.Metavariable
 import SecondOrder.Term
+import SecondOrder.VRenaming
 
 module SecondOrder.MRenaming
   {ℓ}
@@ -23,6 +26,7 @@ module SecondOrder.MRenaming
   open SecondOrder.Signature.Signature Σ
   open SecondOrder.Metavariable Σ
   open SecondOrder.Term Σ
+  open SecondOrder.VRenaming Σ
 
   -- a metarenaming maps metavariables between contexts in an arity-preserving way
   _⇒ᵐʳ_ : ∀ (Θ ψ : MContext) → Set ℓ
@@ -71,13 +75,14 @@ module SecondOrder.MRenaming
   idᵐʳ : ∀ {Θ : MContext} → Θ ⇒ᵐʳ Θ
   idᵐʳ M = M
 
+  -- equal metavariable renaming act the same on metavariables
+
+
   -- composition of renamings
   _∘ᵐʳ_ : ∀ {Θ ψ Ω} → ψ ⇒ᵐʳ Ω → Θ ⇒ᵐʳ ψ → Θ ⇒ᵐʳ Ω
   (ι ∘ᵐʳ μ) M = ι (μ M)
 
   infix 7 _∘ᵐʳ_
-
-
 
   -- composition respects equality
   ∘ᵐʳ-resp-≡ᵐʳ : ∀ {Γ Δ Ξ} {τ₁ τ₂ : Δ ⇒ᵐʳ Ξ} {σ₁ σ₂ : Γ ⇒ᵐʳ Δ} →
@@ -124,115 +129,216 @@ module SecondOrder.MRenaming
         }
 
 
-  -- -- the coproduct structure of the category
-  -- module _ where
+  -- the coproduct structure of the category
+  module _ where
 
-  --   infixl 7 [_,_]ᵐʳ
+    infixl 7 [_,_]ᵐʳ
 
-  --   [_,_]ᵐʳ : ∀ {Γ Δ Ξ} → Γ ⇒ᵐʳ Ξ → Δ ⇒ᵐʳ Ξ → Γ ,, Δ ⇒ᵐʳ Ξ
-  --   [ σ , τ ]ᵐʳ (var-inl x) = σ x
-  --   [ σ , τ ]ᵐʳ (var-inr y) = τ y
+    [_,_]ᵐʳ : ∀ {Γ Δ Ξ} → Γ ⇒ᵐʳ Ξ → Δ ⇒ᵐʳ Ξ → Γ ,, Δ ⇒ᵐʳ Ξ
+    [ σ , τ ]ᵐʳ (var-inl x) = σ x
+    [ σ , τ ]ᵐʳ (var-inr y) = τ y
 
-  --   inlᵐʳ : ∀ {Γ Δ} → Γ ⇒ᵐʳ Γ ,, Δ
-  --   inlᵐʳ = var-inl
+    inlᵐʳ : ∀ {Γ Δ} → Γ ⇒ᵐʳ Γ ,, Δ
+    inlᵐʳ = var-inl
 
-  --   inrᵐʳ : ∀ {Γ Δ} → Δ ⇒ᵐʳ Γ ,, Δ
-  --   inrᵐʳ = var-inr
+    inrᵐʳ : ∀ {Γ Δ} → Δ ⇒ᵐʳ Γ ,, Δ
+    inrᵐʳ = var-inr
 
-  --   uniqueᵐʳ : ∀ {Γ Δ Ξ} {τ : Γ ,, Δ ⇒ᵐʳ Ξ} {ρ : Γ ⇒ᵐʳ Ξ} {σ : Δ ⇒ᵐʳ Ξ}
-  --             → τ ∘ᵐʳ inlᵐʳ ≡ᵐʳ ρ
-  --             → τ ∘ᵐʳ inrᵐʳ ≡ᵐʳ σ
-  --             → [ ρ , σ ]ᵐʳ ≡ᵐʳ τ
-  --   uniqueᵐʳ ξ ζ (var-inl x) = sym (ξ x)
-  --   uniqueᵐʳ ξ ζ (var-inr y) = sym (ζ y)
+    uniqueᵐʳ : ∀ {Γ Δ Ξ} {τ : Γ ,, Δ ⇒ᵐʳ Ξ} {ρ : Γ ⇒ᵐʳ Ξ} {σ : Δ ⇒ᵐʳ Ξ}
+              → τ ∘ᵐʳ inlᵐʳ ≡ᵐʳ ρ
+              → τ ∘ᵐʳ inrᵐʳ ≡ᵐʳ σ
+              → [ ρ , σ ]ᵐʳ ≡ᵐʳ τ
+    uniqueᵐʳ ξ ζ (var-inl x) = sym (ξ x)
+    uniqueᵐʳ ξ ζ (var-inr y) = sym (ζ y)
 
-  --   Context-+ : Categories.Category.Cocartesian.BinaryCoproducts Contexts
-  --   Context-+ =
-  --     record {
-  --       coproduct =
-  --         λ {Γ Δ} →
-  --         record
-  --           { A+B = Γ ,, Δ
-  --           ; i₁ = inlᵐʳ
-  --           ; i₂ = inrᵐʳ
-  --           ; [_,_] = [_,_]ᵐʳ
-  --           ; inject₁ = λ x → refl
-  --           ; inject₂ = λ x → refl
-  --           ; unique = uniqueᵐʳ
-  --           }
-  --     }
+    MContext-+ : Categories.Category.Cocartesian.BinaryCoproducts MContexts
+    MContext-+ =
+      record {
+        coproduct =
+          λ {Γ Δ} →
+          record
+            { A+B = Γ ,, Δ
+            ; i₁ = inlᵐʳ
+            ; i₂ = inrᵐʳ
+            ; [_,_] = [_,_]ᵐʳ
+            ; inject₁ = λ x → refl
+            ; inject₂ = λ x → refl
+            ; unique = uniqueᵐʳ
+            }
+      }
 
-  -- open Categories.Category.Cocartesian.BinaryCoproducts Context-+
+  open Categories.Category.Cocartesian.BinaryCoproducts MContext-+
 
-  -- -- the renaming from the empty context
+  -- the renaming from the empty context
 
-  -- inᵐʳ : ∀ {Γ} → ctx-empty ⇒ᵐʳ Γ
-  -- inᵐʳ ()
+  inᵐʳ : ∀ {Γ} → ctx-empty ⇒ᵐʳ Γ
+  inᵐʳ ()
 
-  -- -- extension of a renaming is summing with identity
-  -- ⇑ᵐʳ : ∀ {Γ Δ Ξ} → Γ ⇒ᵐʳ Δ → Γ ,, Ξ ⇒ᵐʳ Δ ,, Ξ
-  -- ⇑ᵐʳ ρ = ρ +₁ idᵐʳ
+  -- extension of a renaming is summing with identity
+  ⇑ᵐʳ : ∀ {Θ Ψ Ω} → Θ ⇒ᵐʳ Ψ → Θ ,, Ω ⇒ᵐʳ Ψ ,, Ω
+  ⇑ᵐʳ ρ = ρ +₁ idᵐʳ
 
-  -- -- a renaming can also be extended on the right
-  -- ᵐʳ⇑ᵐʳ : ∀ {Γ Δ} → Γ ⇒ᵐʳ Δ → ∀ {Ξ} → Ξ ,, Γ ⇒ᵐʳ Ξ ,, Δ
-  -- ᵐʳ⇑ᵐʳ ρ = idᵐʳ +₁ ρ
+  -- a renaming can also be extended on the right
+  ᵐʳ⇑ᵐʳ : ∀ {Θ Ψ} → Θ ⇒ᵐʳ Ψ → ∀ {Ω} → Ω ,, Θ ⇒ᵐʳ Ω ,, Ψ
+  ᵐʳ⇑ᵐʳ ρ = idᵐʳ +₁ ρ
 
 
-  -- -- the action of a renaming on terms
-  -- module _ {Θ : MContext} where
+  -- the action of a metavariable renaming on terms
+  infix 6 [_]ᵐʳ_
 
-  --   infix 6 [_]ᵐʳ_
+  [_]ᵐʳ_ : ∀ {Θ Ψ Γ A} → Θ ⇒ᵐʳ Ψ → Term Θ Γ A → Term Ψ Γ A
+  [ ι ]ᵐʳ (tm-var x) = tm-var x
+  [ ι ]ᵐʳ (tm-meta M ts) = tm-meta (ι M) (λ i → [ ι ]ᵐʳ ts i)
+  [ ι ]ᵐʳ (tm-oper f es) = tm-oper f (λ i → [ ι ]ᵐʳ es i)
 
-  --   [_]ᵐʳ_ : ∀ {Γ Δ A} → Γ ⇒ᵐʳ Δ → Term Θ Γ A → Term Θ Δ A
-  --   [ ρ ]ᵐʳ (tm-var x) = tm-var (ρ x)
-  --   [ ρ ]ᵐʳ (tm-meta M ts) = tm-meta M (λ i → [ ρ ]ᵐʳ (ts i))
-  --   [ ρ ]ᵐʳ (tm-oper f es) = tm-oper f (λ i → [ ⇑ᵐʳ ρ ]ᵐʳ (es i))
+  -- The sum of identities is an identity
+  idᵐʳ+idᵐʳ : ∀ {Θ Ψ} → idᵐʳ {Θ = Θ} +₁ idᵐʳ {Θ = Ψ} ≡ᵐʳ idᵐʳ {Θ = Θ ,, Ψ}
+  idᵐʳ+idᵐʳ (var-inl x) = refl
+  idᵐʳ+idᵐʳ (var-inr y) = refl
 
-  -- -- The sum of identities is an identity
-  -- idᵐʳ+idᵐʳ : ∀ {Γ Δ} → idᵐʳ {Γ = Γ} +₁ idᵐʳ {Γ = Δ} ≡ᵐʳ idᵐʳ {Γ = Γ ,, Δ}
-  -- idᵐʳ+idᵐʳ (var-inl x) = refl
-  -- idᵐʳ+idᵐʳ (var-inr y) = refl
+  -- The action of a renaming respects equality of terms
+  []ᵐʳ-resp-≈ : ∀ {Θ Ψ Γ A} {s t : Term Θ Γ A} {ι : Θ ⇒ᵐʳ Ψ} → s ≈ t → [ ι ]ᵐʳ s ≈ [ ι ]ᵐʳ t
+  []ᵐʳ-resp-≈ (≈-≡ refl) = ≈-≡ refl
+  []ᵐʳ-resp-≈ (≈-meta ξ) = ≈-meta (λ i → []ᵐʳ-resp-≈ (ξ i))
+  []ᵐʳ-resp-≈ (≈-oper ξ) = ≈-oper (λ i → []ᵐʳ-resp-≈ (ξ i))
 
-  -- -- The action of a renaming respects equality of terms
-  -- []ᵐʳ-resp-≈ : ∀ {Θ Γ Δ A} {s t : Term Θ Γ A} {ρ : Γ ⇒ᵐʳ Δ} → s ≈ t → [ ρ ]ᵐʳ s ≈ [ ρ ]ᵐʳ t
-  -- []ᵐʳ-resp-≈ (≈-≡ refl) = ≈-≡ refl
-  -- []ᵐʳ-resp-≈ (≈-meta ξ) = ≈-meta (λ i → []ᵐʳ-resp-≈ (ξ i))
-  -- []ᵐʳ-resp-≈ (≈-oper ξ) = ≈-oper (λ i → []ᵐʳ-resp-≈ (ξ i))
+  -- The action of a renaming respects equality of renamings
+  []ᵐʳ-resp-≡ᵐʳ : ∀ {Θ Ψ Γ A} {ι μ : Θ ⇒ᵐʳ Ψ} {t : Term Θ Γ A} → ι ≡ᵐʳ μ → [ ι ]ᵐʳ t ≈ [ μ ]ᵐʳ t
+  []ᵐʳ-resp-≡ᵐʳ {t = tm-var x} ξ = ≈-≡ refl
+  []ᵐʳ-resp-≡ᵐʳ {Θ} {Ψ} {Γ} {A} {ι = ι} {μ = μ} {t = tm-meta M ts} ξ =
+    let open SetoidR (Term-setoid Ψ Γ A) in
+    begin
+    tm-meta (ι M) (λ i → [ ι ]ᵐʳ ts i) ≈⟨ ≈-meta (λ i → []ᵐʳ-resp-≡ᵐʳ ξ) ⟩
+    tm-meta (ι M) (λ i → [ μ ]ᵐʳ ts i) ≈⟨ ≈-≡ ((cong λ N → tm-meta N (λ i → [ μ ]ᵐʳ ts i)) (ξ M)) ⟩
+    tm-meta (μ M) (λ i → [ μ ]ᵐʳ ts i) ≈⟨ ≈-≡ refl ⟩
+    tm-meta (μ M) (λ i → [ μ ]ᵐʳ ts i)
+    ∎
+  []ᵐʳ-resp-≡ᵐʳ {t = tm-oper f es} ξ = ≈-oper λ i → []ᵐʳ-resp-≡ᵐʳ ξ
 
-  -- -- The action of a renaming respects equality of renamings
-  -- []ᵐʳ-resp-≡ᵐʳ : ∀ {Θ Γ Δ A} {ρ τ : Γ ⇒ᵐʳ Δ} {t : Term Θ Γ A} → ρ ≡ᵐʳ τ → [ ρ ]ᵐʳ t ≈ [ τ ]ᵐʳ t
-  -- []ᵐʳ-resp-≡ᵐʳ {t = tm-var x} ξ = ≈-≡ (cong tm-var (ξ x))
-  -- []ᵐʳ-resp-≡ᵐʳ {t = tm-meta M ts} ξ = ≈-meta (λ i → []ᵐʳ-resp-≡ᵐʳ ξ)
-  -- []ᵐʳ-resp-≡ᵐʳ {t = tm-oper f es} ξ = ≈-oper (λ i → []ᵐʳ-resp-≡ᵐʳ (+₁-cong₂ ξ ≡ᵐʳ-refl))
+  -- The action of the identity is trival
+  [id]ᵐʳ : ∀ {Θ Γ A} {t : Term Θ Γ A} → [ idᵐʳ ]ᵐʳ t ≈ t
+  [id]ᵐʳ {t = tm-var x} = ≈-refl
+  [id]ᵐʳ {t = tm-meta M ts} = ≈-meta λ i → [id]ᵐʳ
+  [id]ᵐʳ {t = tm-oper f es} = ≈-oper λ i → [id]ᵐʳ
 
-  -- -- The action of the identity is trival
-  -- [id]ᵐʳ : ∀ {Θ Γ A} {t : Term Θ Γ A} → [ idᵐʳ ]ᵐʳ t ≈ t
-  -- [id]ᵐʳ {t = tm-var x} = ≈-refl
-  -- [id]ᵐʳ {t = tm-meta M ts} = ≈-meta λ i → [id]ᵐʳ
-  -- [id]ᵐʳ {t = tm-oper f es} = ≈-oper λ i → ≈-trans ([]ᵐʳ-resp-≡ᵐʳ idᵐʳ+idᵐʳ) [id]ᵐʳ
+  -- Extension respects composition
+  ⇑ᵐʳ-∘ᵐʳ : ∀ {Γ Δ Ξ Ψ} {ρ : Γ ⇒ᵐʳ Δ} {τ : Δ ⇒ᵐʳ Ξ} → ⇑ᵐʳ {Ω = Ψ} (τ ∘ᵐʳ ρ) ≡ᵐʳ (⇑ᵐʳ τ) ∘ᵐʳ (⇑ᵐʳ ρ)
+  ⇑ᵐʳ-∘ᵐʳ (var-inl x) = refl
+  ⇑ᵐʳ-∘ᵐʳ (var-inr y) = refl
 
-  -- -- Extension respects composition
-  -- ⇑ᵐʳ-∘ᵐʳ : ∀ {Γ Δ Ξ Ψ} {ρ : Γ ⇒ᵐʳ Δ} {τ : Δ ⇒ᵐʳ Ξ} → ⇑ᵐʳ {Ξ = Ψ} (τ ∘ᵐʳ ρ) ≡ᵐʳ (⇑ᵐʳ τ) ∘ᵐʳ (⇑ᵐʳ ρ)
-  -- ⇑ᵐʳ-∘ᵐʳ (var-inl x) = refl
-  -- ⇑ᵐʳ-∘ᵐʳ (var-inr y) = refl
+  ᵐʳ⇑ᵐʳ-∘ᵐʳ : ∀ {Θ Ψ Ω Ξ} {ρ : Θ ⇒ᵐʳ Ψ} {τ : Ψ ⇒ᵐʳ Ω}
+    → ᵐʳ⇑ᵐʳ {Θ} {Ω} (τ ∘ᵐʳ ρ) {Ξ} ≡ᵐʳ (ᵐʳ⇑ᵐʳ τ) ∘ᵐʳ (ᵐʳ⇑ᵐʳ ρ)
+  ᵐʳ⇑ᵐʳ-∘ᵐʳ (var-inl M) = refl
+  ᵐʳ⇑ᵐʳ-∘ᵐʳ (var-inr N) = refl
 
-  -- -- The action of a renaming is functorial
-  -- [∘]ᵐʳ : ∀ {Θ Γ Δ Ξ} {ρ : Γ ⇒ᵐʳ Δ} {τ : Δ ⇒ᵐʳ Ξ} {A} {t : Term Θ Γ A} → [ τ ∘ᵐʳ ρ ]ᵐʳ t ≈ [ τ ]ᵐʳ ([ ρ ]ᵐʳ t)
-  -- [∘]ᵐʳ {t = tm-var x} = ≈-refl
-  -- [∘]ᵐʳ {t = tm-meta M ts} = ≈-meta (λ i → [∘]ᵐʳ)
-  -- [∘]ᵐʳ {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ᵐʳ-resp-≡ᵐʳ ⇑ᵐʳ-∘ᵐʳ) [∘]ᵐʳ)
+  -- Extension of the identity renaming is the identity
+  ⇑ᵐʳid≡ᵐʳidᵐʳ : ∀ {Θ Ψ} → (⇑ᵐʳ {Θ} {Θ} {Ψ}) (idᵐʳ {Θ}) ≡ᵐʳ idᵐʳ
+  ⇑ᵐʳid≡ᵐʳidᵐʳ (var-inl M) = refl
+  ⇑ᵐʳid≡ᵐʳidᵐʳ (var-inr N) = refl
 
-  -- -- Forming terms over a given metacontext and sort is functorial in the context
-  -- module _ {Θ : MContext} {A : sort} where
-  --   open Categories.Functor
-  --   open Categories.Category.Instance.Setoids
+  ᵐʳ⇑ᵐʳid≡ᵐʳidᵐʳ : ∀ {Θ Ψ} → (ᵐʳ⇑ᵐʳ {Θ} {Θ}) (idᵐʳ {Θ}) {Ψ} ≡ᵐʳ idᵐʳ
+  ᵐʳ⇑ᵐʳid≡ᵐʳidᵐʳ (var-inl M) = refl
+  ᵐʳ⇑ᵐʳid≡ᵐʳidᵐʳ (var-inr N) = refl
 
-  --   Term-Functor : Functor Contexts (Setoids ℓ ℓ)
-  --   Term-Functor =
-  --     record
-  --       { F₀ = λ Γ → Term-setoid Θ Γ A
-  --       ; F₁ = λ ρ → record { _⟨$⟩_ = [ ρ ]ᵐʳ_ ; cong = []ᵐʳ-resp-≈ }
-  --       ; identity = ≈-trans [id]ᵐʳ
-  --       ; homomorphism = λ ξ → ≈-trans ([]ᵐʳ-resp-≈ ξ) [∘]ᵐʳ
-  --       ; F-resp-≈ = λ ζ ξ → ≈-trans ([]ᵐʳ-resp-≡ᵐʳ ζ) ([]ᵐʳ-resp-≈ ξ)
-  --       }
+  -- Extension preserves equality of metavariable renamings
+  ᵐʳ⇑ᵐʳ-resp-≡ᵐʳ : ∀ {Θ Ψ Ω} {ι μ : Θ ⇒ᵐʳ Ψ} → ι ≡ᵐʳ μ → ᵐʳ⇑ᵐʳ ι {Ω} ≡ᵐʳ ᵐʳ⇑ᵐʳ μ
+  ᵐʳ⇑ᵐʳ-resp-≡ᵐʳ ι≡μ (var-inl M) = refl
+  ᵐʳ⇑ᵐʳ-resp-≡ᵐʳ {ι = ι} ι≡μ (var-inr N) = cong (inrᵐʳ) (ι≡μ N)
+
+  ⇑ᵐʳ-resp-≡ᵐʳ : ∀ {Θ Ψ Ω} {ι μ : Θ ⇒ᵐʳ Ψ} → ι ≡ᵐʳ μ → ⇑ᵐʳ {Ω = Ω} ι ≡ᵐʳ ⇑ᵐʳ μ
+  ⇑ᵐʳ-resp-≡ᵐʳ ι≡μ (var-inl M) = cong var-inl (ι≡μ M)
+  ⇑ᵐʳ-resp-≡ᵐʳ {ι = ι} ι≡μ (var-inr N) = refl
+
+
+  -- The action of a renaming is functorial
+  [∘]ᵐʳ : ∀ {Θ Ψ Ω Γ} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ψ ⇒ᵐʳ Ω} {A} {t : Term Θ Γ A}
+    → [ μ ∘ᵐʳ ι ]ᵐʳ t ≈ [ μ ]ᵐʳ ([ ι ]ᵐʳ t)
+  [∘]ᵐʳ {t = tm-var x} = ≈-refl
+  [∘]ᵐʳ {t = tm-meta M ts} = ≈-meta (λ i → [∘]ᵐʳ)
+  [∘]ᵐʳ {t = tm-oper f es} = ≈-oper (λ i → [∘]ᵐʳ)
+
+  ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ : ∀ {Θ Ψ Γ Δ A} {ρ : Γ ⇒ᵛʳ Δ} {ι : Θ ⇒ᵐʳ Ψ} {t : Term Θ Γ A}
+    → [ ι ]ᵐʳ ([ ρ ]ᵛʳ t) ≈ [ ρ ]ᵛʳ ([ ι ]ᵐʳ t)
+  ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ {t = tm-var x} = ≈-refl
+  ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ {t = tm-meta M ts} = ≈-meta (λ i → ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ {t = ts i})
+  ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ {t = tm-oper f es} = ≈-oper (λ i → ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ {t = es i})
+
+  split-sum : ∀ {Θ Ψ Ξ Ω} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ξ ⇒ᵐʳ Ω}
+    → (μ +₁ ι) ≡ᵐʳ (⇑ᵐʳ μ) ∘ᵐʳ (ᵐʳ⇑ᵐʳ ι)
+  split-sum (var-inl M) = refl
+  split-sum (var-inr N) = refl
+
+  split-sum2 : ∀ {Θ Ψ Ξ Ω} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ξ ⇒ᵐʳ Ω}
+    → (μ +₁ ι) ≡ᵐʳ (ᵐʳ⇑ᵐʳ ι) ∘ᵐʳ (⇑ᵐʳ μ)
+  split-sum2 (var-inl M) = refl
+  split-sum2 (var-inr N) = refl
+
+  ⇑-resp-+ : ∀ {Θ Ψ Ξ Ω Γ A} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ξ ⇒ᵐʳ Ω} {t : Term (Ξ + Θ) Γ A}
+    → [ (⇑ᵐʳ μ) ]ᵐʳ ([ (ᵐʳ⇑ᵐʳ ι) ]ᵐʳ t) ≈ [ (ᵐʳ⇑ᵐʳ ι) ]ᵐʳ ([ (⇑ᵐʳ μ) ]ᵐʳ t)
+  ⇑-resp-+ {Θ} {Ψ} {Ξ} {Ω} {Γ} {A} {ι} {μ} {t = t} =
+    let open SetoidR (Term-setoid (Ω ,, Ψ) Γ A) in
+    begin
+    [ ⇑ᵐʳ μ ]ᵐʳ ([ ᵐʳ⇑ᵐʳ ι ]ᵐʳ t) ≈⟨ ≈-sym [∘]ᵐʳ ⟩
+    [ (⇑ᵐʳ μ) ∘ᵐʳ (ᵐʳ⇑ᵐʳ ι) ]ᵐʳ t  ≈⟨ ≈-sym ([]ᵐʳ-resp-≡ᵐʳ split-sum) ⟩
+    [ (μ +₁ ι) ]ᵐʳ t ≈⟨ []ᵐʳ-resp-≡ᵐʳ split-sum2 ⟩
+    [(ᵐʳ⇑ᵐʳ ι) ∘ᵐʳ (⇑ᵐʳ μ)  ]ᵐʳ t ≈⟨ [∘]ᵐʳ ⟩
+    [ ᵐʳ⇑ᵐʳ ι ]ᵐʳ ([ ⇑ᵐʳ μ ]ᵐʳ t)
+    ∎
+
+  ∘ᵐʳ-resp-⇑ : ∀ {Θ Ψ Ξ Ω} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ψ ⇒ᵐʳ Ω} 
+    → ⇑ᵐʳ {Ω = Ξ}  (μ ∘ᵐʳ ι) ≡ᵐʳ ⇑ᵐʳ μ ∘ᵐʳ ⇑ᵐʳ ι
+  ∘ᵐʳ-resp-⇑ (var-inl M) = refl
+  ∘ᵐʳ-resp-⇑ (var-inr N) = refl
+
+  ∘ᵐʳ-resp-⇑-term : ∀ {Θ Ψ Ξ Ω Γ A} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ψ ⇒ᵐʳ Ω} {t : Term (Θ ,, Ξ) Γ A}
+    → [ ⇑ᵐʳ {Ω = Ξ} (μ ∘ᵐʳ ι) ]ᵐʳ t ≈  [ ⇑ᵐʳ μ ]ᵐʳ ([ ⇑ᵐʳ ι ]ᵐʳ t)
+  ∘ᵐʳ-resp-⇑-term {Θ} {Ψ} {Ξ} {Ω} {Γ} {A} {ι} {μ} {t = t} =
+      let open SetoidR (Term-setoid (Ω ,, Ξ) Γ A) in
+      begin
+      [ ⇑ᵐʳ {Ω = Ξ} (μ ∘ᵐʳ ι) ]ᵐʳ t ≈⟨ []ᵐʳ-resp-≡ᵐʳ ∘ᵐʳ-resp-⇑ ⟩
+      [ ⇑ᵐʳ μ ∘ᵐʳ ⇑ᵐʳ ι ]ᵐʳ t ≈⟨ [∘]ᵐʳ ⟩
+      [ ⇑ᵐʳ μ ]ᵐʳ ([ ⇑ᵐʳ ι ]ᵐʳ t)
+      ∎
+
+  ∘ᵐʳ-resp-ᵐʳ⇑ : ∀ {Θ Ψ Ξ Ω} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ψ ⇒ᵐʳ Ω} 
+    → ᵐʳ⇑ᵐʳ (μ ∘ᵐʳ ι) {Ω = Ξ} ≡ᵐʳ ᵐʳ⇑ᵐʳ μ ∘ᵐʳ ᵐʳ⇑ᵐʳ ι
+  ∘ᵐʳ-resp-ᵐʳ⇑ (var-inl M) = refl
+  ∘ᵐʳ-resp-ᵐʳ⇑ (var-inr N) = refl
+
+  ∘ᵐʳ-resp-ᵐʳ⇑-term : ∀ {Θ Ψ Ξ Ω Γ A} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ψ ⇒ᵐʳ Ω} {t : Term (Ξ ,, Θ) Γ A}
+    → [ ᵐʳ⇑ᵐʳ  (μ ∘ᵐʳ ι) {Ω = Ξ} ]ᵐʳ t ≈  [ ᵐʳ⇑ᵐʳ μ ]ᵐʳ ([ ᵐʳ⇑ᵐʳ ι ]ᵐʳ t)
+  ∘ᵐʳ-resp-ᵐʳ⇑-term {Θ} {Ψ} {Ξ} {Ω} {Γ} {A} {ι} {μ} {t = t} =
+      let open SetoidR (Term-setoid (Ξ ,, Ω) Γ A) in
+      begin
+      [ ᵐʳ⇑ᵐʳ (μ ∘ᵐʳ ι) {Ω = Ξ} ]ᵐʳ t ≈⟨ []ᵐʳ-resp-≡ᵐʳ ∘ᵐʳ-resp-ᵐʳ⇑ ⟩
+      [ ᵐʳ⇑ᵐʳ μ ∘ᵐʳ ᵐʳ⇑ᵐʳ ι ]ᵐʳ t ≈⟨ [∘]ᵐʳ ⟩
+      [ ᵐʳ⇑ᵐʳ μ ]ᵐʳ ([ ᵐʳ⇑ᵐʳ ι ]ᵐʳ t)
+      ∎
+
+
+  vr-comm-mr : ∀ {Θ Ψ Γ Δ A} {ρ : Γ ⇒ᵛʳ Δ} {ι : Θ ⇒ᵐʳ Ψ} {t : Term Θ Γ A}
+    → [ ι ]ᵐʳ ([ ρ ]ᵛʳ t) ≈ [ ρ ]ᵛʳ ([ ι ]ᵐʳ t)
+  vr-comm-mr {t = tm-var x} = ≈-refl
+  vr-comm-mr {t = tm-meta M ts} = ≈-meta (λ i → vr-comm-mr)
+  vr-comm-mr {t = tm-oper f es} = ≈-oper (λ i → vr-comm-mr)
+
+  mr-comm-vr : ∀ {Θ Ψ Γ Δ A} {ρ : Γ ⇒ᵛʳ Δ} {ι : Θ ⇒ᵐʳ Ψ} {t : Term Θ Γ A}
+    → [ ρ ]ᵛʳ ([ ι ]ᵐʳ t) ≈  [ ι ]ᵐʳ ([ ρ ]ᵛʳ t)
+  mr-comm-vr {t = tm-var x} = ≈-refl
+  mr-comm-vr {t = tm-meta M ts} = ≈-meta (λ i → mr-comm-vr)
+  mr-comm-vr {t = tm-oper f es} = ≈-oper (λ i → mr-comm-vr)
+
+  module _ {Θ Ψ : MContext} {A : sort} where
+    open Categories.Category
+    open Categories.Category.Instance.Setoids
+    open Categories.Functor
+    open Categories.NaturalTransformation
+
+    MRenaming-NT : ∀ (ι : Θ ⇒ᵐʳ Ψ) → NaturalTransformation (Term-Functor {Θ} {A}) (Term-Functor {Ψ} {A})
+    MRenaming-NT ι =
+      record
+      { η = λ Γ → record { _⟨$⟩_ = [ ι ]ᵐʳ_ ; cong = []ᵐʳ-resp-≈ }
+      ; commute = λ ρ t≈s → ≈-trans ([]ᵐʳ-resp-≈ ([]ᵛʳ-resp-≈ t≈s)) (ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ)
+      ; sym-commute = λ ρ t≈s → ≈-trans (≈-sym ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ) ([]ᵐʳ-resp-≈ ([]ᵛʳ-resp-≈ t≈s))
+      }
+

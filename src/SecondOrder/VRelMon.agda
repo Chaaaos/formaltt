@@ -55,6 +55,7 @@ module SecondOrder.VRelMon
     open Relation.Binary.Core hiding (_⇒_)
 
     -- The carrier of the codomain of Jⱽ (morally ∀ Γ → A ∈ Δ ,, Γ)
+
     record Functor-Jⱽ : Set ((lsuc ℓ)) where
       open Category (Setoids ℓ ℓ)
       open Setoid
