@@ -257,11 +257,11 @@ module SecondOrder.MRenaming
   [∘]ᵐʳ {t = tm-meta M ts} = ≈-meta (λ i → [∘]ᵐʳ)
   [∘]ᵐʳ {t = tm-oper f es} = ≈-oper (λ i → [∘]ᵐʳ)
 
-  ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ : ∀ {Θ Ψ Γ Δ A} {ρ : Γ ⇒ᵛʳ Δ} {ι : Θ ⇒ᵐʳ Ψ} {t : Term Θ Γ A}
-    → [ ι ]ᵐʳ ([ ρ ]ᵛʳ t) ≈ [ ρ ]ᵛʳ ([ ι ]ᵐʳ t)
-  ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ {t = tm-var x} = ≈-refl
-  ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ {t = tm-meta M ts} = ≈-meta (λ i → ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ {t = ts i})
-  ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ {t = tm-oper f es} = ≈-oper (λ i → ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ {t = es i})
+  ᵐʳ∘ᵛ≈ᵛ∘ᵐʳ : ∀ {Θ Ψ Γ Δ A} {ρ : Γ ⇒ᵛ Δ} {ι : Θ ⇒ᵐʳ Ψ} {t : Term Θ Γ A}
+    → [ ι ]ᵐʳ ([ ρ ]ᵛ t) ≈ [ ρ ]ᵛ ([ ι ]ᵐʳ t)
+  ᵐʳ∘ᵛ≈ᵛ∘ᵐʳ {t = tm-var x} = ≈-refl
+  ᵐʳ∘ᵛ≈ᵛ∘ᵐʳ {t = tm-meta M ts} = ≈-meta (λ i → ᵐʳ∘ᵛ≈ᵛ∘ᵐʳ {t = ts i})
+  ᵐʳ∘ᵛ≈ᵛ∘ᵐʳ {t = tm-oper f es} = ≈-oper (λ i → ᵐʳ∘ᵛ≈ᵛ∘ᵐʳ {t = es i})
 
   split-sum : ∀ {Θ Ψ Ξ Ω} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ξ ⇒ᵐʳ Ω}
     → (μ +₁ ι) ≡ᵐʳ (⇑ᵐʳ μ) ∘ᵐʳ (ᵐʳ⇑ᵐʳ ι)
@@ -285,7 +285,7 @@ module SecondOrder.MRenaming
     [ ᵐʳ⇑ᵐʳ ι ]ᵐʳ ([ ⇑ᵐʳ μ ]ᵐʳ t)
     ∎
 
-  ∘ᵐʳ-resp-⇑ : ∀ {Θ Ψ Ξ Ω} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ψ ⇒ᵐʳ Ω} 
+  ∘ᵐʳ-resp-⇑ : ∀ {Θ Ψ Ξ Ω} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ψ ⇒ᵐʳ Ω}
     → ⇑ᵐʳ {Ω = Ξ}  (μ ∘ᵐʳ ι) ≡ᵐʳ ⇑ᵐʳ μ ∘ᵐʳ ⇑ᵐʳ ι
   ∘ᵐʳ-resp-⇑ (var-inl M) = refl
   ∘ᵐʳ-resp-⇑ (var-inr N) = refl
@@ -300,7 +300,7 @@ module SecondOrder.MRenaming
       [ ⇑ᵐʳ μ ]ᵐʳ ([ ⇑ᵐʳ ι ]ᵐʳ t)
       ∎
 
-  ∘ᵐʳ-resp-ᵐʳ⇑ : ∀ {Θ Ψ Ξ Ω} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ψ ⇒ᵐʳ Ω} 
+  ∘ᵐʳ-resp-ᵐʳ⇑ : ∀ {Θ Ψ Ξ Ω} {ι : Θ ⇒ᵐʳ Ψ} {μ : Ψ ⇒ᵐʳ Ω}
     → ᵐʳ⇑ᵐʳ (μ ∘ᵐʳ ι) {Ω = Ξ} ≡ᵐʳ ᵐʳ⇑ᵐʳ μ ∘ᵐʳ ᵐʳ⇑ᵐʳ ι
   ∘ᵐʳ-resp-ᵐʳ⇑ (var-inl M) = refl
   ∘ᵐʳ-resp-ᵐʳ⇑ (var-inr N) = refl
@@ -316,14 +316,14 @@ module SecondOrder.MRenaming
       ∎
 
 
-  vr-comm-mr : ∀ {Θ Ψ Γ Δ A} {ρ : Γ ⇒ᵛʳ Δ} {ι : Θ ⇒ᵐʳ Ψ} {t : Term Θ Γ A}
-    → [ ι ]ᵐʳ ([ ρ ]ᵛʳ t) ≈ [ ρ ]ᵛʳ ([ ι ]ᵐʳ t)
+  vr-comm-mr : ∀ {Θ Ψ Γ Δ A} {ρ : Γ ⇒ᵛ Δ} {ι : Θ ⇒ᵐʳ Ψ} {t : Term Θ Γ A}
+    → [ ι ]ᵐʳ ([ ρ ]ᵛ t) ≈ [ ρ ]ᵛ ([ ι ]ᵐʳ t)
   vr-comm-mr {t = tm-var x} = ≈-refl
   vr-comm-mr {t = tm-meta M ts} = ≈-meta (λ i → vr-comm-mr)
   vr-comm-mr {t = tm-oper f es} = ≈-oper (λ i → vr-comm-mr)
 
-  mr-comm-vr : ∀ {Θ Ψ Γ Δ A} {ρ : Γ ⇒ᵛʳ Δ} {ι : Θ ⇒ᵐʳ Ψ} {t : Term Θ Γ A}
-    → [ ρ ]ᵛʳ ([ ι ]ᵐʳ t) ≈  [ ι ]ᵐʳ ([ ρ ]ᵛʳ t)
+  mr-comm-vr : ∀ {Θ Ψ Γ Δ A} {ρ : Γ ⇒ᵛ Δ} {ι : Θ ⇒ᵐʳ Ψ} {t : Term Θ Γ A}
+    → [ ρ ]ᵛ ([ ι ]ᵐʳ t) ≈  [ ι ]ᵐʳ ([ ρ ]ᵛ t)
   mr-comm-vr {t = tm-var x} = ≈-refl
   mr-comm-vr {t = tm-meta M ts} = ≈-meta (λ i → mr-comm-vr)
   mr-comm-vr {t = tm-oper f es} = ≈-oper (λ i → mr-comm-vr)
@@ -338,7 +338,6 @@ module SecondOrder.MRenaming
     MRenaming-NT ι =
       record
       { η = λ Γ → record { _⟨$⟩_ = [ ι ]ᵐʳ_ ; cong = []ᵐʳ-resp-≈ }
-      ; commute = λ ρ t≈s → ≈-trans ([]ᵐʳ-resp-≈ ([]ᵛʳ-resp-≈ t≈s)) (ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ)
-      ; sym-commute = λ ρ t≈s → ≈-trans (≈-sym ᵐʳ∘ᵛʳ≈ᵛʳ∘ᵐʳ) ([]ᵐʳ-resp-≈ ([]ᵛʳ-resp-≈ t≈s))
+      ; commute = λ ρ t≈s → ≈-trans ([]ᵐʳ-resp-≈ ([]ᵛ-resp-≈ t≈s)) (ᵐʳ∘ᵛ≈ᵛ∘ᵐʳ)
+      ; sym-commute = λ ρ t≈s → ≈-trans (≈-sym ᵐʳ∘ᵛ≈ᵛ∘ᵐʳ) ([]ᵐʳ-resp-≈ ([]ᵛ-resp-≈ t≈s))
       }
-

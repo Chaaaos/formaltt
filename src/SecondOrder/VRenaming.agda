@@ -26,84 +26,84 @@ module SecondOrder.VRenaming
   open SecondOrder.Term Σ
 
   -- a renaming maps variables between contexts in a type-preserving way
-  _⇒ᵛʳ_ : ∀ (Γ Δ : VContext) → Set ℓ
-  Γ ⇒ᵛʳ Δ = ∀ {A} → A ∈ Γ → A ∈ Δ
+  _⇒ᵛ_ : ∀ (Γ Δ : VContext) → Set ℓ
+  Γ ⇒ᵛ Δ = ∀ {A} → A ∈ Γ → A ∈ Δ
 
-  infix 4 _⇒ᵛʳ_
+  infix 4 _⇒ᵛ_
 
   -- equality of renamings
 
-  _≡ᵛʳ_ : ∀ {Γ Δ} (σ τ : Γ ⇒ᵛʳ Δ) → Set ℓ
-  _≡ᵛʳ_ {Γ} σ τ = ∀ {A} (x : A ∈ Γ) → σ x ≡ τ x
+  _≡ᵛ_ : ∀ {Γ Δ} (σ τ : Γ ⇒ᵛ Δ) → Set ℓ
+  _≡ᵛ_ {Γ} σ τ = ∀ {A} (x : A ∈ Γ) → σ x ≡ τ x
 
-  infixl 3 _≡ᵛʳ_
+  infixl 3 _≡ᵛ_
 
-  ≡ᵛʳ-refl : ∀ {Γ Δ} {ρ : Γ ⇒ᵛʳ Δ} → ρ ≡ᵛʳ ρ
-  ≡ᵛʳ-refl = λ x → refl
+  ≡ᵛ-refl : ∀ {Γ Δ} {ρ : Γ ⇒ᵛ Δ} → ρ ≡ᵛ ρ
+  ≡ᵛ-refl = λ x → refl
 
-  ≡ᵛʳ-sym : ∀ {Γ Δ} {ρ ν : Γ ⇒ᵛʳ Δ}
-          → ρ ≡ᵛʳ ν
-          → ν ≡ᵛʳ ρ
-  ≡ᵛʳ-sym eq x = sym (eq x)
+  ≡ᵛ-sym : ∀ {Γ Δ} {ρ ν : Γ ⇒ᵛ Δ}
+          → ρ ≡ᵛ ν
+          → ν ≡ᵛ ρ
+  ≡ᵛ-sym eq x = sym (eq x)
 
-  ≡ᵛʳ-trans : ∀ {Γ Δ} {ρ ν γ : Γ ⇒ᵛʳ Δ}
-           → ρ ≡ᵛʳ ν
-           → ν ≡ᵛʳ γ
-           → ρ ≡ᵛʳ γ
-  ≡ᵛʳ-trans eq1 eq2 x = trans (eq1 x) (eq2 x)
+  ≡ᵛ-trans : ∀ {Γ Δ} {ρ ν γ : Γ ⇒ᵛ Δ}
+           → ρ ≡ᵛ ν
+           → ν ≡ᵛ γ
+           → ρ ≡ᵛ γ
+  ≡ᵛ-trans eq1 eq2 x = trans (eq1 x) (eq2 x)
 
   -- renamings form a setoid
 
   renaming-setoid : ∀ (Γ Δ : VContext) → Setoid ℓ ℓ
   renaming-setoid Γ Δ =
     record
-      { Carrier = Γ ⇒ᵛʳ Δ
-      ;  _≈_ = λ ρ ν → ρ ≡ᵛʳ ν
+      { Carrier = Γ ⇒ᵛ Δ
+      ;  _≈_ = λ ρ ν → ρ ≡ᵛ ν
       ; isEquivalence =
                       record
-                        { refl = λ {ρ} x → ≡ᵛʳ-refl {Γ} {Δ} {ρ} x
-                        ; sym = ≡ᵛʳ-sym
-                        ; trans = ≡ᵛʳ-trans
+                        { refl = λ {ρ} x → ≡ᵛ-refl {Γ} {Δ} {ρ} x
+                        ; sym = ≡ᵛ-sym
+                        ; trans = ≡ᵛ-trans
                         }
       }
 
   -- renaming preserves equality of variables
-  ρ-resp-≡ : ∀ {Γ Δ A} {x y : A ∈ Γ} {ρ : Γ ⇒ᵛʳ Δ} → x ≡ y → ρ x ≡ ρ y
+  ρ-resp-≡ : ∀ {Γ Δ A} {x y : A ∈ Γ} {ρ : Γ ⇒ᵛ Δ} → x ≡ y → ρ x ≡ ρ y
   ρ-resp-≡ refl = refl
 
   -- the identity renaming
 
-  idᵛʳ : ∀ {Γ : VContext} → Γ ⇒ᵛʳ Γ
-  idᵛʳ x = x
+  idᵛ : ∀ {Γ : VContext} → Γ ⇒ᵛ Γ
+  idᵛ x = x
 
   -- composition of renamings
-  _∘ᵛʳ_ : ∀ {Γ Δ Ξ} → Δ ⇒ᵛʳ Ξ → Γ ⇒ᵛʳ Δ → Γ ⇒ᵛʳ Ξ
-  (σ ∘ᵛʳ ρ) x = σ (ρ x)
+  _∘ᵛ_ : ∀ {Γ Δ Ξ} → Δ ⇒ᵛ Ξ → Γ ⇒ᵛ Δ → Γ ⇒ᵛ Ξ
+  (σ ∘ᵛ ρ) x = σ (ρ x)
 
-  infix 7 _∘ᵛʳ_
+  infix 7 _∘ᵛ_
 
   -- composition respects equality
-  ∘ᵛʳ-resp-≡ᵛʳ : ∀ {Γ Δ Ξ} {τ₁ τ₂ : Δ ⇒ᵛʳ Ξ} {σ₁ σ₂ : Γ ⇒ᵛʳ Δ} →
-                 τ₁ ≡ᵛʳ τ₂ → σ₁ ≡ᵛʳ σ₂ → τ₁ ∘ᵛʳ σ₁ ≡ᵛʳ τ₂ ∘ᵛʳ σ₂
-  ∘ᵛʳ-resp-≡ᵛʳ {τ₁ = τ₁} {σ₂ = σ₂} ζ ξ x = trans (cong τ₁ (ξ x)) (ζ (σ₂ x))
+  ∘ᵛ-resp-≡ᵛ : ∀ {Γ Δ Ξ} {τ₁ τ₂ : Δ ⇒ᵛ Ξ} {σ₁ σ₂ : Γ ⇒ᵛ Δ} →
+                 τ₁ ≡ᵛ τ₂ → σ₁ ≡ᵛ σ₂ → τ₁ ∘ᵛ σ₁ ≡ᵛ τ₂ ∘ᵛ σ₂
+  ∘ᵛ-resp-≡ᵛ {τ₁ = τ₁} {σ₂ = σ₂} ζ ξ x = trans (cong τ₁ (ξ x)) (ζ (σ₂ x))
 
   -- the identity is the unit
 
-  identity-leftᵛʳ : ∀ {Γ Δ} {ρ : Γ ⇒ᵛʳ Δ} → idᵛʳ ∘ᵛʳ ρ ≡ᵛʳ ρ
-  identity-leftᵛʳ ρ = refl
+  identity-leftᵛ : ∀ {Γ Δ} {ρ : Γ ⇒ᵛ Δ} → idᵛ ∘ᵛ ρ ≡ᵛ ρ
+  identity-leftᵛ ρ = refl
 
-  identity-rightᵛʳ : ∀ {Γ Δ} {ρ : Γ ⇒ᵛʳ Δ} → ρ ∘ᵛʳ idᵛʳ ≡ᵛʳ ρ
-  identity-rightᵛʳ ρ = refl
+  identity-rightᵛ : ∀ {Γ Δ} {ρ : Γ ⇒ᵛ Δ} → ρ ∘ᵛ idᵛ ≡ᵛ ρ
+  identity-rightᵛ ρ = refl
 
   -- composition is associative
 
-  assocᵛʳ : ∀ {Γ Δ Ξ Ψ} {τ : Γ ⇒ᵛʳ Δ} {ρ : Δ ⇒ᵛʳ Ξ} {σ : Ξ ⇒ᵛʳ Ψ} →
-             (σ ∘ᵛʳ ρ) ∘ᵛʳ τ ≡ᵛʳ σ ∘ᵛʳ (ρ ∘ᵛʳ τ)
-  assocᵛʳ x = refl
+  assocᵛ : ∀ {Γ Δ Ξ Ψ} {τ : Γ ⇒ᵛ Δ} {ρ : Δ ⇒ᵛ Ξ} {σ : Ξ ⇒ᵛ Ψ} →
+             (σ ∘ᵛ ρ) ∘ᵛ τ ≡ᵛ σ ∘ᵛ (ρ ∘ᵛ τ)
+  assocᵛ x = refl
 
-  sym-assocᵛʳ : ∀ {Γ Δ Ξ Ψ} {τ : Γ ⇒ᵛʳ Δ} {ρ : Δ ⇒ᵛʳ Ξ} {σ : Ξ ⇒ᵛʳ Ψ} →
-             σ ∘ᵛʳ (ρ ∘ᵛʳ τ) ≡ᵛʳ (σ ∘ᵛʳ ρ) ∘ᵛʳ τ
-  sym-assocᵛʳ x = refl
+  sym-assocᵛ : ∀ {Γ Δ Ξ Ψ} {τ : Γ ⇒ᵛ Δ} {ρ : Δ ⇒ᵛ Ξ} {σ : Ξ ⇒ᵛ Ψ} →
+             σ ∘ᵛ (ρ ∘ᵛ τ) ≡ᵛ (σ ∘ᵛ ρ) ∘ᵛ τ
+  sym-assocᵛ x = refl
 
   -- contexts and renamings form a category
   module _ where
@@ -113,52 +113,52 @@ module SecondOrder.VRenaming
     VContexts =
       record
         { Obj = VContext
-        ; _⇒_ = _⇒ᵛʳ_
-        ; _≈_ = _≡ᵛʳ_
-        ; id = idᵛʳ
-        ; _∘_ = _∘ᵛʳ_
-        ; assoc = λ {_} {_} {_} {_} {f} {g} {h} {_} → assocᵛʳ {τ = f} {ρ = g} {σ = h}
-        ; sym-assoc = λ {_} {_} {_} {_} {f} {g} {h} {_} → sym-assocᵛʳ {τ = f} {ρ = g} {σ = h}
+        ; _⇒_ = _⇒ᵛ_
+        ; _≈_ = _≡ᵛ_
+        ; id = idᵛ
+        ; _∘_ = _∘ᵛ_
+        ; assoc = λ {_} {_} {_} {_} {f} {g} {h} {_} → assocᵛ {τ = f} {ρ = g} {σ = h}
+        ; sym-assoc = λ {_} {_} {_} {_} {f} {g} {h} {_} → sym-assocᵛ {τ = f} {ρ = g} {σ = h}
         ; identityˡ = λ x → refl
         ; identityʳ = λ x → refl
         ; identity² = λ x → refl
-        ; equiv = record { refl = λ {ρ} {_} → ≡ᵛʳ-refl {ρ = ρ} ; sym = ≡ᵛʳ-sym ; trans = ≡ᵛʳ-trans }
-        ; ∘-resp-≈ = ∘ᵛʳ-resp-≡ᵛʳ
+        ; equiv = record { refl = λ {ρ} {_} → ≡ᵛ-refl {ρ = ρ} ; sym = ≡ᵛ-sym ; trans = ≡ᵛ-trans }
+        ; ∘-resp-≈ = ∘ᵛ-resp-≡ᵛ
         }
 
 
   -- the coproduct structure of the category
   module _ where
 
-    infixl 7 [_,_]ᵛʳ
+    infixl 7 [_,_]ᵛ
 
-    [_,_]ᵛʳ : ∀ {Γ Δ Ξ} → Γ ⇒ᵛʳ Ξ → Δ ⇒ᵛʳ Ξ → Γ ,, Δ ⇒ᵛʳ Ξ
-    [ σ , τ ]ᵛʳ (var-inl x) = σ x
-    [ σ , τ ]ᵛʳ (var-inr y) = τ y
+    [_,_]ᵛ : ∀ {Γ Δ Ξ} → Γ ⇒ᵛ Ξ → Δ ⇒ᵛ Ξ → Γ ,, Δ ⇒ᵛ Ξ
+    [ σ , τ ]ᵛ (var-inl x) = σ x
+    [ σ , τ ]ᵛ (var-inr y) = τ y
 
-    [,]ᵛʳ-resp-≡ᵛʳ : ∀ {Γ Δ Ξ} {ρ₁ ρ₂ : Γ ⇒ᵛʳ Ξ} {τ₁ τ₂ : Δ ⇒ᵛʳ Ξ} → ρ₁ ≡ᵛʳ ρ₂ → τ₁ ≡ᵛʳ τ₂ → [ ρ₁ , τ₁ ]ᵛʳ ≡ᵛʳ [ ρ₂ , τ₂ ]ᵛʳ
-    [,]ᵛʳ-resp-≡ᵛʳ pρ pτ (var-inl x) = pρ x
-    [,]ᵛʳ-resp-≡ᵛʳ pρ pτ (var-inr x) = pτ x
+    [,]ᵛ-resp-≡ᵛ : ∀ {Γ Δ Ξ} {ρ₁ ρ₂ : Γ ⇒ᵛ Ξ} {τ₁ τ₂ : Δ ⇒ᵛ Ξ} → ρ₁ ≡ᵛ ρ₂ → τ₁ ≡ᵛ τ₂ → [ ρ₁ , τ₁ ]ᵛ ≡ᵛ [ ρ₂ , τ₂ ]ᵛ
+    [,]ᵛ-resp-≡ᵛ pρ pτ (var-inl x) = pρ x
+    [,]ᵛ-resp-≡ᵛ pρ pτ (var-inr x) = pτ x
 
-    inlᵛʳ : ∀ {Γ Δ} → Γ ⇒ᵛʳ Γ ,, Δ
-    inlᵛʳ = var-inl
+    inlᵛ : ∀ {Γ Δ} → Γ ⇒ᵛ Γ ,, Δ
+    inlᵛ = var-inl
 
-    inrᵛʳ : ∀ {Γ Δ} → Δ ⇒ᵛʳ Γ ,, Δ
-    inrᵛʳ = var-inr
+    inrᵛ : ∀ {Γ Δ} → Δ ⇒ᵛ Γ ,, Δ
+    inrᵛ = var-inr
 
-    uniqueᵛʳ : ∀ {Γ Δ Ξ} {τ : Γ ,, Δ ⇒ᵛʳ Ξ} {ρ : Γ ⇒ᵛʳ Ξ} {σ : Δ ⇒ᵛʳ Ξ}
-              → τ ∘ᵛʳ inlᵛʳ ≡ᵛʳ ρ
-              → τ ∘ᵛʳ inrᵛʳ ≡ᵛʳ σ
-              → [ ρ , σ ]ᵛʳ ≡ᵛʳ τ
-    uniqueᵛʳ ξ ζ (var-inl x) = sym (ξ x)
-    uniqueᵛʳ ξ ζ (var-inr y) = sym (ζ y)
+    uniqueᵛ : ∀ {Γ Δ Ξ} {τ : Γ ,, Δ ⇒ᵛ Ξ} {ρ : Γ ⇒ᵛ Ξ} {σ : Δ ⇒ᵛ Ξ}
+              → τ ∘ᵛ inlᵛ ≡ᵛ ρ
+              → τ ∘ᵛ inrᵛ ≡ᵛ σ
+              → [ ρ , σ ]ᵛ ≡ᵛ τ
+    uniqueᵛ ξ ζ (var-inl x) = sym (ξ x)
+    uniqueᵛ ξ ζ (var-inr y) = sym (ζ y)
 
-    uniqueᵛʳ² : ∀ {Γ Δ Ξ} {τ σ : Γ ,, Δ ⇒ᵛʳ Ξ}
-              → τ ∘ᵛʳ inlᵛʳ ≡ᵛʳ σ ∘ᵛʳ inlᵛʳ
-              → τ ∘ᵛʳ inrᵛʳ ≡ᵛʳ σ ∘ᵛʳ inrᵛʳ
-              → τ ≡ᵛʳ σ
-    uniqueᵛʳ² ξ ζ (var-inl x) = ξ x
-    uniqueᵛʳ² ξ ζ (var-inr y) = ζ y
+    uniqueᵛ² : ∀ {Γ Δ Ξ} {τ σ : Γ ,, Δ ⇒ᵛ Ξ}
+              → τ ∘ᵛ inlᵛ ≡ᵛ σ ∘ᵛ inlᵛ
+              → τ ∘ᵛ inrᵛ ≡ᵛ σ ∘ᵛ inrᵛ
+              → τ ≡ᵛ σ
+    uniqueᵛ² ξ ζ (var-inl x) = ξ x
+    uniqueᵛ² ξ ζ (var-inr y) = ζ y
 
     Context-+ : Categories.Category.Cocartesian.BinaryCoproducts VContexts
     Context-+ =
@@ -167,12 +167,12 @@ module SecondOrder.VRenaming
           λ {Γ Δ} →
           record
             { A+B = Γ ,, Δ
-            ; i₁ = inlᵛʳ
-            ; i₂ = inrᵛʳ
-            ; [_,_] = [_,_]ᵛʳ
+            ; i₁ = inlᵛ
+            ; i₂ = inrᵛ
+            ; [_,_] = [_,_]ᵛ
             ; inject₁ = λ x → refl
             ; inject₂ = λ x → refl
-            ; unique = uniqueᵛʳ
+            ; unique = uniqueᵛ
             }
       }
 
@@ -180,104 +180,104 @@ module SecondOrder.VRenaming
 
   -- the renaming from the empty context
 
-  inᵛʳ : ∀ {Γ} → ctx-empty ⇒ᵛʳ Γ
-  inᵛʳ ()
+  inᵛ : ∀ {Γ} → ctx-empty ⇒ᵛ Γ
+  inᵛ ()
 
   -- extension of a renaming is summing with identity
-  ⇑ᵛʳ : ∀ {Γ Δ Ξ} → Γ ⇒ᵛʳ Δ → Γ ,, Ξ ⇒ᵛʳ Δ ,, Ξ
-  ⇑ᵛʳ ρ = ρ +₁ idᵛʳ
+  ⇑ᵛ : ∀ {Γ Δ Ξ} → Γ ⇒ᵛ Δ → Γ ,, Ξ ⇒ᵛ Δ ,, Ξ
+  ⇑ᵛ ρ = ρ +₁ idᵛ
 
   -- a renaming can also be extended on the right
-  ʳ⇑ᵛʳ : ∀ {Γ Δ} → Γ ⇒ᵛʳ Δ → ∀ {Ξ} → Ξ ,, Γ ⇒ᵛʳ Ξ ,, Δ
-  ʳ⇑ᵛʳ ρ = idᵛʳ +₁ ρ
+  ʳ⇑ᵛ : ∀ {Γ Δ} → Γ ⇒ᵛ Δ → ∀ {Ξ} → Ξ ,, Γ ⇒ᵛ Ξ ,, Δ
+  ʳ⇑ᵛ ρ = idᵛ +₁ ρ
 
   -- right extension of renamings commutes with right injection
-  ʳ⇑ᵛʳ-comm-inrᵛʳ : ∀ {Γ Δ Ξ} (ρ : Γ ⇒ᵛʳ Δ)
-    → (ʳ⇑ᵛʳ ρ {Ξ = Ξ}) ∘ᵛʳ (inrᵛʳ {Δ = Γ}) ≡ᵛʳ inrᵛʳ ∘ᵛʳ ρ
-  ʳ⇑ᵛʳ-comm-inrᵛʳ ρ var-slot = refl
-  ʳ⇑ᵛʳ-comm-inrᵛʳ ρ (var-inl x) = refl
-  ʳ⇑ᵛʳ-comm-inrᵛʳ ρ (var-inr x) = refl
+  ʳ⇑ᵛ-comm-inrᵛ : ∀ {Γ Δ Ξ} (ρ : Γ ⇒ᵛ Δ)
+    → (ʳ⇑ᵛ ρ {Ξ = Ξ}) ∘ᵛ (inrᵛ {Δ = Γ}) ≡ᵛ inrᵛ ∘ᵛ ρ
+  ʳ⇑ᵛ-comm-inrᵛ ρ var-slot = refl
+  ʳ⇑ᵛ-comm-inrᵛ ρ (var-inl x) = refl
+  ʳ⇑ᵛ-comm-inrᵛ ρ (var-inr x) = refl
 
   -- left extension of renamings commutes with left injection
-  ⇑ᵛʳ-comm-inlᵛʳ : ∀ {Γ Δ Ξ} (ρ : Γ ⇒ᵛʳ Δ) → (⇑ᵛʳ {Ξ = Ξ} ρ) ∘ᵛʳ (inlᵛʳ {Δ = Ξ}) ≡ᵛʳ inlᵛʳ ∘ᵛʳ ρ
-  ⇑ᵛʳ-comm-inlᵛʳ ρ var-slot = refl
-  ⇑ᵛʳ-comm-inlᵛʳ ρ (var-inl x) = refl
-  ⇑ᵛʳ-comm-inlᵛʳ ρ (var-inr x) = refl
+  ⇑ᵛ-comm-inlᵛ : ∀ {Γ Δ Ξ} (ρ : Γ ⇒ᵛ Δ) → (⇑ᵛ {Ξ = Ξ} ρ) ∘ᵛ (inlᵛ {Δ = Ξ}) ≡ᵛ inlᵛ ∘ᵛ ρ
+  ⇑ᵛ-comm-inlᵛ ρ var-slot = refl
+  ⇑ᵛ-comm-inlᵛ ρ (var-inl x) = refl
+  ⇑ᵛ-comm-inlᵛ ρ (var-inr x) = refl
 
   -- the action of a renaming on terms
   module _ {Θ : MContext} where
 
-    infix 6 [_]ᵛʳ_
+    infix 6 [_]ᵛ_
 
-    [_]ᵛʳ_ : ∀ {Γ Δ A} → Γ ⇒ᵛʳ Δ → Term Θ Γ A → Term Θ Δ A
-    [ ρ ]ᵛʳ (tm-var x) = tm-var (ρ x)
-    [ ρ ]ᵛʳ (tm-meta M ts) = tm-meta M (λ i → [ ρ ]ᵛʳ (ts i))
-    [ ρ ]ᵛʳ (tm-oper f es) = tm-oper f (λ i → [ ⇑ᵛʳ ρ ]ᵛʳ (es i))
+    [_]ᵛ_ : ∀ {Γ Δ A} → Γ ⇒ᵛ Δ → Term Θ Γ A → Term Θ Δ A
+    [ ρ ]ᵛ (tm-var x) = tm-var (ρ x)
+    [ ρ ]ᵛ (tm-meta M ts) = tm-meta M (λ i → [ ρ ]ᵛ (ts i))
+    [ ρ ]ᵛ (tm-oper f es) = tm-oper f (λ i → [ ⇑ᵛ ρ ]ᵛ (es i))
 
   -- The sum of identities is an identity
-  idᵛʳ+idᵛʳ : ∀ {Γ Δ} → idᵛʳ {Γ = Γ} +₁ idᵛʳ {Γ = Δ} ≡ᵛʳ idᵛʳ {Γ = Γ ,, Δ}
-  idᵛʳ+idᵛʳ (var-inl x) = refl
-  idᵛʳ+idᵛʳ (var-inr y) = refl
+  idᵛ+idᵛ : ∀ {Γ Δ} → idᵛ {Γ = Γ} +₁ idᵛ {Γ = Δ} ≡ᵛ idᵛ {Γ = Γ ,, Δ}
+  idᵛ+idᵛ (var-inl x) = refl
+  idᵛ+idᵛ (var-inr y) = refl
 
   -- The action of a renaming respects equality of terms
-  []ᵛʳ-resp-≈ : ∀ {Θ Γ Δ A} {s t : Term Θ Γ A} {ρ : Γ ⇒ᵛʳ Δ} → s ≈ t → [ ρ ]ᵛʳ s ≈ [ ρ ]ᵛʳ t
-  []ᵛʳ-resp-≈ (≈-≡ refl) = ≈-≡ refl
-  []ᵛʳ-resp-≈ (≈-meta ξ) = ≈-meta (λ i → []ᵛʳ-resp-≈ (ξ i))
-  []ᵛʳ-resp-≈ (≈-oper ξ) = ≈-oper (λ i → []ᵛʳ-resp-≈ (ξ i))
+  []ᵛ-resp-≈ : ∀ {Θ Γ Δ A} {s t : Term Θ Γ A} {ρ : Γ ⇒ᵛ Δ} → s ≈ t → [ ρ ]ᵛ s ≈ [ ρ ]ᵛ t
+  []ᵛ-resp-≈ (≈-≡ refl) = ≈-≡ refl
+  []ᵛ-resp-≈ (≈-meta ξ) = ≈-meta (λ i → []ᵛ-resp-≈ (ξ i))
+  []ᵛ-resp-≈ (≈-oper ξ) = ≈-oper (λ i → []ᵛ-resp-≈ (ξ i))
 
   -- The action of a renaming respects equality of renamings
-  []ᵛʳ-resp-≡ᵛʳ : ∀ {Θ Γ Δ A} {ρ τ : Γ ⇒ᵛʳ Δ} {t : Term Θ Γ A} → ρ ≡ᵛʳ τ → [ ρ ]ᵛʳ t ≈ [ τ ]ᵛʳ t
-  []ᵛʳ-resp-≡ᵛʳ {t = tm-var x} ξ = ≈-≡ (cong tm-var (ξ x))
-  []ᵛʳ-resp-≡ᵛʳ {t = tm-meta M ts} ξ = ≈-meta (λ i → []ᵛʳ-resp-≡ᵛʳ ξ)
-  []ᵛʳ-resp-≡ᵛʳ {t = tm-oper f es} ξ = ≈-oper (λ i → []ᵛʳ-resp-≡ᵛʳ (+₁-cong₂ ξ ≡ᵛʳ-refl))
+  []ᵛ-resp-≡ᵛ : ∀ {Θ Γ Δ A} {ρ τ : Γ ⇒ᵛ Δ} {t : Term Θ Γ A} → ρ ≡ᵛ τ → [ ρ ]ᵛ t ≈ [ τ ]ᵛ t
+  []ᵛ-resp-≡ᵛ {t = tm-var x} ξ = ≈-≡ (cong tm-var (ξ x))
+  []ᵛ-resp-≡ᵛ {t = tm-meta M ts} ξ = ≈-meta (λ i → []ᵛ-resp-≡ᵛ ξ)
+  []ᵛ-resp-≡ᵛ {t = tm-oper f es} ξ = ≈-oper (λ i → []ᵛ-resp-≡ᵛ (+₁-cong₂ ξ ≡ᵛ-refl))
 
   -- The action of the identity is trival
-  [id]ᵛʳ : ∀ {Θ Γ A} {t : Term Θ Γ A} → [ idᵛʳ ]ᵛʳ t ≈ t
-  [id]ᵛʳ {t = tm-var x} = ≈-refl
-  [id]ᵛʳ {t = tm-meta M ts} = ≈-meta λ i → [id]ᵛʳ
-  [id]ᵛʳ {t = tm-oper f es} = ≈-oper λ i → ≈-trans ([]ᵛʳ-resp-≡ᵛʳ idᵛʳ+idᵛʳ) [id]ᵛʳ
+  [id]ᵛ : ∀ {Θ Γ A} {t : Term Θ Γ A} → [ idᵛ ]ᵛ t ≈ t
+  [id]ᵛ {t = tm-var x} = ≈-refl
+  [id]ᵛ {t = tm-meta M ts} = ≈-meta λ i → [id]ᵛ
+  [id]ᵛ {t = tm-oper f es} = ≈-oper λ i → ≈-trans ([]ᵛ-resp-≡ᵛ idᵛ+idᵛ) [id]ᵛ
 
   -- Extension respects composition
-  ⇑ᵛʳ-∘ᵛʳ : ∀ {Γ Δ Ξ Ψ} {ρ : Γ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Ξ} → ⇑ᵛʳ {Ξ = Ψ} (τ ∘ᵛʳ ρ) ≡ᵛʳ (⇑ᵛʳ τ) ∘ᵛʳ (⇑ᵛʳ ρ)
-  ⇑ᵛʳ-∘ᵛʳ (var-inl x) = refl
-  ⇑ᵛʳ-∘ᵛʳ (var-inr y) = refl
+  ⇑ᵛ-∘ᵛ : ∀ {Γ Δ Ξ Ψ} {ρ : Γ ⇒ᵛ Δ} {τ : Δ ⇒ᵛ Ξ} → ⇑ᵛ {Ξ = Ψ} (τ ∘ᵛ ρ) ≡ᵛ (⇑ᵛ τ) ∘ᵛ (⇑ᵛ ρ)
+  ⇑ᵛ-∘ᵛ (var-inl x) = refl
+  ⇑ᵛ-∘ᵛ (var-inr y) = refl
 
   -- Right extension respects composition
-  ʳ⇑ᵛʳ-∘ᵛʳ : ∀ {Γ Δ Ξ Ψ} {ρ : Γ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Ξ} → ʳ⇑ᵛʳ (τ ∘ᵛʳ ρ) {Ξ = Ψ} ≡ᵛʳ (ʳ⇑ᵛʳ τ) ∘ᵛʳ (ʳ⇑ᵛʳ ρ)
-  ʳ⇑ᵛʳ-∘ᵛʳ (var-inl x) = refl
-  ʳ⇑ᵛʳ-∘ᵛʳ (var-inr y) = refl
+  ʳ⇑ᵛ-∘ᵛ : ∀ {Γ Δ Ξ Ψ} {ρ : Γ ⇒ᵛ Δ} {τ : Δ ⇒ᵛ Ξ} → ʳ⇑ᵛ (τ ∘ᵛ ρ) {Ξ = Ψ} ≡ᵛ (ʳ⇑ᵛ τ) ∘ᵛ (ʳ⇑ᵛ ρ)
+  ʳ⇑ᵛ-∘ᵛ (var-inl x) = refl
+  ʳ⇑ᵛ-∘ᵛ (var-inr y) = refl
 
   -- The action of a renaming is functorial
-  [∘]ᵛʳ : ∀ {Θ Γ Δ Ξ} {ρ : Γ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Ξ} {A} {t : Term Θ Γ A}
-    → [ τ ∘ᵛʳ ρ ]ᵛʳ t ≈ [ τ ]ᵛʳ ([ ρ ]ᵛʳ t)
-  [∘]ᵛʳ {t = tm-var x} = ≈-refl
-  [∘]ᵛʳ {t = tm-meta M ts} = ≈-meta (λ i → [∘]ᵛʳ)
-  [∘]ᵛʳ {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ᵛʳ-resp-≡ᵛʳ ⇑ᵛʳ-∘ᵛʳ) [∘]ᵛʳ)
+  [∘]ᵛ : ∀ {Θ Γ Δ Ξ} {ρ : Γ ⇒ᵛ Δ} {τ : Δ ⇒ᵛ Ξ} {A} {t : Term Θ Γ A}
+    → [ τ ∘ᵛ ρ ]ᵛ t ≈ [ τ ]ᵛ ([ ρ ]ᵛ t)
+  [∘]ᵛ {t = tm-var x} = ≈-refl
+  [∘]ᵛ {t = tm-meta M ts} = ≈-meta (λ i → [∘]ᵛ)
+  [∘]ᵛ {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ᵛ-resp-≡ᵛ ⇑ᵛ-∘ᵛ) [∘]ᵛ)
 
-  ∘ᵛʳ-resp-ʳ⇑ᵛʳ : ∀ {Γ Δ Ξ Λ} {ρ : Γ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Ξ}
-    → ʳ⇑ᵛʳ (τ ∘ᵛʳ ρ) {Ξ = Λ} ≡ᵛʳ ʳ⇑ᵛʳ τ ∘ᵛʳ ʳ⇑ᵛʳ ρ
-  ∘ᵛʳ-resp-ʳ⇑ᵛʳ (var-inl x) = refl
-  ∘ᵛʳ-resp-ʳ⇑ᵛʳ (var-inr y) = refl
+  ∘ᵛ-resp-ʳ⇑ᵛ : ∀ {Γ Δ Ξ Λ} {ρ : Γ ⇒ᵛ Δ} {τ : Δ ⇒ᵛ Ξ}
+    → ʳ⇑ᵛ (τ ∘ᵛ ρ) {Ξ = Λ} ≡ᵛ ʳ⇑ᵛ τ ∘ᵛ ʳ⇑ᵛ ρ
+  ∘ᵛ-resp-ʳ⇑ᵛ (var-inl x) = refl
+  ∘ᵛ-resp-ʳ⇑ᵛ (var-inr y) = refl
 
-  ∘ᵛʳ-resp-ʳ⇑ᵛʳ-term : ∀ {Θ Γ Δ Ξ Λ A} {ρ : Γ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Ξ} {t : Term Θ (Λ ,, Γ) A}
-    → [ ʳ⇑ᵛʳ (τ ∘ᵛʳ ρ) {Ξ = Λ} ]ᵛʳ t ≈ [ ʳ⇑ᵛʳ τ ]ᵛʳ ([ ʳ⇑ᵛʳ ρ ]ᵛʳ t)
-  ∘ᵛʳ-resp-ʳ⇑ᵛʳ-term {Θ} {Γ} {Δ} {Ξ} {Λ} {A} {ρ} {τ} {t = t} =
+  ∘ᵛ-resp-ʳ⇑ᵛ-term : ∀ {Θ Γ Δ Ξ Λ A} {ρ : Γ ⇒ᵛ Δ} {τ : Δ ⇒ᵛ Ξ} {t : Term Θ (Λ ,, Γ) A}
+    → [ ʳ⇑ᵛ (τ ∘ᵛ ρ) {Ξ = Λ} ]ᵛ t ≈ [ ʳ⇑ᵛ τ ]ᵛ ([ ʳ⇑ᵛ ρ ]ᵛ t)
+  ∘ᵛ-resp-ʳ⇑ᵛ-term {Θ} {Γ} {Δ} {Ξ} {Λ} {A} {ρ} {τ} {t = t} =
     let open SetoidR (Term-setoid Θ (Λ ,, Ξ) A) in
     begin
-    [ ʳ⇑ᵛʳ (τ ∘ᵛʳ ρ) {Ξ = Λ} ]ᵛʳ t ≈⟨ []ᵛʳ-resp-≡ᵛʳ ∘ᵛʳ-resp-ʳ⇑ᵛʳ ⟩
-    [ ʳ⇑ᵛʳ τ ∘ᵛʳ ʳ⇑ᵛʳ ρ ]ᵛʳ t ≈⟨ [∘]ᵛʳ ⟩
-    [ ʳ⇑ᵛʳ τ ]ᵛʳ ([ ʳ⇑ᵛʳ ρ ]ᵛʳ t)
+    [ ʳ⇑ᵛ (τ ∘ᵛ ρ) {Ξ = Λ} ]ᵛ t ≈⟨ []ᵛ-resp-≡ᵛ ∘ᵛ-resp-ʳ⇑ᵛ ⟩
+    [ ʳ⇑ᵛ τ ∘ᵛ ʳ⇑ᵛ ρ ]ᵛ t ≈⟨ [∘]ᵛ ⟩
+    [ ʳ⇑ᵛ τ ]ᵛ ([ ʳ⇑ᵛ ρ ]ᵛ t)
     ∎
 
-  ʳ⇑ᵛʳ-comm-inrᵛʳ-term : ∀ {Θ Γ Δ Ξ A} {ρ : Γ ⇒ᵛʳ Δ} {t : Term Θ Γ A}
-    → ([ ʳ⇑ᵛʳ ρ {Ξ = Ξ} ]ᵛʳ ([ inrᵛʳ {Δ = Γ} ]ᵛʳ t)) ≈ ([ inrᵛʳ ]ᵛʳ ([ ρ ]ᵛʳ t))
-  ʳ⇑ᵛʳ-comm-inrᵛʳ-term {Θ} {Γ} {Δ} {Ξ} {A} {ρ} {t = t} =
+  ʳ⇑ᵛ-comm-inrᵛ-term : ∀ {Θ Γ Δ Ξ A} {ρ : Γ ⇒ᵛ Δ} {t : Term Θ Γ A}
+    → ([ ʳ⇑ᵛ ρ {Ξ = Ξ} ]ᵛ ([ inrᵛ {Δ = Γ} ]ᵛ t)) ≈ ([ inrᵛ ]ᵛ ([ ρ ]ᵛ t))
+  ʳ⇑ᵛ-comm-inrᵛ-term {Θ} {Γ} {Δ} {Ξ} {A} {ρ} {t = t} =
     let open SetoidR (Term-setoid Θ (Ξ ,, Δ) A) in
     begin
-    [ ʳ⇑ᵛʳ ρ ]ᵛʳ ([ inrᵛʳ ]ᵛʳ t) ≈⟨ ≈-sym [∘]ᵛʳ ⟩
-    [ ʳ⇑ᵛʳ ρ ∘ᵛʳ var-inr ]ᵛʳ t ≈⟨ []ᵛʳ-resp-≡ᵛʳ (ʳ⇑ᵛʳ-comm-inrᵛʳ ρ) ⟩
-    [ inrᵛʳ ∘ᵛʳ ρ ]ᵛʳ t ≈⟨ [∘]ᵛʳ ⟩
-    [ inrᵛʳ ]ᵛʳ ([ ρ ]ᵛʳ t)
+    [ ʳ⇑ᵛ ρ ]ᵛ ([ inrᵛ ]ᵛ t) ≈⟨ ≈-sym [∘]ᵛ ⟩
+    [ ʳ⇑ᵛ ρ ∘ᵛ var-inr ]ᵛ t ≈⟨ []ᵛ-resp-≡ᵛ (ʳ⇑ᵛ-comm-inrᵛ ρ) ⟩
+    [ inrᵛ ∘ᵛ ρ ]ᵛ t ≈⟨ [∘]ᵛ ⟩
+    [ inrᵛ ]ᵛ ([ ρ ]ᵛ t)
     ∎
 
 
@@ -291,8 +291,8 @@ module SecondOrder.VRenaming
     Term-Functor =
       record
         { F₀ = λ Γ → Term-setoid Θ Γ A
-        ; F₁ = λ ρ → record { _⟨$⟩_ = [ ρ ]ᵛʳ_ ; cong = []ᵛʳ-resp-≈ }
-        ; identity = ≈-trans [id]ᵛʳ
-        ; homomorphism = λ ξ → ≈-trans ([]ᵛʳ-resp-≈ ξ) [∘]ᵛʳ
-        ; F-resp-≈ = λ ζ ξ → ≈-trans ([]ᵛʳ-resp-≡ᵛʳ ζ) ([]ᵛʳ-resp-≈ ξ)
+        ; F₁ = λ ρ → record { _⟨$⟩_ = [ ρ ]ᵛ_ ; cong = []ᵛ-resp-≈ }
+        ; identity = ≈-trans [id]ᵛ
+        ; homomorphism = λ ξ → ≈-trans ([]ᵛ-resp-≈ ξ) [∘]ᵛ
+        ; F-resp-≈ = λ ζ ξ → ≈-trans ([]ᵛ-resp-≡ᵛ ζ) ([]ᵛ-resp-≈ ξ)
         }

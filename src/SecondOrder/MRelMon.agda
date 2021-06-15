@@ -73,15 +73,15 @@ module SecondOrder.MRelMon
            record
            { F₀ = λ Ψ → record
                           { F₀ = λ Δ → Term-setoid (Θ ,, Ψ) (Γ ,, Δ) A
-                          ; F₁ = λ {Δ} {Ξ} ρ → record { _⟨$⟩_ = [_]ᵛʳ_ (ʳ⇑ᵛʳ ρ) ; cong = λ t≈s → []ᵛʳ-resp-≈ t≈s }
-                          ; identity = λ t≈s → ≈-trans ([]ᵛʳ-resp-≡ᵛʳ idᵛʳ+idᵛʳ) (≈-trans [id]ᵛʳ t≈s)
-                          ; homomorphism = λ t≈s → ≈-trans ([]ᵛʳ-resp-≈ t≈s) ∘ᵛʳ-resp-ʳ⇑ᵛʳ-term
+                          ; F₁ = λ {Δ} {Ξ} ρ → record { _⟨$⟩_ = [_]ᵛ_ (ʳ⇑ᵛ ρ) ; cong = λ t≈s → []ᵛ-resp-≈ t≈s }
+                          ; identity = λ t≈s → ≈-trans ([]ᵛ-resp-≡ᵛ idᵛ+idᵛ) (≈-trans [id]ᵛ t≈s)
+                          ; homomorphism = λ t≈s → ≈-trans ([]ᵛ-resp-≈ t≈s) ∘ᵛ-resp-ʳ⇑ᵛ-term
                           ; F-resp-≈ = λ ρ≈τ t≈s → {!!}
                           }
            ; F₁ = λ ι → record
                          { η = λ Δ → record { _⟨$⟩_ = [_]ᵐʳ_ (ᵐʳ⇑ᵐʳ ι) ; cong = λ t≈s → []ᵐʳ-resp-≈ t≈s }
-                         ; commute = λ ρ t≈s → ≈-trans ([]ᵐʳ-resp-≈ ([]ᵛʳ-resp-≈ t≈s)) vr-comm-mr
-                         ; sym-commute = λ ρ t≈s → ≈-trans (≈-sym vr-comm-mr) ([]ᵐʳ-resp-≈ ([]ᵛʳ-resp-≈ t≈s))
+                         ; commute = λ ρ t≈s → ≈-trans ([]ᵐʳ-resp-≈ ([]ᵛ-resp-≈ t≈s)) vr-comm-mr
+                         ; sym-commute = λ ρ t≈s → ≈-trans (≈-sym vr-comm-mr) ([]ᵐʳ-resp-≈ ([]ᵛ-resp-≈ t≈s))
                          }
            ; identity = λ t≈s → ≈-trans ([]ᵐʳ-resp-≈ t≈s) (≈-trans ([]ᵐʳ-resp-≡ᵐʳ ᵐʳ⇑ᵐʳid≡ᵐʳidᵐʳ) [id]ᵐʳ)
            ; homomorphism = λ t≈s → ≈-trans ([]ᵐʳ-resp-≈ t≈s) ∘ᵐʳ-resp-ᵐʳ⇑-term
@@ -90,12 +90,12 @@ module SecondOrder.MRelMon
       ; unit = λ A → record
                       { η = λ Θ →
                           record
-                          { η = λ Δ → record { _⟨$⟩_ = [_]ᵛʳ_ inrᵛʳ ; cong = λ t≈s → []ᵛʳ-resp-≈ t≈s }
-                          ; commute = λ ρ t≈s → ≈-trans ([]ᵛʳ-resp-≈ ([]ᵛʳ-resp-≈ t≈s)) (≈-sym ʳ⇑ᵛʳ-comm-inrᵛʳ-term)
-                          ; sym-commute = λ ρ t≈s → ≈-trans ʳ⇑ᵛʳ-comm-inrᵛʳ-term ([]ᵛʳ-resp-≈ ([]ᵛʳ-resp-≈ t≈s))
+                          { η = λ Δ → record { _⟨$⟩_ = [_]ᵛ_ inrᵛ ; cong = λ t≈s → []ᵛ-resp-≈ t≈s }
+                          ; commute = λ ρ t≈s → ≈-trans ([]ᵛ-resp-≈ ([]ᵛ-resp-≈ t≈s)) (≈-sym ʳ⇑ᵛ-comm-inrᵛ-term)
+                          ; sym-commute = λ ρ t≈s → ≈-trans ʳ⇑ᵛ-comm-inrᵛ-term ([]ᵛ-resp-≈ ([]ᵛ-resp-≈ t≈s))
                           }
-                      ; commute = λ f t≈s → ≈-trans ([]ᵛʳ-resp-≈ ([]ᵐʳ-resp-≈ t≈s)) mr-comm-vr
-                      ; sym-commute = λ f t≈s → ≈-trans ? ([]ᵛʳ-resp-≈ ([]ᵐʳ-resp-≈ t≈s))
+                      ; commute = λ f t≈s → ≈-trans ([]ᵛ-resp-≈ ([]ᵐʳ-resp-≈ t≈s)) mr-comm-vr
+                      ; sym-commute = λ f t≈s → ≈-trans ? ([]ᵛ-resp-≈ ([]ᵐʳ-resp-≈ t≈s))
                       }
       ; extend = λ I A → record
                           { η = λ Θ →
@@ -112,5 +112,3 @@ module SecondOrder.MRelMon
       ; assoc = {!!}
       ; extend-≈ = {!!}
       }
-
-
