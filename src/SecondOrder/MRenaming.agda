@@ -216,29 +216,29 @@ module SecondOrder.MRenaming
   []ᵐ-resp-≡ᵐ {t = tm-oper f es} ξ = ≈-oper λ i → []ᵐ-resp-≡ᵐ ξ
 
   -- The action of the identity is trival
-  [id]ᵐ : ∀ {Θ Γ A} {t : Term Θ Γ A} → [ idᵐ ]ᵐ t ≈ t
-  [id]ᵐ {t = tm-var x} = ≈-refl
-  [id]ᵐ {t = tm-meta M ts} = ≈-meta λ i → [id]ᵐ
-  [id]ᵐ {t = tm-oper f es} = ≈-oper λ i → [id]ᵐ
+  [idᵐ] : ∀ {Θ Γ A} {t : Term Θ Γ A} → [ idᵐ ]ᵐ t ≈ t
+  [idᵐ] {t = tm-var x} = ≈-refl
+  [idᵐ] {t = tm-meta M ts} = ≈-meta λ i → [idᵐ]
+  [idᵐ] {t = tm-oper f es} = ≈-oper λ i → [idᵐ]
 
   -- Extension respects composition
-  ⇑ᵐ-∘ᵐ : ∀ {Γ Δ Ξ Ψ} {ρ : Γ ⇒ᵐ Δ} {τ : Δ ⇒ᵐ Ξ} → ⇑ᵐ {Ω = Ψ} (τ ∘ᵐ ρ) ≡ᵐ (⇑ᵐ τ) ∘ᵐ (⇑ᵐ ρ)
-  ⇑ᵐ-∘ᵐ (var-inl x) = refl
-  ⇑ᵐ-∘ᵐ (var-inr y) = refl
+  ⇑ᵐ-resp-∘ᵐ : ∀ {Γ Δ Ξ Ψ} {ρ : Γ ⇒ᵐ Δ} {τ : Δ ⇒ᵐ Ξ} → ⇑ᵐ {Ω = Ψ} (τ ∘ᵐ ρ) ≡ᵐ (⇑ᵐ τ) ∘ᵐ (⇑ᵐ ρ)
+  ⇑ᵐ-resp-∘ᵐ (var-inl x) = refl
+  ⇑ᵐ-resp-∘ᵐ (var-inr y) = refl
 
-  ᵐ⇑ᵐ-∘ᵐ : ∀ {Θ Ψ Ω Ξ} {ρ : Θ ⇒ᵐ Ψ} {τ : Ψ ⇒ᵐ Ω}
+  ᵐ⇑ᵐ-resp-∘ᵐ : ∀ {Θ Ψ Ω Ξ} {ρ : Θ ⇒ᵐ Ψ} {τ : Ψ ⇒ᵐ Ω}
     → ᵐ⇑ᵐ {Θ} {Ω} (τ ∘ᵐ ρ) {Ξ} ≡ᵐ (ᵐ⇑ᵐ τ) ∘ᵐ (ᵐ⇑ᵐ ρ)
-  ᵐ⇑ᵐ-∘ᵐ (var-inl M) = refl
-  ᵐ⇑ᵐ-∘ᵐ (var-inr N) = refl
+  ᵐ⇑ᵐ-resp-∘ᵐ (var-inl M) = refl
+  ᵐ⇑ᵐ-resp-∘ᵐ (var-inr N) = refl
 
   -- Extension of the identity renaming is the identity
-  ⇑ᵐid≡ᵐidᵐ : ∀ {Θ Ψ} → (⇑ᵐ {Θ} {Θ} {Ψ}) (idᵐ {Θ}) ≡ᵐ idᵐ
-  ⇑ᵐid≡ᵐidᵐ (var-inl M) = refl
-  ⇑ᵐid≡ᵐidᵐ (var-inr N) = refl
+  ⇑ᵐ-resp-idᵐ : ∀ {Θ Ψ} → (⇑ᵐ {Θ} {Θ} {Ψ}) (idᵐ {Θ}) ≡ᵐ idᵐ
+  ⇑ᵐ-resp-idᵐ (var-inl M) = refl
+  ⇑ᵐ-resp-idᵐ (var-inr N) = refl
 
-  ᵐ⇑ᵐid≡ᵐidᵐ : ∀ {Θ Ψ} → (ᵐ⇑ᵐ {Θ} {Θ}) (idᵐ {Θ}) {Ψ} ≡ᵐ idᵐ
-  ᵐ⇑ᵐid≡ᵐidᵐ (var-inl M) = refl
-  ᵐ⇑ᵐid≡ᵐidᵐ (var-inr N) = refl
+  ᵐ⇑ᵐ-resp-idᵐ : ∀ {Θ Ψ} → (ᵐ⇑ᵐ {Θ} {Θ}) (idᵐ {Θ}) {Ψ} ≡ᵐ idᵐ
+  ᵐ⇑ᵐ-resp-idᵐ (var-inl M) = refl
+  ᵐ⇑ᵐ-resp-idᵐ (var-inr N) = refl
 
   -- Extension preserves equality of metavariable renamings
   ᵐ⇑ᵐ-resp-≡ᵐ : ∀ {Θ Ψ Ω} {ι μ : Θ ⇒ᵐ Ψ} → ι ≡ᵐ μ → ᵐ⇑ᵐ ι {Ω} ≡ᵐ ᵐ⇑ᵐ μ
@@ -251,11 +251,11 @@ module SecondOrder.MRenaming
 
 
   -- The action of a renaming is functorial
-  [∘]ᵐ : ∀ {Θ Ψ Ω Γ} {ι : Θ ⇒ᵐ Ψ} {μ : Ψ ⇒ᵐ Ω} {A} {t : Term Θ Γ A}
+  [∘ᵐ] : ∀ {Θ Ψ Ω Γ} {ι : Θ ⇒ᵐ Ψ} {μ : Ψ ⇒ᵐ Ω} {A} {t : Term Θ Γ A}
     → [ μ ∘ᵐ ι ]ᵐ t ≈ [ μ ]ᵐ ([ ι ]ᵐ t)
-  [∘]ᵐ {t = tm-var x} = ≈-refl
-  [∘]ᵐ {t = tm-meta M ts} = ≈-meta (λ i → [∘]ᵐ)
-  [∘]ᵐ {t = tm-oper f es} = ≈-oper (λ i → [∘]ᵐ)
+  [∘ᵐ] {t = tm-var x} = ≈-refl
+  [∘ᵐ] {t = tm-meta M ts} = ≈-meta (λ i → [∘ᵐ])
+  [∘ᵐ] {t = tm-oper f es} = ≈-oper (λ i → [∘ᵐ])
 
   ᵐ∘ᵛ≈ᵛ∘ᵐ : ∀ {Θ Ψ Γ Δ A} {ρ : Γ ⇒ᵛ Δ} {ι : Θ ⇒ᵐ Ψ} {t : Term Θ Γ A}
     → [ ι ]ᵐ ([ ρ ]ᵛ t) ≈ [ ρ ]ᵛ ([ ι ]ᵐ t)
@@ -278,10 +278,10 @@ module SecondOrder.MRenaming
   ⇑-resp-+ {Θ} {Ψ} {Ξ} {Ω} {Γ} {A} {ι} {μ} {t = t} =
     let open SetoidR (Term-setoid (Ω ,, Ψ) Γ A) in
     begin
-    [ ⇑ᵐ μ ]ᵐ ([ ᵐ⇑ᵐ ι ]ᵐ t) ≈⟨ ≈-sym [∘]ᵐ ⟩
+    [ ⇑ᵐ μ ]ᵐ ([ ᵐ⇑ᵐ ι ]ᵐ t) ≈⟨ ≈-sym [∘ᵐ] ⟩
     [ (⇑ᵐ μ) ∘ᵐ (ᵐ⇑ᵐ ι) ]ᵐ t  ≈⟨ ≈-sym ([]ᵐ-resp-≡ᵐ split-sum) ⟩
     [ (μ +₁ ι) ]ᵐ t ≈⟨ []ᵐ-resp-≡ᵐ split-sum2 ⟩
-    [(ᵐ⇑ᵐ ι) ∘ᵐ (⇑ᵐ μ)  ]ᵐ t ≈⟨ [∘]ᵐ ⟩
+    [(ᵐ⇑ᵐ ι) ∘ᵐ (⇑ᵐ μ)  ]ᵐ t ≈⟨ [∘ᵐ] ⟩
     [ ᵐ⇑ᵐ ι ]ᵐ ([ ⇑ᵐ μ ]ᵐ t)
     ∎
 
@@ -296,7 +296,7 @@ module SecondOrder.MRenaming
       let open SetoidR (Term-setoid (Ω ,, Ξ) Γ A) in
       begin
       [ ⇑ᵐ {Ω = Ξ} (μ ∘ᵐ ι) ]ᵐ t ≈⟨ []ᵐ-resp-≡ᵐ ∘ᵐ-resp-⇑ ⟩
-      [ ⇑ᵐ μ ∘ᵐ ⇑ᵐ ι ]ᵐ t ≈⟨ [∘]ᵐ ⟩
+      [ ⇑ᵐ μ ∘ᵐ ⇑ᵐ ι ]ᵐ t ≈⟨ [∘ᵐ] ⟩
       [ ⇑ᵐ μ ]ᵐ ([ ⇑ᵐ ι ]ᵐ t)
       ∎
 
@@ -311,7 +311,7 @@ module SecondOrder.MRenaming
       let open SetoidR (Term-setoid (Ξ ,, Ω) Γ A) in
       begin
       [ ᵐ⇑ᵐ (μ ∘ᵐ ι) {Ω = Ξ} ]ᵐ t ≈⟨ []ᵐ-resp-≡ᵐ ∘ᵐ-resp-ᵐ⇑ ⟩
-      [ ᵐ⇑ᵐ μ ∘ᵐ ᵐ⇑ᵐ ι ]ᵐ t ≈⟨ [∘]ᵐ ⟩
+      [ ᵐ⇑ᵐ μ ∘ᵐ ᵐ⇑ᵐ ι ]ᵐ t ≈⟨ [∘ᵐ] ⟩
       [ ᵐ⇑ᵐ μ ]ᵐ ([ ᵐ⇑ᵐ ι ]ᵐ t)
       ∎
 

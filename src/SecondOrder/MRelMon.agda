@@ -83,7 +83,7 @@ module SecondOrder.MRelMon
                          ; commute = λ ρ t≈s → ≈-trans ([]ᵐ-resp-≈ ([]ᵛ-resp-≈ t≈s)) vr-comm-mr
                          ; sym-commute = λ ρ t≈s → ≈-trans (≈-sym vr-comm-mr) ([]ᵐ-resp-≈ ([]ᵛ-resp-≈ t≈s))
                          }
-           ; identity = λ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) (≈-trans ([]ᵐ-resp-≡ᵐ ᵐ⇑ᵐid≡ᵐidᵐ) [id]ᵐ)
+           ; identity = λ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) (≈-trans ([]ᵐ-resp-≡ᵐ ᵐ⇑ᵐ-resp-idᵐ) [idᵐ])
            ; homomorphism = λ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) ∘ᵐ-resp-ᵐ⇑-term
            ; F-resp-≈ = λ ι≈μ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) ([]ᵐ-resp-≡ᵐ (ᵐ⇑ᵐ-resp-≡ᵐ ι≈μ))
            }

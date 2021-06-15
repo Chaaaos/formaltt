@@ -116,8 +116,8 @@ module SecondOrder.Mslot
                  record
                  { F₀ = λ ψ → Term-Functor {Θ ,, ψ} {A}
                  ; F₁ = λ ι → MRenaming-NT (ᵐ⇑ᵐ ι)
-                 ; identity = λ t≈s → ≈-trans (≈-trans ([]ᵐ-resp-≡ᵐ ᵐ⇑ᵐid≡ᵐidᵐ) [id]ᵐ) t≈s
-                 ; homomorphism = λ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) (≈-trans ([]ᵐ-resp-≡ᵐ ᵐ⇑ᵐ-∘ᵐ) [∘]ᵐ)
+                 ; identity = λ t≈s → ≈-trans (≈-trans ([]ᵐ-resp-≡ᵐ ᵐ⇑ᵐ-resp-idᵐ) [idᵐ]) t≈s
+                 ; homomorphism = λ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) (≈-trans ([]ᵐ-resp-≡ᵐ ᵐ⇑ᵐ-resp-∘ᵐ) [∘ᵐ])
                  ; F-resp-≈ = λ ι≡μ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) ([]ᵐ-resp-≡ᵐ (ᵐ⇑ᵐ-resp-≡ᵐ ι≡μ))
                  }
             ; F₁ = λ {Θ} {Θ'} ι A →
@@ -132,7 +132,7 @@ module SecondOrder.Mslot
                  ; sym-commute = λ ι t≈s → ≈-trans (≈-sym ⇑-resp-+) (([]ᵐ-resp-≈ ([]ᵐ-resp-≈ t≈s)))
                  }
             ; identity = λ Θ ψ Γ t≈s
-              → ≈-trans ([]ᵐ-resp-≈ t≈s) (≈-trans ([]ᵐ-resp-≡ᵐ ⇑ᵐid≡ᵐidᵐ) [id]ᵐ)
+              → ≈-trans ([]ᵐ-resp-≈ t≈s) (≈-trans ([]ᵐ-resp-≡ᵐ ⇑ᵐ-resp-idᵐ) [idᵐ])
             ; homomorphism = λ A ψ Γ t≈s
               → ≈-trans ([]ᵐ-resp-≈ t≈s) ∘ᵐ-resp-⇑-term
             ; F-resp-≈ = λ ι≡μ A ψ Γ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) ([]ᵐ-resp-≡ᵐ (⇑ᵐ-resp-≡ᵐ ι≡μ))
