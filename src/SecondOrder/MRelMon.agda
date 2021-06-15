@@ -79,13 +79,13 @@ module SecondOrder.MRelMon
                           ; F-resp-≈ = λ ρ≈τ t≈s → {!!}
                           }
            ; F₁ = λ ι → record
-                         { η = λ Δ → record { _⟨$⟩_ = [_]ᵐʳ_ (ᵐʳ⇑ᵐʳ ι) ; cong = λ t≈s → []ᵐʳ-resp-≈ t≈s }
-                         ; commute = λ ρ t≈s → ≈-trans ([]ᵐʳ-resp-≈ ([]ᵛ-resp-≈ t≈s)) vr-comm-mr
-                         ; sym-commute = λ ρ t≈s → ≈-trans (≈-sym vr-comm-mr) ([]ᵐʳ-resp-≈ ([]ᵛ-resp-≈ t≈s))
+                         { η = λ Δ → record { _⟨$⟩_ = [_]ᵐ_ (ᵐ⇑ᵐ ι) ; cong = λ t≈s → []ᵐ-resp-≈ t≈s }
+                         ; commute = λ ρ t≈s → ≈-trans ([]ᵐ-resp-≈ ([]ᵛ-resp-≈ t≈s)) vr-comm-mr
+                         ; sym-commute = λ ρ t≈s → ≈-trans (≈-sym vr-comm-mr) ([]ᵐ-resp-≈ ([]ᵛ-resp-≈ t≈s))
                          }
-           ; identity = λ t≈s → ≈-trans ([]ᵐʳ-resp-≈ t≈s) (≈-trans ([]ᵐʳ-resp-≡ᵐʳ ᵐʳ⇑ᵐʳid≡ᵐʳidᵐʳ) [id]ᵐʳ)
-           ; homomorphism = λ t≈s → ≈-trans ([]ᵐʳ-resp-≈ t≈s) ∘ᵐʳ-resp-ᵐʳ⇑-term
-           ; F-resp-≈ = λ ι≈μ t≈s → ≈-trans ([]ᵐʳ-resp-≈ t≈s) ([]ᵐʳ-resp-≡ᵐʳ (ᵐʳ⇑ᵐʳ-resp-≡ᵐʳ ι≈μ))
+           ; identity = λ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) (≈-trans ([]ᵐ-resp-≡ᵐ ᵐ⇑ᵐid≡ᵐidᵐ) [id]ᵐ)
+           ; homomorphism = λ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) ∘ᵐ-resp-ᵐ⇑-term
+           ; F-resp-≈ = λ ι≈μ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) ([]ᵐ-resp-≡ᵐ (ᵐ⇑ᵐ-resp-≡ᵐ ι≈μ))
            }
       ; unit = λ A → record
                       { η = λ Θ →
@@ -94,8 +94,8 @@ module SecondOrder.MRelMon
                           ; commute = λ ρ t≈s → ≈-trans ([]ᵛ-resp-≈ ([]ᵛ-resp-≈ t≈s)) (≈-sym ʳ⇑ᵛ-comm-inrᵛ-term)
                           ; sym-commute = λ ρ t≈s → ≈-trans ʳ⇑ᵛ-comm-inrᵛ-term ([]ᵛ-resp-≈ ([]ᵛ-resp-≈ t≈s))
                           }
-                      ; commute = λ f t≈s → ≈-trans ([]ᵛ-resp-≈ ([]ᵐʳ-resp-≈ t≈s)) mr-comm-vr
-                      ; sym-commute = λ f t≈s → ≈-trans ? ([]ᵛ-resp-≈ ([]ᵐʳ-resp-≈ t≈s))
+                      ; commute = λ f t≈s → ≈-trans ([]ᵛ-resp-≈ ([]ᵐ-resp-≈ t≈s)) mr-comm-vr
+                      ; sym-commute = λ f t≈s → ≈-trans ? ([]ᵛ-resp-≈ ([]ᵐ-resp-≈ t≈s))
                       }
       ; extend = λ I A → record
                           { η = λ Θ →

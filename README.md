@@ -44,7 +44,8 @@ or something similar that doesn't produce exceedingly long lines with unecessary
 
 1. Use full names: `RelativeMonad` instead of `RelMon`, `RelativeMorphism` instead of `RelMorph`. Abbreviations should be use very sparingly.
 2. We use subscripts to indicate entities, as follows:
-   * `ᵛʳ` for *variable renaming*
+   * `ᵛ` for *variable renaming*
+   * `ᵐ` for *metavariable renaming*
    * `ˢ` for *substitition*
    * `ⁱ` for *instantiation*
 3. Composition of entities is written as `∘ˣ` where `x` is a supscript indicating the kind, e.g.,

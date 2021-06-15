@@ -61,14 +61,14 @@ module SecondOrder.VRelMon
       open Setoid
       field
         F₀ :  VContext → MContext → Obj
-        F₁ : ∀ {Θ ψ Δ Ξ} (ρ : Δ ⇒ᵛ Ξ) (ι : Θ ⇒ᵐʳ ψ)
+        F₁ : ∀ {Θ ψ Δ Ξ} (ρ : Δ ⇒ᵛ Ξ) (ι : Θ ⇒ᵐ ψ)
              → (F₀ Δ Θ) ⇒ (F₀ Ξ ψ)
         identity : ∀ {Θ Δ}
-                   → Category._≈_ (Setoids ℓ ℓ) (F₁ (idᵛ {Δ}) (idᵐʳ {Θ})) (id {F₀ Δ Θ})
-        homomorphism : ∀ {Θ ψ Ω Γ Δ Ξ} {ρ : Γ ⇒ᵛ Δ} {ι : Θ ⇒ᵐʳ ψ} {τ : Δ ⇒ᵛ Ξ} {μ : ψ ⇒ᵐʳ Ω}
-                       → Category._≈_ (Setoids ℓ ℓ) (F₁ (τ ∘ᵛ ρ) (μ ∘ᵐʳ ι)) ((F₁ τ μ) ∘ (F₁ ρ ι))
-        F-resp-≈ : ∀ {Θ ψ Γ Δ} {ρ τ : Γ ⇒ᵛ Δ} {ι μ : Θ ⇒ᵐʳ ψ}
-                   → (ρ ≡ᵛ τ) → (ι ≡ᵐʳ μ) → (Category._≈_ (Setoids ℓ ℓ) (F₁ ρ ι) (F₁ τ μ))
+                   → Category._≈_ (Setoids ℓ ℓ) (F₁ (idᵛ {Δ}) (idᵐ {Θ})) (id {F₀ Δ Θ})
+        homomorphism : ∀ {Θ ψ Ω Γ Δ Ξ} {ρ : Γ ⇒ᵛ Δ} {ι : Θ ⇒ᵐ ψ} {τ : Δ ⇒ᵛ Ξ} {μ : ψ ⇒ᵐ Ω}
+                       → Category._≈_ (Setoids ℓ ℓ) (F₁ (τ ∘ᵛ ρ) (μ ∘ᵐ ι)) ((F₁ τ μ) ∘ (F₁ ρ ι))
+        F-resp-≈ : ∀ {Θ ψ Γ Δ} {ρ τ : Γ ⇒ᵛ Δ} {ι μ : Θ ⇒ᵐ ψ}
+                   → (ρ ≡ᵛ τ) → (ι ≡ᵐ μ) → (Category._≈_ (Setoids ℓ ℓ) (F₁ ρ ι) (F₁ τ μ))
 
 
 
@@ -83,7 +83,7 @@ module SecondOrder.VRelMon
         open Category (Setoids ℓ ℓ)
         field
           η : ∀ Θ Γ → (F₀ Γ Θ) ⇒ (Gⱽ.F₀ Γ Θ)
-          commute : ∀ {Θ ψ Γ Δ} (ρ : Γ ⇒ᵛ Δ) (ι : Θ ⇒ᵐʳ ψ)
+          commute : ∀ {Θ ψ Γ Δ} (ρ : Γ ⇒ᵛ Δ) (ι : Θ ⇒ᵐ ψ)
                     → Category._≈_ (Setoids ℓ ℓ) ((η ψ Δ) ∘ (F₁ ρ ι)) ((Gⱽ.F₁ ρ ι) ∘ (η Θ Γ))
           -- ignore-MCtx : ∀ Θ Ω Γ → (∀ (x : F₀ Γ Θ))
 
@@ -216,7 +216,7 @@ module SecondOrder.VRelMon
                                             (ʳ⇑ᵛ-∘ᵛ x)
                                             (ρ-resp-≡ {ρ = [ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛ}
                                               (ρ-resp-≡ {ρ = [ var-inl , (λ x₁ → var-inr (ρ x₁)) ]ᵛ} ξ))
-                         ; F-resp-≈ = λ {Θ} {ψ} {Δ} {Ξ} {ρ} {τ} {ι} {μ} ξᵛ ξᵐʳ {x} {y} ξ
+                         ; F-resp-≈ = λ {Θ} {ψ} {Δ} {Ξ} {ρ} {τ} {ι} {μ} ξᵛ ξᵐ {x} {y} ξ
                                       → trans
                                         ([,]ᵛ-resp-≡ᵛ (λ x₁ → refl) (∘ᵛ-resp-≡ᵛ {τ₁ = λ x₁ → var-inr x₁} (λ x₁ → refl) λ x₁ → ξᵛ x₁) x)
                                         (ρ-resp-≡ {ρ = [ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛ} ξ)
@@ -292,7 +292,7 @@ module SecondOrder.VRelMon
                 ]ᵛ ∘ᵛ [ var-inl
                       , (λ x₁ → var-inr (ρ x₁))
                       ]ᵛ
-    Codomain-Jⱽ-Elt.F-resp-≈  (Monad.F₀ VMonad Γ A) {ψ} {Ω} {Δ} {Ξ} {ρ} {τ} {ι} {μ} ξᵛ ξᵐʳ {t} {u} ξ  =
+    Codomain-Jⱽ-Elt.F-resp-≈  (Monad.F₀ VMonad Γ A) {ψ} {Ω} {Δ} {Ξ} {ρ} {τ} {ι} {μ} ξᵛ ξᵐ {t} {u} ξ  =
                                                           begin⟨ Term-setoid Θ _ _ ⟩
                                                           ([ [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (ρ x₁)) ]ᵛ ]ᵛ t) ≈⟨ []ᵛ-resp-≈ ξ ⟩
                                                           ([ [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (ρ x₁)) ]ᵛ ]ᵛ u)
@@ -319,7 +319,7 @@ module SecondOrder.VRelMon
           ⟨$⟩ y)
           ∎
       where
-        η-ˢ∘ᵛ : ∀ {Ξ} {Ψ} {Γ} {Δ} (ρ : Γ ⇒ᵛ Δ) (ι : Ξ ⇒ᵐʳ Ψ)
+        η-ˢ∘ᵛ : ∀ {Ξ} {Ψ} {Γ} {Δ} (ρ : Γ ⇒ᵛ Δ) (ι : Ξ ⇒ᵐ Ψ)
                → (λ {B} → _⟨$⟩_ (η (σ B) Θ Δ)) ˢ∘ᵛ (ʳ⇑ᵛ ρ)
                  ≈ˢ ʳ⇑ᵛ ρ ᵛ∘ˢ (λ {B} x₁ → η (σ B) Θ Γ ⟨$⟩ x₁)
         η-ˢ∘ᵛ {Γ = Γ′} {Δ′} ρ ι (var-inl x) =
@@ -441,14 +441,14 @@ module SecondOrder.VRelMon
 --       open Setoid
 --       field
 --         F₀ :  VContext → MContext → Obj
---         F₁ : ∀ {Θ ψ Δ Ξ} (ρ : Δ ⇒ᵛ Ξ) (ι : Θ ⇒ᵐʳ ψ)
+--         F₁ : ∀ {Θ ψ Δ Ξ} (ρ : Δ ⇒ᵛ Ξ) (ι : Θ ⇒ᵐ ψ)
 --              → (F₀ Δ Θ) ⇒ (F₀ Ξ ψ)
 --         identity : ∀ {Θ Δ}
---                    → Category._≈_ (Setoids ℓ ℓ) (F₁ (idᵛ {Δ}) (idᵐʳ {Θ})) (id {F₀ Δ Θ})
---         homomorphism : ∀ {Θ ψ Ω Γ Δ Ξ} {ρ : Γ ⇒ᵛ Δ} {ι : Θ ⇒ᵐʳ ψ} {τ : Δ ⇒ᵛ Ξ} {μ : ψ ⇒ᵐʳ Ω}
---                        → Category._≈_ (Setoids ℓ ℓ) (F₁ (τ ∘ᵛ ρ) (μ ∘ᵐʳ ι)) ((F₁ τ μ) ∘ (F₁ ρ ι))
---         F-resp-≈ : ∀ {Θ ψ Γ Δ} {ρ τ : Γ ⇒ᵛ Δ} {ι μ : Θ ⇒ᵐʳ ψ}
---                    → (ρ ≡ᵛ τ) → (ι ≡ᵐʳ μ) → (Category._≈_ (Setoids ℓ ℓ) (F₁ ρ ι) (F₁ τ μ))
+--                    → Category._≈_ (Setoids ℓ ℓ) (F₁ (idᵛ {Δ}) (idᵐ {Θ})) (id {F₀ Δ Θ})
+--         homomorphism : ∀ {Θ ψ Ω Γ Δ Ξ} {ρ : Γ ⇒ᵛ Δ} {ι : Θ ⇒ᵐ ψ} {τ : Δ ⇒ᵛ Ξ} {μ : ψ ⇒ᵐ Ω}
+--                        → Category._≈_ (Setoids ℓ ℓ) (F₁ (τ ∘ᵛ ρ) (μ ∘ᵐ ι)) ((F₁ τ μ) ∘ (F₁ ρ ι))
+--         F-resp-≈ : ∀ {Θ ψ Γ Δ} {ρ τ : Γ ⇒ᵛ Δ} {ι μ : Θ ⇒ᵐ ψ}
+--                    → (ρ ≡ᵛ τ) → (ι ≡ᵐ μ) → (Category._≈_ (Setoids ℓ ℓ) (F₁ ρ ι) (F₁ τ μ))
 
 
 
@@ -463,7 +463,7 @@ module SecondOrder.VRelMon
 --         open Category (Setoids ℓ ℓ)
 --         field
 --           η : ∀ Θ Γ → (F₀ Γ Θ) ⇒ (Gⱽ.F₀ Γ Θ)
---           commute : ∀ {Θ ψ Γ Δ} (ρ : Γ ⇒ᵛ Δ) (ι : Θ ⇒ᵐʳ ψ)
+--           commute : ∀ {Θ ψ Γ Δ} (ρ : Γ ⇒ᵛ Δ) (ι : Θ ⇒ᵐ ψ)
 --                     → Category._≈_ (Setoids ℓ ℓ) ((η ψ Δ) ∘ (F₁ ρ ι)) ((Gⱽ.F₁ ρ ι) ∘ (η Θ Γ))
 
 --     open NaturalTransformation-Jⱽ
@@ -595,7 +595,7 @@ module SecondOrder.VRelMon
 --                                             (ʳ⇑ᵛ-∘ᵛ x)
 --                                             (ρ-resp-≡ {ρ = [ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛ}
 --                                               (ρ-resp-≡ {ρ = [ var-inl , (λ x₁ → var-inr (ρ x₁)) ]ᵛ} ξ))
---                          ; F-resp-≈ = λ {Θ} {ψ} {Δ} {Ξ} {ρ} {τ} {ι} {μ} ξᵛ ξᵐʳ {x} {y} ξ
+--                          ; F-resp-≈ = λ {Θ} {ψ} {Δ} {Ξ} {ρ} {τ} {ι} {μ} ξᵛ ξᵐ {x} {y} ξ
 --                                       → trans
 --                                         ([,]ᵛ-resp-≡ᵛ (λ x₁ → refl) (∘ᵛ-resp-≡ᵛ {τ₁ = λ x₁ → var-inr x₁} (λ x₁ → refl) λ x₁ → ξᵛ x₁) x)
 --                                         (ρ-resp-≡ {ρ = [ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛ} ξ)
@@ -659,7 +659,7 @@ module SecondOrder.VRelMon
 --                                                 (λ x₂ → refl) (λ x₂ → refl) x₁)
 --                                             [∘]ᵛ)
 
---                          ; F-resp-≈ = λ ξᵛ ξᵐʳ ξ → ≈-trans ([]ᵛ-resp-≈ ξ) ([]ᵛ-resp-≡ᵛ λ x → [,]ᵛ-resp-≡ᵛ (λ x₁ → refl) (λ x₁ → ρ-resp-≡ {ρ = var-inr} (ξᵛ x₁)) x )
+--                          ; F-resp-≈ = λ ξᵛ ξᵐ ξ → ≈-trans ([]ᵛ-resp-≈ ξ) ([]ᵛ-resp-≡ᵛ λ x → [,]ᵛ-resp-≡ᵛ (λ x₁ → refl) (λ x₁ → ρ-resp-≡ {ρ = var-inr} (ξᵛ x₁)) x )
 --                          }
 --         ; unit = λ A
 --                    → record

@@ -44,7 +44,7 @@ module SecondOrder.Mslot
   open SecondOrder.MRenaming Σ
   -- open SecondOrder.Substitution Σ
   -- open import SecondOrder.RMonadsMorphism
-  -- open SecondOrder.Instantiation 
+  -- open SecondOrder.Instantiation
   open Categories.Category
   open Categories.Functor using (Functor)
   open Categories.NaturalTransformation renaming (id to idNt)
@@ -69,7 +69,7 @@ module SecondOrder.Mslot
     open Category
     open NaturalTransformation
     open Function.Equality renaming (_∘_ to _∙_)
-    
+
     ∘ᵥ-resp-≈ : ∀ {o l e o' l' e'} {𝒞 : Category o l e} {𝒟 : Category o' l' e'}
                 {F G H : Functor 𝒞 𝒟} {α β : NaturalTransformation F G} {γ δ : NaturalTransformation G H}
               → (∀ {X : Obj 𝒞} → (𝒟 Category.≈ (η α X)) (η β X))
@@ -90,7 +90,7 @@ module SecondOrder.Mslot
     { Obj = Functor MTele (Functors VTele (Setoids ℓ ℓ))
     ; _⇒_ = NaturalTransformation
     ; _≈_ = λ {F} {G} α β → ∀ (ψ : Obj MTele) (Γ : Obj VTele)
-          → (Setoids ℓ ℓ Category.≈ (η ((η α) ψ) Γ)) (η ((η β) ψ) Γ) 
+          → (Setoids ℓ ℓ Category.≈ (η ((η α) ψ) Γ)) (η ((η β) ψ) Γ)
     ; id = idNt
     ; _∘_ = _∘ᵥ_
     ; assoc = λ ψ Γ x≈y → Setoid.refl {!!}
@@ -115,25 +115,25 @@ module SecondOrder.Mslot
             { F₀ = λ Θ A →
                  record
                  { F₀ = λ ψ → Term-Functor {Θ ,, ψ} {A}
-                 ; F₁ = λ ι → MRenaming-NT (ᵐʳ⇑ᵐʳ ι)
-                 ; identity = λ t≈s → ≈-trans (≈-trans ([]ᵐʳ-resp-≡ᵐʳ ᵐʳ⇑ᵐʳid≡ᵐʳidᵐʳ) [id]ᵐʳ) t≈s
-                 ; homomorphism = λ t≈s → ≈-trans ([]ᵐʳ-resp-≈ t≈s) (≈-trans ([]ᵐʳ-resp-≡ᵐʳ ᵐʳ⇑ᵐʳ-∘ᵐʳ) [∘]ᵐʳ)
-                 ; F-resp-≈ = λ ι≡μ t≈s → ≈-trans ([]ᵐʳ-resp-≈ t≈s) ([]ᵐʳ-resp-≡ᵐʳ (ᵐʳ⇑ᵐʳ-resp-≡ᵐʳ ι≡μ))
+                 ; F₁ = λ ι → MRenaming-NT (ᵐ⇑ᵐ ι)
+                 ; identity = λ t≈s → ≈-trans (≈-trans ([]ᵐ-resp-≡ᵐ ᵐ⇑ᵐid≡ᵐidᵐ) [id]ᵐ) t≈s
+                 ; homomorphism = λ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) (≈-trans ([]ᵐ-resp-≡ᵐ ᵐ⇑ᵐ-∘ᵐ) [∘]ᵐ)
+                 ; F-resp-≈ = λ ι≡μ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) ([]ᵐ-resp-≡ᵐ (ᵐ⇑ᵐ-resp-≡ᵐ ι≡μ))
                  }
             ; F₁ = λ {Θ} {Θ'} ι A →
                  record
                  { η = λ Ψ →
-                     record { η = λ Γ → η (MRenaming-NT (⇑ᵐʳ ι)) Γ
-                            ; commute = commute (MRenaming-NT (⇑ᵐʳ ι))
-                            ; sym-commute = sym-commute (MRenaming-NT (⇑ᵐʳ ι))
+                     record { η = λ Γ → η (MRenaming-NT (⇑ᵐ ι)) Γ
+                            ; commute = commute (MRenaming-NT (⇑ᵐ ι))
+                            ; sym-commute = sym-commute (MRenaming-NT (⇑ᵐ ι))
                             }
                  ; commute = λ ι t≈s
-                           → ≈-trans ([]ᵐʳ-resp-≈ ([]ᵐʳ-resp-≈ t≈s)) ⇑-resp-+
-                 ; sym-commute = λ ι t≈s → ≈-trans (≈-sym ⇑-resp-+) (([]ᵐʳ-resp-≈ ([]ᵐʳ-resp-≈ t≈s)))
+                           → ≈-trans ([]ᵐ-resp-≈ ([]ᵐ-resp-≈ t≈s)) ⇑-resp-+
+                 ; sym-commute = λ ι t≈s → ≈-trans (≈-sym ⇑-resp-+) (([]ᵐ-resp-≈ ([]ᵐ-resp-≈ t≈s)))
                  }
             ; identity = λ Θ ψ Γ t≈s
-              → ≈-trans ([]ᵐʳ-resp-≈ t≈s) (≈-trans ([]ᵐʳ-resp-≡ᵐʳ ⇑ᵐʳid≡ᵐʳidᵐʳ) [id]ᵐʳ)
+              → ≈-trans ([]ᵐ-resp-≈ t≈s) (≈-trans ([]ᵐ-resp-≡ᵐ ⇑ᵐid≡ᵐidᵐ) [id]ᵐ)
             ; homomorphism = λ A ψ Γ t≈s
-              → ≈-trans ([]ᵐʳ-resp-≈ t≈s) ∘ᵐʳ-resp-⇑-term
-            ; F-resp-≈ = λ ι≡μ A ψ Γ t≈s → ≈-trans ([]ᵐʳ-resp-≈ t≈s) ([]ᵐʳ-resp-≡ᵐʳ (⇑ᵐʳ-resp-≡ᵐʳ ι≡μ))
+              → ≈-trans ([]ᵐ-resp-≈ t≈s) ∘ᵐ-resp-⇑-term
+            ; F-resp-≈ = λ ι≡μ A ψ Γ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) ([]ᵐ-resp-≡ᵐ (⇑ᵐ-resp-≡ᵐ ι≡μ))
             }
