@@ -152,7 +152,7 @@ module SecondOrder.Instantiation
 
   ⇑ⁱ-resp-ᵛ∘ⁱ : ∀ {Θ ψ} {Γ Δ Ξ} {I : Θ ⇒ⁱ ψ ⊕ Γ} {ρ : Γ ⇒ᵛ Δ}
                → ⇑ⁱ {Δ = Ξ} (ρ ᵛ∘ⁱ I) ≈ⁱ ⇑ᵛ ρ ᵛ∘ⁱ ⇑ⁱ I
-  ⇑ⁱ-resp-ᵛ∘ⁱ {ρ = ρ} M = ≈-trans (≈-sym [∘]ᵛ) (≈-trans ([]ᵛ-resp-≡ᵛ λ {(var-inl _) → refl ; (var-inr x) → refl}) [∘]ᵛ)
+  ⇑ⁱ-resp-ᵛ∘ⁱ {ρ = ρ} M = ≈-trans (≈-sym [∘ᵛ]) (≈-trans ([]ᵛ-resp-≡ᵛ λ {(var-inl _) → refl ; (var-inr x) → refl}) [∘ᵛ])
 
   -- the action of the composition of an instantiation and a renaming
 
@@ -178,10 +178,10 @@ module SecondOrder.Instantiation
      ([]ⁱ-resp-≈ⁱ
         ([ ⇑ᵛ var-inl ]ᵛ I M)
         (λ N → ≈-trans
-                 (≈-sym [∘]ᵛ)
+                 (≈-sym [∘ᵛ])
                  (≈-trans
                    ([]ᵛ-resp-≡ᵛ (λ { (var-inl x) → refl ; (var-inr x) → refl }))
-                   [∘]ᵛ)))
+                   [∘ᵛ])))
 
   ⇑ˢ-resp-ⁱ∘ˢ : ∀ {Θ ψ Γ Δ Ξ} → {I : Θ ⇒ⁱ ψ ⊕ Δ} → {σ : Θ ⊕ Γ ⇒ˢ Δ} → ⇑ˢ {Ξ = Ξ} (I ⁱ∘ˢ σ) ≈ˢ ⇑ⁱ I ⁱ∘ˢ ⇑ˢ σ
   ⇑ˢ-resp-ⁱ∘ˢ {σ = σ} (var-inl x) = [ᵛ∘ⁱ]ⁱ (σ x)

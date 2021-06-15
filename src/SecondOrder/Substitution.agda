@@ -181,7 +181,7 @@ module SecondOrder.Substitution
 
   ⇑ˢ-ᵛ∘ˢ : ∀ {Θ} {Γ Δ Ξ Ψ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {ρ : Δ ⇒ᵛ Ξ} →
            ⇑ˢ {Ξ = Ψ} (ρ ᵛ∘ˢ σ) ≈ˢ ⇑ᵛ ρ ᵛ∘ˢ ⇑ˢ σ
-  ⇑ˢ-ᵛ∘ˢ (var-inl x) = ≈-trans (≈-sym [∘]ᵛ) (≈-trans ([]ᵛ-resp-≡ᵛ (λ _ → refl)) [∘]ᵛ)
+  ⇑ˢ-ᵛ∘ˢ (var-inl x) = ≈-trans (≈-sym [∘ᵛ]) (≈-trans ([]ᵛ-resp-≡ᵛ (λ _ → refl)) [∘ᵛ])
   ⇑ˢ-ᵛ∘ˢ (var-inr y) = ≈-refl
 
   [⇑ᵛ∘ˢ] : ∀ {Θ} {A} {Γ Δ Ξ Ψ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {ρ : Δ ⇒ᵛ Ξ} (t : Term Θ (Γ ,, Ψ) A) →

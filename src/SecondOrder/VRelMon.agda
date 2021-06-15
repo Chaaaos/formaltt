@@ -213,7 +213,7 @@ module SecondOrder.VRelMon
                          ; identity = λ {Θ} {Δ} {x} ξ → trans (idᵛ+idᵛ x) ξ
                          ; homomorphism = λ {Θ} {ψ} {Ω} {Δ} {Ξ} {Λ} {ρ} {ι} {τ} {μ} {x} {y} ξ
                                           → trans
-                                            (ʳ⇑ᵛ-∘ᵛ x)
+                                            (ʳ⇑ᵛ-resp-∘ᵛ x)
                                             (ρ-resp-≡ {ρ = [ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛ}
                                               (ρ-resp-≡ {ρ = [ var-inl , (λ x₁ → var-inr (ρ x₁)) ]ᵛ} ξ))
                          ; F-resp-≈ = λ {Θ} {ψ} {Δ} {Ξ} {ρ} {τ} {ι} {μ} ξᵛ ξᵐ {x} {y} ξ
@@ -273,7 +273,7 @@ module SecondOrder.VRelMon
     Codomain-Jⱽ-Elt.F₀ (Monad.F₀ VMonad Γ A) Δ ψ = Term-setoid Θ (Γ ,, Δ) A
     _⟨$⟩_      (Codomain-Jⱽ-Elt.F₁ (Monad.F₀ VMonad Γ A) ρ ι) = [ ʳ⇑ᵛ ρ ]ᵛ_
     func-cong (Codomain-Jⱽ-Elt.F₁ (Monad.F₀ VMonad Γ A) ρ ι) ξ = []ᵛ-resp-≈ ξ
-    Codomain-Jⱽ-Elt.identity     (Monad.F₀ VMonad Γ A) ξ = ≈-trans ([]ᵛ-resp-≡ᵛ idᵛ+idᵛ) (≈-trans [id]ᵛ ξ)
+    Codomain-Jⱽ-Elt.identity     (Monad.F₀ VMonad Γ A) ξ = ≈-trans ([]ᵛ-resp-≡ᵛ idᵛ+idᵛ) (≈-trans [idᵛ] ξ)
     Codomain-Jⱽ-Elt.homomorphism (Monad.F₀ VMonad Γ A) {ρ = ρ} {ι = ι} {τ = τ} {μ = μ} {x = x} {y = y} ξ
       = begin⟨ Term-setoid Θ _ _ ⟩
           [ ʳ⇑ᵛ (τ ∘ᵛ ρ) ]ᵛ x ≈⟨ []ᵛ-resp-≈ ξ ⟩
@@ -281,7 +281,7 @@ module SecondOrder.VRelMon
               uniqueᵛ² {τ = [ (λ x₂ → var-inl x₂) , (λ x₂ → var-inr (τ (ρ x₂))) ]ᵛ}
                        {σ = σ' }
                        (λ x₂ → refl) (λ x₂ → refl) x₁) ⟩
-          [ σ' ]ᵛ y ≈⟨ [∘]ᵛ ⟩
+          [ σ' ]ᵛ y ≈⟨ [∘ᵛ] ⟩
          ((Codomain-Jⱽ-Elt.F₁ (Monad.F₀ VMonad Γ A) τ μ ∘
            Codomain-Jⱽ-Elt.F₁ (Monad.F₀ VMonad Γ A) ρ ι) ⟨$⟩ y)
          ∎
@@ -334,7 +334,7 @@ module SecondOrder.VRelMon
                  ˢ∘ᵛ-ᵛ∘ˢ-disjoint σ τ (var-inl x) =
                                         begin⟨ Term-setoid _ _ _ ⟩
                                           ([ var-inl ]ᵛ σ x) ≈⟨ []ᵛ-resp-≡ᵛ (λ x₃ → refl) ⟩
-                                          ([ [ (λ x₃ → var-inl x₃) , (λ x₃ → var-inr (τ x₃)) ]ᵛ ∘ᵛ var-inl ]ᵛ σ x) ≈⟨ [∘]ᵛ ⟩
+                                          ([ [ (λ x₃ → var-inl x₃) , (λ x₃ → var-inr (τ x₃)) ]ᵛ ∘ᵛ var-inl ]ᵛ σ x) ≈⟨ [∘ᵛ] ⟩
                                           ([ [ (λ x₃ → var-inl x₃) , (λ x₃ → var-inr (τ x₃)) ]ᵛ ]ᵛ ([ var-inl ]ᵛ σ x)) ∎
                  ˢ∘ᵛ-ᵛ∘ˢ-disjoint σ τ (var-inr x) = ≈-refl
         η-ˢ∘ᵛ ρ ι (var-inr x) = {!!}
@@ -592,7 +592,7 @@ module SecondOrder.VRelMon
 --                          ; identity = λ {Θ} {Δ} {x} ξ → trans (idᵛ+idᵛ x) ξ
 --                          ; homomorphism = λ {Θ} {ψ} {Ω} {Δ} {Ξ} {Λ} {ρ} {ι} {τ} {μ} {x} {y} ξ
 --                                           → trans
---                                             (ʳ⇑ᵛ-∘ᵛ x)
+--                                             (ʳ⇑ᵛ-resp-∘ᵛ x)
 --                                             (ρ-resp-≡ {ρ = [ var-inl , (λ x₁ → var-inr (τ x₁)) ]ᵛ}
 --                                               (ρ-resp-≡ {ρ = [ var-inl , (λ x₁ → var-inr (ρ x₁)) ]ᵛ} ξ))
 --                          ; F-resp-≈ = λ {Θ} {ψ} {Δ} {Ξ} {ρ} {τ} {ι} {μ} ξᵛ ξᵐ {x} {y} ξ
@@ -647,7 +647,7 @@ module SecondOrder.VRelMon
 --         { F₀ = λ Γ A → record
 --                          { F₀ = λ Δ ψ → Term-setoid Θ (Γ ,, Δ) A
 --                          ; F₁ = λ ρ ι → record { _⟨$⟩_ = [_]ᵛ_ (ʳ⇑ᵛ ρ) ; cong = λ ξ → []ᵛ-resp-≈ ξ }
---                          ; identity = λ ξ → ≈-trans ([]ᵛ-resp-≡ᵛ idᵛ+idᵛ) (≈-trans [id]ᵛ ξ)
+--                          ; identity = λ ξ → ≈-trans ([]ᵛ-resp-≡ᵛ idᵛ+idᵛ) (≈-trans [idᵛ] ξ)
 --                          ; homomorphism = λ {_} {_} {_} {_} {_} {_} {ρ} {_} {τ} ξ
 --                                           → ≈-trans
 --                                           ([]ᵛ-resp-≈ ξ)
@@ -657,7 +657,7 @@ module SecondOrder.VRelMon
 --                                                 {τ = [ (λ x₂ → var-inl x₂) , (λ x₂ → var-inr (τ (ρ x₂))) ]ᵛ}
 --                                                 {σ = [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (τ x₁)) ]ᵛ  ∘ᵛ [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (ρ x₁)) ]ᵛ }
 --                                                 (λ x₂ → refl) (λ x₂ → refl) x₁)
---                                             [∘]ᵛ)
+--                                             [∘ᵛ])
 
 --                          ; F-resp-≈ = λ ξᵛ ξᵐ ξ → ≈-trans ([]ᵛ-resp-≈ ξ) ([]ᵛ-resp-≡ᵛ λ x → [,]ᵛ-resp-≡ᵛ (λ x₁ → refl) (λ x₁ → ρ-resp-≡ {ρ = var-inr} (ξᵛ x₁)) x )
 --                          }

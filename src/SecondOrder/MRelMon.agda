@@ -74,7 +74,7 @@ module SecondOrder.MRelMon
            { F₀ = λ Ψ → record
                           { F₀ = λ Δ → Term-setoid (Θ ,, Ψ) (Γ ,, Δ) A
                           ; F₁ = λ {Δ} {Ξ} ρ → record { _⟨$⟩_ = [_]ᵛ_ (ʳ⇑ᵛ ρ) ; cong = λ t≈s → []ᵛ-resp-≈ t≈s }
-                          ; identity = λ t≈s → ≈-trans ([]ᵛ-resp-≡ᵛ idᵛ+idᵛ) (≈-trans [id]ᵛ t≈s)
+                          ; identity = λ t≈s → ≈-trans ([]ᵛ-resp-≡ᵛ idᵛ+idᵛ) (≈-trans [idᵛ] t≈s)
                           ; homomorphism = λ t≈s → ≈-trans ([]ᵛ-resp-≈ t≈s) ∘ᵛ-resp-ʳ⇑ᵛ-term
                           ; F-resp-≈ = λ ρ≈τ t≈s → {!!}
                           }

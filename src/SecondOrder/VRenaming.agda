@@ -232,27 +232,27 @@ module SecondOrder.VRenaming
   []ᵛ-resp-≡ᵛ {t = tm-oper f es} ξ = ≈-oper (λ i → []ᵛ-resp-≡ᵛ (+₁-cong₂ ξ ≡ᵛ-refl))
 
   -- The action of the identity is trival
-  [id]ᵛ : ∀ {Θ Γ A} {t : Term Θ Γ A} → [ idᵛ ]ᵛ t ≈ t
-  [id]ᵛ {t = tm-var x} = ≈-refl
-  [id]ᵛ {t = tm-meta M ts} = ≈-meta λ i → [id]ᵛ
-  [id]ᵛ {t = tm-oper f es} = ≈-oper λ i → ≈-trans ([]ᵛ-resp-≡ᵛ idᵛ+idᵛ) [id]ᵛ
+  [idᵛ] : ∀ {Θ Γ A} {t : Term Θ Γ A} → [ idᵛ ]ᵛ t ≈ t
+  [idᵛ] {t = tm-var x} = ≈-refl
+  [idᵛ] {t = tm-meta M ts} = ≈-meta λ i → [idᵛ]
+  [idᵛ] {t = tm-oper f es} = ≈-oper λ i → ≈-trans ([]ᵛ-resp-≡ᵛ idᵛ+idᵛ) [idᵛ]
 
   -- Extension respects composition
-  ⇑ᵛ-∘ᵛ : ∀ {Γ Δ Ξ Ψ} {ρ : Γ ⇒ᵛ Δ} {τ : Δ ⇒ᵛ Ξ} → ⇑ᵛ {Ξ = Ψ} (τ ∘ᵛ ρ) ≡ᵛ (⇑ᵛ τ) ∘ᵛ (⇑ᵛ ρ)
-  ⇑ᵛ-∘ᵛ (var-inl x) = refl
-  ⇑ᵛ-∘ᵛ (var-inr y) = refl
+  ⇑ᵛ-resp-∘ᵛ : ∀ {Γ Δ Ξ Ψ} {ρ : Γ ⇒ᵛ Δ} {τ : Δ ⇒ᵛ Ξ} → ⇑ᵛ {Ξ = Ψ} (τ ∘ᵛ ρ) ≡ᵛ (⇑ᵛ τ) ∘ᵛ (⇑ᵛ ρ)
+  ⇑ᵛ-resp-∘ᵛ (var-inl x) = refl
+  ⇑ᵛ-resp-∘ᵛ (var-inr y) = refl
 
   -- Right extension respects composition
-  ʳ⇑ᵛ-∘ᵛ : ∀ {Γ Δ Ξ Ψ} {ρ : Γ ⇒ᵛ Δ} {τ : Δ ⇒ᵛ Ξ} → ʳ⇑ᵛ (τ ∘ᵛ ρ) {Ξ = Ψ} ≡ᵛ (ʳ⇑ᵛ τ) ∘ᵛ (ʳ⇑ᵛ ρ)
-  ʳ⇑ᵛ-∘ᵛ (var-inl x) = refl
-  ʳ⇑ᵛ-∘ᵛ (var-inr y) = refl
+  ʳ⇑ᵛ-resp-∘ᵛ : ∀ {Γ Δ Ξ Ψ} {ρ : Γ ⇒ᵛ Δ} {τ : Δ ⇒ᵛ Ξ} → ʳ⇑ᵛ (τ ∘ᵛ ρ) {Ξ = Ψ} ≡ᵛ (ʳ⇑ᵛ τ) ∘ᵛ (ʳ⇑ᵛ ρ)
+  ʳ⇑ᵛ-resp-∘ᵛ (var-inl x) = refl
+  ʳ⇑ᵛ-resp-∘ᵛ (var-inr y) = refl
 
   -- The action of a renaming is functorial
-  [∘]ᵛ : ∀ {Θ Γ Δ Ξ} {ρ : Γ ⇒ᵛ Δ} {τ : Δ ⇒ᵛ Ξ} {A} {t : Term Θ Γ A}
+  [∘ᵛ] : ∀ {Θ Γ Δ Ξ} {ρ : Γ ⇒ᵛ Δ} {τ : Δ ⇒ᵛ Ξ} {A} {t : Term Θ Γ A}
     → [ τ ∘ᵛ ρ ]ᵛ t ≈ [ τ ]ᵛ ([ ρ ]ᵛ t)
-  [∘]ᵛ {t = tm-var x} = ≈-refl
-  [∘]ᵛ {t = tm-meta M ts} = ≈-meta (λ i → [∘]ᵛ)
-  [∘]ᵛ {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ᵛ-resp-≡ᵛ ⇑ᵛ-∘ᵛ) [∘]ᵛ)
+  [∘ᵛ] {t = tm-var x} = ≈-refl
+  [∘ᵛ] {t = tm-meta M ts} = ≈-meta (λ i → [∘ᵛ])
+  [∘ᵛ] {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ᵛ-resp-≡ᵛ ⇑ᵛ-resp-∘ᵛ) [∘ᵛ])
 
   ∘ᵛ-resp-ʳ⇑ᵛ : ∀ {Γ Δ Ξ Λ} {ρ : Γ ⇒ᵛ Δ} {τ : Δ ⇒ᵛ Ξ}
     → ʳ⇑ᵛ (τ ∘ᵛ ρ) {Ξ = Λ} ≡ᵛ ʳ⇑ᵛ τ ∘ᵛ ʳ⇑ᵛ ρ
@@ -265,7 +265,7 @@ module SecondOrder.VRenaming
     let open SetoidR (Term-setoid Θ (Λ ,, Ξ) A) in
     begin
     [ ʳ⇑ᵛ (τ ∘ᵛ ρ) {Ξ = Λ} ]ᵛ t ≈⟨ []ᵛ-resp-≡ᵛ ∘ᵛ-resp-ʳ⇑ᵛ ⟩
-    [ ʳ⇑ᵛ τ ∘ᵛ ʳ⇑ᵛ ρ ]ᵛ t ≈⟨ [∘]ᵛ ⟩
+    [ ʳ⇑ᵛ τ ∘ᵛ ʳ⇑ᵛ ρ ]ᵛ t ≈⟨ [∘ᵛ] ⟩
     [ ʳ⇑ᵛ τ ]ᵛ ([ ʳ⇑ᵛ ρ ]ᵛ t)
     ∎
 
@@ -274,13 +274,11 @@ module SecondOrder.VRenaming
   ʳ⇑ᵛ-comm-inrᵛ-term {Θ} {Γ} {Δ} {Ξ} {A} {ρ} {t = t} =
     let open SetoidR (Term-setoid Θ (Ξ ,, Δ) A) in
     begin
-    [ ʳ⇑ᵛ ρ ]ᵛ ([ inrᵛ ]ᵛ t) ≈⟨ ≈-sym [∘]ᵛ ⟩
+    [ ʳ⇑ᵛ ρ ]ᵛ ([ inrᵛ ]ᵛ t) ≈⟨ ≈-sym [∘ᵛ] ⟩
     [ ʳ⇑ᵛ ρ ∘ᵛ var-inr ]ᵛ t ≈⟨ []ᵛ-resp-≡ᵛ (ʳ⇑ᵛ-comm-inrᵛ ρ) ⟩
-    [ inrᵛ ∘ᵛ ρ ]ᵛ t ≈⟨ [∘]ᵛ ⟩
+    [ inrᵛ ∘ᵛ ρ ]ᵛ t ≈⟨ [∘ᵛ] ⟩
     [ inrᵛ ]ᵛ ([ ρ ]ᵛ t)
     ∎
-
-
 
   -- Forming terms over a given metacontext and sort is functorial in the context
   module _ {Θ : MContext} {A : sort} where
@@ -292,7 +290,7 @@ module SecondOrder.VRenaming
       record
         { F₀ = λ Γ → Term-setoid Θ Γ A
         ; F₁ = λ ρ → record { _⟨$⟩_ = [ ρ ]ᵛ_ ; cong = []ᵛ-resp-≈ }
-        ; identity = ≈-trans [id]ᵛ
-        ; homomorphism = λ ξ → ≈-trans ([]ᵛ-resp-≈ ξ) [∘]ᵛ
+        ; identity = ≈-trans [idᵛ]
+        ; homomorphism = λ ξ → ≈-trans ([]ᵛ-resp-≈ ξ) [∘ᵛ]
         ; F-resp-≈ = λ ζ ξ → ≈-trans ([]ᵛ-resp-≡ᵛ ζ) ([]ᵛ-resp-≈ ξ)
         }
