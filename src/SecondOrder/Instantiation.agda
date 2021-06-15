@@ -130,23 +130,23 @@ module SecondOrder.Instantiation
 
   -- composition of a renaming and an instantiation preerve equality of instantiations
 
-  [ᵛ∘ⁱ]ⁱ-resp-≈ⁱ : ∀ {Θ ψ Γ Δ} (ρ : Γ ⇒ᵛ Δ) (I J : Θ ⇒ⁱ ψ ⊕ Γ) → (I ≈ⁱ J) → (ρ ᵛ∘ⁱ I) ≈ⁱ (ρ ᵛ∘ⁱ J)
-  [ᵛ∘ⁱ]ⁱ-resp-≈ⁱ σ I J ξ M = []ᵛ-resp-≈ (ξ M)
+  [ᵛ∘ⁱ]-resp-≈ⁱ : ∀ {Θ ψ Γ Δ} (ρ : Γ ⇒ᵛ Δ) (I J : Θ ⇒ⁱ ψ ⊕ Γ) → (I ≈ⁱ J) → (ρ ᵛ∘ⁱ I) ≈ⁱ (ρ ᵛ∘ⁱ J)
+  [ᵛ∘ⁱ]-resp-≈ⁱ σ I J ξ M = []ᵛ-resp-≈ (ξ M)
 
   -- composition of a renaming and an instantiation preserve equality of instantiations
 
-  [ˢ∘ⁱ]ⁱ-resp-≈ⁱ : ∀ {Θ ψ Γ Δ} (σ : ψ ⊕ Γ ⇒ˢ Δ) (I J : Θ ⇒ⁱ ψ ⊕ Γ) → (I ≈ⁱ J) → (σ ˢ∘ⁱ I) ≈ⁱ (σ ˢ∘ⁱ J)
-  [ˢ∘ⁱ]ⁱ-resp-≈ⁱ σ I J ξ M = []ˢ-resp-≈ (⇑ˢ σ) (ξ M)
+  [ˢ∘ⁱ]-resp-≈ⁱ : ∀ {Θ ψ Γ Δ} (σ : ψ ⊕ Γ ⇒ˢ Δ) (I J : Θ ⇒ⁱ ψ ⊕ Γ) → (I ≈ⁱ J) → (σ ˢ∘ⁱ I) ≈ⁱ (σ ˢ∘ⁱ J)
+  [ˢ∘ⁱ]-resp-≈ⁱ σ I J ξ M = []ˢ-resp-≈ (⇑ˢ σ) (ξ M)
 
 
   -- Actions correspondig to the interactions
 
   -- the action of the identity
 
-  [id]ⁱ : ∀ {Θ Γ A Δ} {t : Term Θ (Γ ,, Δ) A}  → [ idⁱ ]ⁱ t ≈ t
-  [id]ⁱ {t = tm-var x} = ≈-refl
-  [id]ⁱ {t = tm-meta M ts} = ≈-meta (λ i → [id]ⁱ)
-  [id]ⁱ {t = tm-oper f es} = ≈-oper (λ i → [id]ⁱ)
+  [idⁱ] : ∀ {Θ Γ A Δ} {t : Term Θ (Γ ,, Δ) A}  → [ idⁱ ]ⁱ t ≈ t
+  [idⁱ] {t = tm-var x} = ≈-refl
+  [idⁱ] {t = tm-meta M ts} = ≈-meta (λ i → [idⁱ])
+  [idⁱ] {t = tm-oper f es} = ≈-oper (λ i → [idⁱ])
 
   -- extension commutes with composition of renaming and substitution
 
@@ -156,17 +156,17 @@ module SecondOrder.Instantiation
 
   -- the action of the composition of an instantiation and a renaming
 
-  [ᵛ∘ⁱ]ⁱ : ∀ {Θ Ψ Γ Δ A} {ρ : Γ ⇒ᵛ Δ} {I : Θ ⇒ⁱ Ψ ⊕ Γ} (t : Term Θ Γ A) →
+  [ᵛ∘ⁱ] : ∀ {Θ Ψ Γ Δ A} {ρ : Γ ⇒ᵛ Δ} {I : Θ ⇒ⁱ Ψ ⊕ Γ} (t : Term Θ Γ A) →
            [ ρ ]ᵛ [ I ]ⁱ t ≈ [ ρ ᵛ∘ⁱ I ]ⁱ [ ρ ]ᵛ t
-  [ᵛ∘ⁱ]ⁱ (tm-var x) = ≈-refl
-  [ᵛ∘ⁱ]ⁱ {I = I} (tm-meta M ts) =
+  [ᵛ∘ⁱ] (tm-var x) = ≈-refl
+  [ᵛ∘ⁱ] {I = I} (tm-meta M ts) =
     ≈-trans
      (≈-sym ([ᵛ∘ˢ] (I M)))
      (≈-trans
-       ([]ˢ-resp-≈ˢ (I M) (λ { (var-inl _) → ≈-refl ; (var-inr j) → [ᵛ∘ⁱ]ⁱ (ts j)}))
+       ([]ˢ-resp-≈ˢ (I M) (λ { (var-inl _) → ≈-refl ; (var-inr j) → [ᵛ∘ⁱ] (ts j)}))
        ([ˢ∘ᵛ] (I M)))
-  [ᵛ∘ⁱ]ⁱ {ρ = ρ} {I = I} (tm-oper f es) =
-    ≈-oper λ i → ≈-trans ([ᵛ∘ⁱ]ⁱ (es i)) ([]ⁱ-resp-≈ⁱ ([ ⇑ᵛ ρ ]ᵛ es i) (≈ⁱ-sym (⇑ⁱ-resp-ᵛ∘ⁱ {I = I})))
+  [ᵛ∘ⁱ] {ρ = ρ} {I = I} (tm-oper f es) =
+    ≈-oper λ i → ≈-trans ([ᵛ∘ⁱ] (es i)) ([]ⁱ-resp-≈ⁱ ([ ⇑ᵛ ρ ]ᵛ es i) (≈ⁱ-sym (⇑ⁱ-resp-ᵛ∘ⁱ {I = I})))
 
   -- extension commutes with composition
 
@@ -174,7 +174,7 @@ module SecondOrder.Instantiation
                ⇑ⁱ {Δ = Δ} (J ∘ⁱ I) ≈ⁱ ⇑ⁱ J ∘ⁱ ⇑ⁱ I
   ⇑ⁱ-resp-∘ⁱ {I = I} {J = J} M =
     ≈-trans
-     ([ᵛ∘ⁱ]ⁱ (I M))
+     ([ᵛ∘ⁱ] (I M))
      ([]ⁱ-resp-≈ⁱ
         ([ ⇑ᵛ var-inl ]ᵛ I M)
         (λ N → ≈-trans
@@ -184,7 +184,7 @@ module SecondOrder.Instantiation
                    [∘ᵛ])))
 
   ⇑ˢ-resp-ⁱ∘ˢ : ∀ {Θ ψ Γ Δ Ξ} → {I : Θ ⇒ⁱ ψ ⊕ Δ} → {σ : Θ ⊕ Γ ⇒ˢ Δ} → ⇑ˢ {Ξ = Ξ} (I ⁱ∘ˢ σ) ≈ˢ ⇑ⁱ I ⁱ∘ˢ ⇑ˢ σ
-  ⇑ˢ-resp-ⁱ∘ˢ {σ = σ} (var-inl x) = [ᵛ∘ⁱ]ⁱ (σ x)
+  ⇑ˢ-resp-ⁱ∘ˢ {σ = σ} (var-inl x) = [ᵛ∘ⁱ] (σ x)
   ⇑ˢ-resp-ⁱ∘ˢ (var-inr x) = ≈-refl
 
   -- interaction lemma
@@ -215,14 +215,14 @@ module SecondOrder.Instantiation
 
   -- the action of a composition
 
-  [∘]ⁱ : ∀ {Θ Ξ Ω Γ} → {I : Θ ⇒ⁱ Ξ ⊕ Γ} → {J : Ξ ⇒ⁱ Ω ⊕ Γ} →
+  [∘ⁱ] : ∀ {Θ Ξ Ω Γ} → {I : Θ ⇒ⁱ Ξ ⊕ Γ} → {J : Ξ ⇒ⁱ Ω ⊕ Γ} →
            ∀ {A} → ∀ (t : Term Θ Γ A) → [ J ∘ⁱ I ]ⁱ t ≈ [ J ]ⁱ [ I ]ⁱ t
-  [∘]ⁱ (tm-var x) = ≈-refl
-  [∘]ⁱ {Θ = Θ} {Ξ = Ξ} {Γ = Γ} {I = I} {J = J} (tm-meta {Γᴹ = Γᴹ} M ts) =
+  [∘ⁱ] (tm-var x) = ≈-refl
+  [∘ⁱ] {Θ = Θ} {Ξ = Ξ} {Γ = Γ} {I = I} {J = J} (tm-meta {Γᴹ = Γᴹ} M ts) =
     ≈-trans
       ([]ˢ-resp-≈ˢ
         ([ ⇑ⁱ J ]ⁱ (I M))
-        ([,]ˢ-resp-≈ˢ (λ x → ≈-refl) (λ i → [∘]ⁱ {I = I} {J = J} (ts i))))
+        ([,]ˢ-resp-≈ˢ (λ x → ≈-refl) (λ i → [∘ⁱ] {I = I} {J = J} (ts i))))
       (≈-trans
         ([]ˢ-resp-≈ˢ {τ = λ i → [ J ]ⁱ var-or-ts i} ([ ⇑ⁱ J ]ⁱ (I M))
         λ {(var-inl x) → ≈-refl ; (var-inr y) → ≈-refl})
@@ -235,5 +235,5 @@ module SecondOrder.Instantiation
                  var-or-ts (var-inl x) = tm-var x
                  var-or-ts (var-inr y) = [ I ]ⁱ ts y
 
-  [∘]ⁱ {I = I} {J = J} (tm-oper f es) =
-            ≈-oper (λ i → ≈-trans ([]ⁱ-resp-≈ⁱ (es i) (⇑ⁱ-resp-∘ⁱ {I = I})) ([∘]ⁱ (es i)))
+  [∘ⁱ] {I = I} {J = J} (tm-oper f es) =
+            ≈-oper (λ i → ≈-trans ([]ⁱ-resp-≈ⁱ (es i) (⇑ⁱ-resp-∘ⁱ {I = I})) ([∘ⁱ] (es i)))
