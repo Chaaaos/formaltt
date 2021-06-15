@@ -94,7 +94,7 @@ module SecondOrder.Instantiation
                 [ ⇑ⁱ {Δ = Γᴹ} I ]ⁱ tm-meta-generic M ≈ I M
   []ⁱ-generic {Θ = Θ} {Ξ = Ξ} {Γ = Γ} {I = I} {Γᴹ = Γᴹ} {M = M} =
     ≈-trans
-      (≈-sym ([ˢ∘ᵛ]ˢ (I M)))
+      (≈-sym ([ˢ∘ᵛ] (I M)))
       (≈ˢ-idˢ-[]ˢ (λ { (var-inl _) → ≈-refl ; (var-inr _) → ≈-refl}))
 
 
@@ -161,10 +161,10 @@ module SecondOrder.Instantiation
   [ᵛ∘ⁱ]ⁱ (tm-var x) = ≈-refl
   [ᵛ∘ⁱ]ⁱ {I = I} (tm-meta M ts) =
     ≈-trans
-     (≈-sym ([ᵛ∘ˢ]ˢ (I M)))
+     (≈-sym ([ᵛ∘ˢ] (I M)))
      (≈-trans
        ([]ˢ-resp-≈ˢ (I M) (λ { (var-inl _) → ≈-refl ; (var-inr j) → [ᵛ∘ⁱ]ⁱ (ts j)}))
-       ([ˢ∘ᵛ]ˢ (I M)))
+       ([ˢ∘ᵛ] (I M)))
   [ᵛ∘ⁱ]ⁱ {ρ = ρ} {I = I} (tm-oper f es) =
     ≈-oper λ i → ≈-trans ([ᵛ∘ⁱ]ⁱ (es i)) ([]ⁱ-resp-≈ⁱ ([ ⇑ᵛ ρ ]ᵛ es i) (≈ⁱ-sym (⇑ⁱ-resp-ᵛ∘ⁱ {I = I})))
 
@@ -196,15 +196,15 @@ module SecondOrder.Instantiation
      ([]ˢ-resp-≈ˢ (I M)
         (λ { (var-inl i) → []ⁱ-resp-≈ I (≈-sym (ξ i)) ; (var-inr j) → []ⁱ-[]ˢ (ts j) ξ}))
      (≈-trans
-       ([ˢ∘ᵛ]ˢ (I M))
-       ([∘]ˢ ((ρ ᵛ∘ⁱ I) M)))
+       ([ˢ∘ᵛ] (I M))
+       ([∘ˢ] ((ρ ᵛ∘ⁱ I) M)))
   []ⁱ-[]ˢ {I = I} {σ = σ} {ρ = ρ} (tm-oper f es) ξ =
     ≈-oper λ i →
       ≈-trans
        ([]ⁱ-[]ˢ {σ = ⇑ˢ σ} {ρ = ⇑ᵛ ρ} (es i)
          (≈ˢ-trans
-           (≈ˢ-sym (⇑ˢ-ˢ∘ᵛ  {ρ = ρ} {σ = σ}))
-           (≈ˢ-trans (⇑ˢ-resp-≈ˢ ξ) ⇑ˢ-idˢ)))
+           (≈ˢ-sym (⇑ˢ-resp-ˢ∘ᵛ  {ρ = ρ} {σ = σ}))
+           (≈ˢ-trans (⇑ˢ-resp-≈ˢ ξ) ⇑ˢ-resp-idˢ)))
        ([]ˢ-resp-≈ˢ-≈
           {σ = ⇑ⁱ I ⁱ∘ˢ ⇑ˢ σ }
           {τ = ⇑ˢ (I ⁱ∘ˢ σ)}

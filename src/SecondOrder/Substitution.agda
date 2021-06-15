@@ -103,9 +103,9 @@ module SecondOrder.Substitution
 
   -- extension commutes with renaming action
 
-  ⇑ˢ-ˢ∘ᵛ : ∀ {Θ} {Γ Δ Ξ Ψ} {ρ : Γ ⇒ᵛ Δ} {σ : Θ ⊕ Δ ⇒ˢ Ξ} → ⇑ˢ {Ξ = Ψ} (σ ˢ∘ᵛ ρ) ≈ˢ ⇑ˢ σ ˢ∘ᵛ ⇑ᵛ ρ
-  ⇑ˢ-ˢ∘ᵛ (var-inl x) = ≈-refl
-  ⇑ˢ-ˢ∘ᵛ (var-inr x) = ≈-refl
+  ⇑ˢ-resp-ˢ∘ᵛ : ∀ {Θ} {Γ Δ Ξ Ψ} {ρ : Γ ⇒ᵛ Δ} {σ : Θ ⊕ Δ ⇒ˢ Ξ} → ⇑ˢ {Ξ = Ψ} (σ ˢ∘ᵛ ρ) ≈ˢ ⇑ˢ σ ˢ∘ᵛ ⇑ᵛ ρ
+  ⇑ˢ-resp-ˢ∘ᵛ (var-inl x) = ≈-refl
+  ⇑ˢ-resp-ˢ∘ᵛ (var-inr x) = ≈-refl
 
   -- the action of a substitution on a term
 
@@ -148,25 +148,25 @@ module SecondOrder.Substitution
 
   -- extension preserves identity
 
-  ⇑ˢ-idˢ : ∀ {Θ} {Γ Δ} → ⇑ˢ idˢ ≈ˢ idˢ {Θ = Θ} {Γ = Γ ,, Δ}
-  ⇑ˢ-idˢ (var-inl x) = ≈-refl
-  ⇑ˢ-idˢ (var-inr y) = ≈-refl
+  ⇑ˢ-resp-idˢ : ∀ {Θ} {Γ Δ} → ⇑ˢ idˢ ≈ˢ idˢ {Θ = Θ} {Γ = Γ ,, Δ}
+  ⇑ˢ-resp-idˢ (var-inl x) = ≈-refl
+  ⇑ˢ-resp-idˢ (var-inr y) = ≈-refl
 
   -- the identity substution acts trivially
 
-  [id]ˢ : ∀ {Θ} {Γ} {A} {t : Term Θ Γ A} → [ idˢ ]ˢ t ≈ t
-  [id]ˢ {t = tm-var x} = ≈-refl
-  [id]ˢ {t = tm-meta M ts} = ≈-meta (λ i → [id]ˢ)
-  [id]ˢ {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ˢ-resp-≈ˢ (es i) ⇑ˢ-idˢ) [id]ˢ)
+  [idˢ] : ∀ {Θ} {Γ} {A} {t : Term Θ Γ A} → [ idˢ ]ˢ t ≈ t
+  [idˢ] {t = tm-var x} = ≈-refl
+  [idˢ] {t = tm-meta M ts} = ≈-meta (λ i → [idˢ])
+  [idˢ] {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ˢ-resp-≈ˢ (es i) ⇑ˢ-resp-idˢ) [idˢ])
 
   -- the identity substitution preserves equality of terms
-  [id]ˢ-resp-≈ : ∀ {Θ} {Γ} {A} {t s : Term Θ Γ A} → t ≈ s → [ idˢ ]ˢ t ≈ s
-  [id]ˢ-resp-≈ t≈s = ≈-trans ([]ˢ-resp-≈ idˢ t≈s) [id]ˢ
+  [idˢ]-resp-≈ : ∀ {Θ} {Γ} {A} {t s : Term Θ Γ A} → t ≈ s → [ idˢ ]ˢ t ≈ s
+  [idˢ]-resp-≈ t≈s = ≈-trans ([]ˢ-resp-≈ idˢ t≈s) [idˢ]
 
 
   -- if a substiution is equal to the identity then it acts trivially
   ≈ˢ-idˢ-[]ˢ : ∀ {Θ} {Γ} {A} {σ : Θ ⊕ Γ ⇒ˢ Γ} {t : Term Θ Γ A} → σ ≈ˢ idˢ → [ σ ]ˢ t ≈ t
-  ≈ˢ-idˢ-[]ˢ {t = t} ξ = ≈-trans ([]ˢ-resp-≈ˢ t ξ) [id]ˢ
+  ≈ˢ-idˢ-[]ˢ {t = t} ξ = ≈-trans ([]ˢ-resp-≈ˢ t ξ) [idˢ]
 
   -- interaction of extension and right renaming action
 
@@ -175,51 +175,51 @@ module SecondOrder.Substitution
   [⇑ˢ∘ᵛ] (tm-var (var-inl x)) = ≈-refl
   [⇑ˢ∘ᵛ] (tm-var (var-inr x)) = ≈-refl
   [⇑ˢ∘ᵛ] (tm-meta M ts) = ≈-meta (λ i → [⇑ˢ∘ᵛ] (ts i))
-  [⇑ˢ∘ᵛ] (tm-oper f es) = ≈-oper (λ i → ≈-trans ([]ˢ-resp-≈ˢ (es i) (⇑ˢ-resp-≈ˢ ⇑ˢ-ˢ∘ᵛ)) ([⇑ˢ∘ᵛ] (es i)))
+  [⇑ˢ∘ᵛ] (tm-oper f es) = ≈-oper (λ i → ≈-trans ([]ˢ-resp-≈ˢ (es i) (⇑ˢ-resp-≈ˢ ⇑ˢ-resp-ˢ∘ᵛ)) ([⇑ˢ∘ᵛ] (es i)))
 
   -- interaction of extension and left renaming action
 
-  ⇑ˢ-ᵛ∘ˢ : ∀ {Θ} {Γ Δ Ξ Ψ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {ρ : Δ ⇒ᵛ Ξ} →
+  ⇑ˢ-resp-ᵛ∘ˢ : ∀ {Θ} {Γ Δ Ξ Ψ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {ρ : Δ ⇒ᵛ Ξ} →
            ⇑ˢ {Ξ = Ψ} (ρ ᵛ∘ˢ σ) ≈ˢ ⇑ᵛ ρ ᵛ∘ˢ ⇑ˢ σ
-  ⇑ˢ-ᵛ∘ˢ (var-inl x) = ≈-trans (≈-sym [∘ᵛ]) (≈-trans ([]ᵛ-resp-≡ᵛ (λ _ → refl)) [∘ᵛ])
-  ⇑ˢ-ᵛ∘ˢ (var-inr y) = ≈-refl
+  ⇑ˢ-resp-ᵛ∘ˢ (var-inl x) = ≈-trans (≈-sym [∘ᵛ]) (≈-trans ([]ᵛ-resp-≡ᵛ (λ _ → refl)) [∘ᵛ])
+  ⇑ˢ-resp-ᵛ∘ˢ (var-inr y) = ≈-refl
 
   [⇑ᵛ∘ˢ] : ∀ {Θ} {A} {Γ Δ Ξ Ψ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {ρ : Δ ⇒ᵛ Ξ} (t : Term Θ (Γ ,, Ψ) A) →
          [ ⇑ˢ (ρ ᵛ∘ˢ σ) ]ˢ t ≈ [ ⇑ᵛ ρ ]ᵛ ([ ⇑ˢ σ ]ˢ t)
-  [⇑ᵛ∘ˢ] (tm-var x) = ⇑ˢ-ᵛ∘ˢ x
+  [⇑ᵛ∘ˢ] (tm-var x) = ⇑ˢ-resp-ᵛ∘ˢ x
   [⇑ᵛ∘ˢ] (tm-meta M ts) = ≈-meta (λ i → [⇑ᵛ∘ˢ] (ts i))
-  [⇑ᵛ∘ˢ] (tm-oper f es) = ≈-oper (λ i → ≈-trans ([]ˢ-resp-≈ˢ (es i) (⇑ˢ-resp-≈ˢ ⇑ˢ-ᵛ∘ˢ)) ([⇑ᵛ∘ˢ] (es i)))
+  [⇑ᵛ∘ˢ] (tm-oper f es) = ≈-oper (λ i → ≈-trans ([]ˢ-resp-≈ˢ (es i) (⇑ˢ-resp-≈ˢ ⇑ˢ-resp-ᵛ∘ˢ)) ([⇑ᵛ∘ˢ] (es i)))
 
   -- functoriality of left renaming action
 
-  [ᵛ∘ˢ]ˢ : ∀ {Θ} {A} {Γ Δ Ξ} {ρ : Δ ⇒ᵛ Ξ} {σ : Θ ⊕ Γ ⇒ˢ Δ} (t : Term Θ Γ A) →
+  [ᵛ∘ˢ] : ∀ {Θ} {A} {Γ Δ Ξ} {ρ : Δ ⇒ᵛ Ξ} {σ : Θ ⊕ Γ ⇒ˢ Δ} (t : Term Θ Γ A) →
            [ ρ ᵛ∘ˢ σ ]ˢ t ≈ [ ρ ]ᵛ [ σ ]ˢ t
-  [ᵛ∘ˢ]ˢ (tm-var x) = ≈-refl
-  [ᵛ∘ˢ]ˢ (tm-meta M ts) = ≈-meta (λ i → [ᵛ∘ˢ]ˢ (ts i))
-  [ᵛ∘ˢ]ˢ (tm-oper f es) = ≈-oper (λ i → [⇑ᵛ∘ˢ] (es i))
+  [ᵛ∘ˢ] (tm-var x) = ≈-refl
+  [ᵛ∘ˢ] (tm-meta M ts) = ≈-meta (λ i → [ᵛ∘ˢ] (ts i))
+  [ᵛ∘ˢ] (tm-oper f es) = ≈-oper (λ i → [⇑ᵛ∘ˢ] (es i))
 
   -- functoriality of right renaming action
 
-  [ˢ∘ᵛ]ˢ : ∀ {Θ} {A} {Γ Δ Ξ} {σ : Θ ⊕ Δ ⇒ˢ Ξ} {ρ : Γ ⇒ᵛ Δ} (t : Term Θ Γ A) →
+  [ˢ∘ᵛ] : ∀ {Θ} {A} {Γ Δ Ξ} {σ : Θ ⊕ Δ ⇒ˢ Ξ} {ρ : Γ ⇒ᵛ Δ} (t : Term Θ Γ A) →
            [ σ ˢ∘ᵛ ρ ]ˢ t ≈ [ σ ]ˢ [ ρ ]ᵛ t
-  [ˢ∘ᵛ]ˢ (tm-var x) = ≈-refl
-  [ˢ∘ᵛ]ˢ (tm-meta M ts) = ≈-meta (λ i → [ˢ∘ᵛ]ˢ (ts i))
-  [ˢ∘ᵛ]ˢ (tm-oper f es) = ≈-oper (λ i → [⇑ˢ∘ᵛ] (es i))
+  [ˢ∘ᵛ] (tm-var x) = ≈-refl
+  [ˢ∘ᵛ] (tm-meta M ts) = ≈-meta (λ i → [ˢ∘ᵛ] (ts i))
+  [ˢ∘ᵛ] (tm-oper f es) = ≈-oper (λ i → [⇑ˢ∘ᵛ] (es i))
 
   -- composition commutes with extension
 
-  ⇑ˢ-∘ˢ : ∀ {Θ} {Γ Δ Ξ Ψ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Δ ⇒ˢ Ξ} →
+  ⇑ˢ-resp-∘ˢ : ∀ {Θ} {Γ Δ Ξ Ψ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Δ ⇒ˢ Ξ} →
           ⇑ˢ {Ξ = Ψ} (τ ∘ˢ σ) ≈ˢ ⇑ˢ τ ∘ˢ ⇑ˢ σ
-  ⇑ˢ-∘ˢ {σ = σ} {τ = τ} (var-inl x) =  ≈-trans (≈-sym ([ᵛ∘ˢ]ˢ (σ x))) ([ˢ∘ᵛ]ˢ (σ x))
-  ⇑ˢ-∘ˢ (var-inr y) = ≈-refl
+  ⇑ˢ-resp-∘ˢ {σ = σ} {τ = τ} (var-inl x) =  ≈-trans (≈-sym ([ᵛ∘ˢ] (σ x))) ([ˢ∘ᵛ] (σ x))
+  ⇑ˢ-resp-∘ˢ (var-inr y) = ≈-refl
 
   -- substitition action is functorial
 
-  [∘]ˢ : ∀ {Θ} {Γ Δ Ξ} {A} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Δ ⇒ˢ Ξ} (t : Term Θ Γ A) →
+  [∘ˢ] : ∀ {Θ} {Γ Δ Ξ} {A} {σ : Θ ⊕ Γ ⇒ˢ Δ} {τ : Θ ⊕ Δ ⇒ˢ Ξ} (t : Term Θ Γ A) →
          [ τ ∘ˢ σ ]ˢ t ≈ [ τ ]ˢ ([ σ ]ˢ t)
-  [∘]ˢ (tm-var x) = ≈-refl
-  [∘]ˢ (tm-meta M ts) = ≈-meta (λ i → [∘]ˢ (ts i))
-  [∘]ˢ (tm-oper f es) = ≈-oper (λ i → ≈-trans ([]ˢ-resp-≈ˢ (es i) ⇑ˢ-∘ˢ) ([∘]ˢ (es i)))
+  [∘ˢ] (tm-var x) = ≈-refl
+  [∘ˢ] (tm-meta M ts) = ≈-meta (λ i → [∘ˢ] (ts i))
+  [∘ˢ] (tm-oper f es) = ≈-oper (λ i → ≈-trans ([]ˢ-resp-≈ˢ (es i) ⇑ˢ-resp-∘ˢ) ([∘ˢ] (es i)))
 
   -- Terms form a relative monad
 
@@ -266,8 +266,8 @@ module SecondOrder.Substitution
         ; unit = λ A → record { _⟨$⟩_ = idˢ ; cong = λ ξ → ≈-≡ (cong idˢ ξ) }
         ; extend = λ σ A → record { _⟨$⟩_ =  [ (σ _ ⟨$⟩_) ]ˢ_ ; cong = []ˢ-resp-≈ (σ _ ⟨$⟩_)}
         ; identityʳ = λ {_} {_} {σ} A {_} {_} ξ → func-cong (σ A) ξ
-        ; identityˡ = λ A → ≈-trans [id]ˢ
-        ; assoc = λ {_} {_} {_} {σ} {ρ} A {_} {t} ξ → ≈-trans ([]ˢ-resp-≈ _ ξ) ([∘]ˢ t)
+        ; identityˡ = λ A → ≈-trans [idˢ]
+        ; assoc = λ {_} {_} {_} {σ} {ρ} A {_} {t} ξ → ≈-trans ([]ˢ-resp-≈ _ ξ) ([∘ˢ] t)
         ; extend-≈ = λ {Γ} {Δ} {σ} {ρ} ζ B {s} {t} ξ → []ˢ-resp-≈ˢ-≈ (λ x → ζ _ refl) ξ
         }
 
@@ -287,9 +287,9 @@ module SecondOrder.Substitution
         ; _≈_ =  _≈ˢ_
         ; id = idˢ
         ; _∘_ = _∘ˢ_
-        ; assoc = λ {Γ} {Δ} {Ξ} {Ψ} {σ} {τ} {ψ} {A} x → [∘]ˢ (σ x)
-        ; sym-assoc = λ {Γ} {Δ} {Ξ} {Ψ} {σ} {τ} {ψ} {A} x → ≈-sym ([∘]ˢ (σ x))
-        ; identityˡ = λ x → [id]ˢ
+        ; assoc = λ {Γ} {Δ} {Ξ} {Ψ} {σ} {τ} {ψ} {A} x → [∘ˢ] (σ x)
+        ; sym-assoc = λ {Γ} {Δ} {Ξ} {Ψ} {σ} {τ} {ψ} {A} x → ≈-sym ([∘ˢ] (σ x))
+        ; identityˡ = λ x → [idˢ]
         ; identityʳ = λ x → ≈-refl
         ; identity² = λ x → ≈-refl
         ; equiv = record { refl = λ {σ} {A} → ≈ˢ-refl {σ = σ} ; sym = ≈ˢ-sym ; trans = ≈ˢ-trans }
@@ -326,18 +326,18 @@ module SecondOrder.Substitution
                          { η = λ Γ A → record { _⟨$⟩_ = idˢ
                                                ; cong = λ i≡j → ≈-≡ (cong idˢ i≡j)
                                                }
-                         ; commute = λ σ A x≡y → [id]ˢ-resp-≈ (≈-≡ (cong (λ x → σ A ⟨$⟩ x) x≡y))
+                         ; commute = λ σ A x≡y → [idˢ]-resp-≈ (≈-≡ (cong (λ x → σ A ⟨$⟩ x) x≡y))
                          ; sym-commute = λ σ A x≡y
-                                       → ≈-sym ([id]ˢ-resp-≈ (≈-≡ (cong (λ x → σ A ⟨$⟩ x ) (sym x≡y))))
+                                       → ≈-sym ([idˢ]-resp-≈ (≈-≡ (cong (λ x → σ A ⟨$⟩ x ) (sym x≡y))))
                          }
                    ; F⇐G =
                          record
                          { η = λ Γ A → record { _⟨$⟩_ = idˢ
                                                ; cong = λ i≡j → ≈-≡ (cong idˢ i≡j)
                                                }
-                         ; commute = λ σ A x≡y → [id]ˢ-resp-≈ (≈-≡ (cong (λ x → σ A ⟨$⟩ x) x≡y))
+                         ; commute = λ σ A x≡y → [idˢ]-resp-≈ (≈-≡ (cong (λ x → σ A ⟨$⟩ x) x≡y))
                          ; sym-commute = λ σ A x≡y
-                                       → ≈-sym ([id]ˢ-resp-≈ (≈-≡ (cong (λ x → σ A ⟨$⟩ x ) (sym x≡y))))
+                                       → ≈-sym ([idˢ]-resp-≈ (≈-≡ (cong (λ x → σ A ⟨$⟩ x ) (sym x≡y))))
                          }
                    ; iso = λ Γ → record { isoˡ = λ A x≡y → ≈-≡ (cong tm-var x≡y)
                                          ; isoʳ = λ A x≡y → ≈-≡ (cong tm-var x≡y)
@@ -348,14 +348,14 @@ module SecondOrder.Substitution
                    { F⇒G =
                          record
                          { η = λ Γ x → tm-var x
-                         ; commute = λ σ x → [id]ˢ
-                         ; sym-commute = λ σ x → ≈-sym [id]ˢ
+                         ; commute = λ σ x → [idˢ]
+                         ; sym-commute = λ σ x → ≈-sym [idˢ]
                          }
                    ; F⇐G =
                          record
                          { η = λ Γ x → tm-var x
-                         ; commute = λ σ x → [id]ˢ
-                         ; sym-commute = λ σ x → ≈-sym [id]ˢ
+                         ; commute = λ σ x → [idˢ]
+                         ; sym-commute = λ σ x → ≈-sym [idˢ]
                          }
                    ; iso = λ Γ → record { isoˡ = λ x → ≈-refl
                                          ; isoʳ = λ x → ≈-refl
