@@ -23,7 +23,7 @@ import SecondOrder.IndexedCategory
 import SecondOrder.RelativeKleisli
 import SecondOrder.Substitution
 
-module SecondOrder.VRelMon
+module SecondOrder.VRelativeMonad
   {ℓ}
   {𝔸 : SecondOrder.Arity.Arity}
   (Σ : SecondOrder.Signature.Signature ℓ 𝔸)

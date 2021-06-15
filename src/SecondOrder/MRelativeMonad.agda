@@ -30,7 +30,7 @@ import SecondOrder.RelativeKleisli
 import SecondOrder.Mslot
 
 
-module SecondOrder.MRelMon
+module SecondOrder.MRelativeMonad
   {ℓ}
   {𝔸 : SecondOrder.Arity.Arity}
   (Σ : SecondOrder.Signature.Signature ℓ 𝔸)
