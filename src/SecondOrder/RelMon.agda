@@ -6,7 +6,7 @@ import Categories.Category.Cartesian as Cartesian
 open import Categories.Monad.Relative
 
 import SecondOrder.RelativeKleisli
-open import SecondOrder.RMonadsMorphism
+open import SecondOrder.RelativeMonadMorphism
 
 -- The category of relative monads and relative monad morphisms
 

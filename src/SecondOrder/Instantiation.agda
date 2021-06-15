@@ -8,7 +8,7 @@ import SecondOrder.VRenaming
 import SecondOrder.MRenaming
 import SecondOrder.Term
 import SecondOrder.Substitution
-import SecondOrder.RMonadsMorphism
+import SecondOrder.RelativeMonadMorphism
 
 module SecondOrder.Instantiation
   {ℓ}
@@ -22,7 +22,7 @@ module SecondOrder.Instantiation
   open SecondOrder.VRenaming Σ
   open SecondOrder.MRenaming Σ
   open SecondOrder.Substitution Σ
-  open import SecondOrder.RMonadsMorphism
+  open import SecondOrder.RelativeMonadMorphism
 
   -- metavariable instantiation
 

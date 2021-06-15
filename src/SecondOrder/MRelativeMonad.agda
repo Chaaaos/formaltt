@@ -23,7 +23,7 @@ import SecondOrder.VRenaming
 import SecondOrder.MRenaming
 import SecondOrder.Term
 import SecondOrder.Substitution
-import SecondOrder.RMonadsMorphism
+import SecondOrder.RelativeMonadMorphism
 import SecondOrder.Instantiation
 import SecondOrder.IndexedCategory
 import SecondOrder.RelativeKleisli
@@ -44,7 +44,7 @@ module SecondOrder.MRelativeMonad
   open SecondOrder.Mslot Σ
   open SecondOrder.Substitution Σ
   open SecondOrder.Instantiation Σ
-  open import SecondOrder.RMonadsMorphism
+  open import SecondOrder.RelativeMonadMorphism
   open Categories.Category
   open Categories.Functor using (Functor)
   open Categories.NaturalTransformation renaming (id to idNt)

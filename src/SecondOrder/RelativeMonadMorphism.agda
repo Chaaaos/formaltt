@@ -10,7 +10,7 @@ open import Categories.Monad.Relative
 open import Categories.Category.Equivalence
 open import Categories.Category.Cocartesian
 
-module SecondOrder.RMonadsMorphism
+module SecondOrder.RelativeMonadMorphism
   {o ℓ e o′ ℓ′ e′ : Level}
   {C : Category o ℓ e}
   {D : Category o′ ℓ′ e′}
