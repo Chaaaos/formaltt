@@ -2,6 +2,7 @@ open import Level
 open import Relation.Binary.PropositionalEquality
 open import Relation.Binary using (Setoid)
 import Function.Equality
+import Relation.Binary.Reasoning.Setoid as SetoidR
 
 import Categories.Category
 import Categories.Functor
@@ -191,7 +192,8 @@ module SecondOrder.VRenaming
   ʳ⇑ᵛʳ ρ = idᵛʳ +₁ ρ
 
   -- right extension of renamings commutes with right injection
-  ʳ⇑ᵛʳ-comm-inrᵛʳ : ∀ {Γ Δ Ξ} (ρ : Γ ⇒ᵛʳ Δ) → (ʳ⇑ᵛʳ ρ {Ξ = Ξ}) ∘ᵛʳ (inrᵛʳ {Δ = Γ}) ≡ᵛʳ inrᵛʳ ∘ᵛʳ ρ
+  ʳ⇑ᵛʳ-comm-inrᵛʳ : ∀ {Γ Δ Ξ} (ρ : Γ ⇒ᵛʳ Δ)
+    → (ʳ⇑ᵛʳ ρ {Ξ = Ξ}) ∘ᵛʳ (inrᵛʳ {Δ = Γ}) ≡ᵛʳ inrᵛʳ ∘ᵛʳ ρ
   ʳ⇑ᵛʳ-comm-inrᵛʳ ρ var-slot = refl
   ʳ⇑ᵛʳ-comm-inrᵛʳ ρ (var-inl x) = refl
   ʳ⇑ᵛʳ-comm-inrᵛʳ ρ (var-inr x) = refl
@@ -246,10 +248,39 @@ module SecondOrder.VRenaming
   ʳ⇑ᵛʳ-∘ᵛʳ (var-inr y) = refl
 
   -- The action of a renaming is functorial
-  [∘]ᵛʳ : ∀ {Θ Γ Δ Ξ} {ρ : Γ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Ξ} {A} {t : Term Θ Γ A} → [ τ ∘ᵛʳ ρ ]ᵛʳ t ≈ [ τ ]ᵛʳ ([ ρ ]ᵛʳ t)
+  [∘]ᵛʳ : ∀ {Θ Γ Δ Ξ} {ρ : Γ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Ξ} {A} {t : Term Θ Γ A}
+    → [ τ ∘ᵛʳ ρ ]ᵛʳ t ≈ [ τ ]ᵛʳ ([ ρ ]ᵛʳ t)
   [∘]ᵛʳ {t = tm-var x} = ≈-refl
   [∘]ᵛʳ {t = tm-meta M ts} = ≈-meta (λ i → [∘]ᵛʳ)
   [∘]ᵛʳ {t = tm-oper f es} = ≈-oper (λ i → ≈-trans ([]ᵛʳ-resp-≡ᵛʳ ⇑ᵛʳ-∘ᵛʳ) [∘]ᵛʳ)
+
+  ∘ᵛʳ-resp-ʳ⇑ᵛʳ : ∀ {Γ Δ Ξ Λ} {ρ : Γ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Ξ}
+    → ʳ⇑ᵛʳ (τ ∘ᵛʳ ρ) {Ξ = Λ} ≡ᵛʳ ʳ⇑ᵛʳ τ ∘ᵛʳ ʳ⇑ᵛʳ ρ
+  ∘ᵛʳ-resp-ʳ⇑ᵛʳ (var-inl x) = refl
+  ∘ᵛʳ-resp-ʳ⇑ᵛʳ (var-inr y) = refl
+
+  ∘ᵛʳ-resp-ʳ⇑ᵛʳ-term : ∀ {Θ Γ Δ Ξ Λ A} {ρ : Γ ⇒ᵛʳ Δ} {τ : Δ ⇒ᵛʳ Ξ} {t : Term Θ (Λ ,, Γ) A}
+    → [ ʳ⇑ᵛʳ (τ ∘ᵛʳ ρ) {Ξ = Λ} ]ᵛʳ t ≈ [ ʳ⇑ᵛʳ τ ]ᵛʳ ([ ʳ⇑ᵛʳ ρ ]ᵛʳ t)
+  ∘ᵛʳ-resp-ʳ⇑ᵛʳ-term {Θ} {Γ} {Δ} {Ξ} {Λ} {A} {ρ} {τ} {t = t} =
+    let open SetoidR (Term-setoid Θ (Λ ,, Ξ) A) in
+    begin
+    [ ʳ⇑ᵛʳ (τ ∘ᵛʳ ρ) {Ξ = Λ} ]ᵛʳ t ≈⟨ []ᵛʳ-resp-≡ᵛʳ ∘ᵛʳ-resp-ʳ⇑ᵛʳ ⟩
+    [ ʳ⇑ᵛʳ τ ∘ᵛʳ ʳ⇑ᵛʳ ρ ]ᵛʳ t ≈⟨ [∘]ᵛʳ ⟩
+    [ ʳ⇑ᵛʳ τ ]ᵛʳ ([ ʳ⇑ᵛʳ ρ ]ᵛʳ t)
+    ∎
+
+  ʳ⇑ᵛʳ-comm-inrᵛʳ-term : ∀ {Θ Γ Δ Ξ A} {ρ : Γ ⇒ᵛʳ Δ} {t : Term Θ Γ A}
+    → ([ ʳ⇑ᵛʳ ρ {Ξ = Ξ} ]ᵛʳ ([ inrᵛʳ {Δ = Γ} ]ᵛʳ t)) ≈ ([ inrᵛʳ ]ᵛʳ ([ ρ ]ᵛʳ t))
+  ʳ⇑ᵛʳ-comm-inrᵛʳ-term {Θ} {Γ} {Δ} {Ξ} {A} {ρ} {t = t} =
+    let open SetoidR (Term-setoid Θ (Ξ ,, Δ) A) in
+    begin
+    [ ʳ⇑ᵛʳ ρ ]ᵛʳ ([ inrᵛʳ ]ᵛʳ t) ≈⟨ ≈-sym [∘]ᵛʳ ⟩
+    [ ʳ⇑ᵛʳ ρ ∘ᵛʳ var-inr ]ᵛʳ t ≈⟨ []ᵛʳ-resp-≡ᵛʳ (ʳ⇑ᵛʳ-comm-inrᵛʳ ρ) ⟩
+    [ inrᵛʳ ∘ᵛʳ ρ ]ᵛʳ t ≈⟨ [∘]ᵛʳ ⟩
+    [ inrᵛʳ ]ᵛʳ ([ ρ ]ᵛʳ t)
+    ∎
+
+
 
   -- Forming terms over a given metacontext and sort is functorial in the context
   module _ {Θ : MContext} {A : sort} where
