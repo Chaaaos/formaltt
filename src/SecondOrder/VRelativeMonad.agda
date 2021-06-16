@@ -304,12 +304,17 @@ module SecondOrder.VRelativeMonad
     func-cong (η (Monad.unit VMonad A) ψ Γ) ξ = congˢ-var {σ = tm-var} ξ
     commute (Monad.unit VMonad A) ρ ι ξ =  congˢ-var {σ = tm-var} (ρ-resp-≡ {ρ = [ var-inl , (λ x₁ → var-inr (ρ x₁)) ]ᵛ} ξ)
 
-    _⟨$⟩_   (η (Monad.extend VMonad {Δ} {Ξ} σ A) ψ Γ) t = [ (λ {B} x →  η (σ B) ψ  Γ  ⟨$⟩ x) ]ˢ t
+    _⟨$⟩_ (η (Monad.extend VMonad {Δ} {Ξ} σ A) ψ Γ) t =  [ (λ {B} x →  η (σ B) ψ  Γ  ⟨$⟩ x) ]ˢ t
     func-cong (η (Monad.extend VMonad σ A) ψ Γ) = []ˢ-resp-≈ ((λ {B} x → η (σ B) ψ Γ ⟨$⟩ x) )
     commute (Monad.extend VMonad {Υ} {Ω} σ A) {Ξ} {Ψ} {Γ} {Δ} ρ ι {x} {y} x≈y
-      = {!!}
-        -- where
-        --   is-subst : ∀ (𝒩 : NaturalTransformation-Jⱽ (Jⱽ Γ A) (Monad.F₀ VMonad Ω i)) → Σ
+      = begin⟨ Term-setoid Θ _ _ ⟩
+               ([ (λ {B} → _⟨$⟩_ (η (σ B) Ψ Δ)) ]ˢ ([ [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (ρ x₁)) ]ᵛ ]ᵛ x)) ≈⟨  ≈-sym ([ˢ∘ᵛ] x) ⟩
+               ([(λ {B} → _⟨$⟩_ (η (σ B) Ψ Δ)) ˢ∘ᵛ [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (ρ x₁)) ]ᵛ ]ˢ x) ≈⟨ {!!} ⟩
+               {!!} ≈⟨ {!!} ⟩
+               ([ [ (λ x₁ → var-inl x₁) , (λ x₁ → var-inr (ρ x₁)) ]ᵛ ]ᵛ ([ (λ {B} → _⟨$⟩_ (η (σ B) Ξ Γ)) ]ˢ y)) ∎
+
+      --   where
+      --     is-subst : ∀ (𝒩 : NaturalTransformation-Jⱽ (Jⱽ Γ A) (Monad.F₀ VMonad Ω i)) → Σ
       -- begin⟨ Term-setoid Θ _ _ ⟩
       --   (η (Monad.extend VMonad σ A) Ψ Δ ∘
       --     Codomain-Jⱽ-Elt.F₁ (Monad.F₀ VMonad Υ A) ρ ι
@@ -322,33 +327,36 @@ module SecondOrder.VRelativeMonad
       --     η (Monad.extend VMonad σ A) Ξ Γ
       --     ⟨$⟩ y)
       --     ∎
-      -- where
-      --   η-ˢ∘ᵛ : ∀ {Ξ} {Ψ} {Γ} {Δ} (ρ : Γ ⇒ᵛ Δ) (ι : Ξ ⇒ᵐ Ψ)
-      --          → (λ {B} → _⟨$⟩_ (η (σ B) Θ Δ)) ˢ∘ᵛ (ʳ⇑ᵛ ρ)
-      --            ≈ˢ ʳ⇑ᵛ ρ ᵛ∘ˢ (λ {B} x₁ → η (σ B) Θ Γ ⟨$⟩ x₁)
-      --   η-ˢ∘ᵛ {Γ = Γ′} {Δ′} ρ ι (var-inl x) =
-      --              begin⟨ Term-setoid Θ _ _ ⟩
-      --                ((λ {B} → _⟨$⟩_ (η (σ B) Θ _)) ˢ∘ᵛ (ʳ⇑ᵛ ρ)) (var-inl x) ≈⟨ {!!} ⟩
-      --                {!!} ≈⟨ {!!} ⟩
-      --                {!!} ≈⟨ {! ˢ∘ᵛ-η (σ A₁) Θ Γ₁η (σ A₁) Θ Γ₁ᵛ∘ˢ-disjoint ˢ∘ᵛ-ᵛ∘uˢ-disjoint!} ⟩
-      --                (ʳ⇑ᵛ ρ ᵛ∘ˢ (λ {B} → _⟨$⟩_ (η (σ B) Θ _))) (var-inl x) ∎
-      --          where
-      --            ˢ∘ᵛ-ᵛ∘ˢ-disjoint : ∀ {ψ} {Γ Ξ Δ Λ} (σ : ψ ⊕ Ξ ⇒ˢ Λ) (ρ : Γ ⇒ᵛ Δ)
-      --                                 →  ⇑ˢ σ ˢ∘ᵛ ʳ⇑ᵛ ρ  ≈ˢ ʳ⇑ᵛ ρ ᵛ∘ˢ ⇑ˢ σ
-      --            ˢ∘ᵛ-ᵛ∘ˢ-disjoint σ τ (var-inl x) =
-      --                                   begin⟨ Term-setoid _ _ _ ⟩
-      --                                     ([ var-inl ]ᵛ σ x) ≈⟨ []ᵛ-resp-≡ᵛ (λ x₃ → refl) ⟩
-      --                                     ([ [ (λ x₃ → var-inl x₃) , (λ x₃ → var-inr (τ x₃)) ]ᵛ ∘ᵛ var-inl ]ᵛ σ x) ≈⟨ [∘ᵛ] ⟩
-      --                                     ([ [ (λ x₃ → var-inl x₃) , (λ x₃ → var-inr (τ x₃)) ]ᵛ ]ᵛ ([ var-inl ]ᵛ σ x)) ∎
-      --            ˢ∘ᵛ-ᵛ∘ˢ-disjoint σ τ (var-inr x) = ≈-refl
-      --   η-ˢ∘ᵛ ρ ι (var-inr x) = {!!}
+      where
+        𝒩-to-subst : ∀  {Γ Δ Ξ} (𝒩 : ∀ A → NaturalTransformation-Jⱽ (Categories.Functor.Functor.F₀ Jⱽ Γ A) (Monad.F₀ VMonad Ξ A)) → (Θ ⊕ (Γ ,, Δ) ⇒ˢ (Ξ ,, Δ))
+        𝒩-to-subst 𝒩 {A} (var-inl z) = η (𝒩 A) _ _ ⟨$⟩ (var-inl z)
+        𝒩-to-subst 𝒩 {A} (var-inr z) = tm-var (var-inr z)
+
+        𝒩-is-subst : ∀ {Ω Γ Ξ} (𝒩 : ∀ A → NaturalTransformation-Jⱽ (Categories.Functor.Functor.F₀ Jⱽ Γ A) (Monad.F₀ VMonad Ξ A)) x → SecondOrder.Term._≈_ Σ ((NaturalTransformation-Jⱽ.η (𝒩 A) Ω Γ) ⟨$⟩ x) (𝒩-to-subst 𝒩 x)
+        𝒩-is-subst 𝒩 (var-inl z) = {!!}
+        𝒩-is-subst 𝒩 (var-inr z) = {!!}
+
+        η-ˢ∘ᵛ : ∀ {Ξ} {ψ} {Γ} {Δ} (ρ : Γ ⇒ᵛ Δ) (ι : Ξ ⇒ᵐ ψ)
+               → (λ {B} → _⟨$⟩_ (η (σ B) ψ Δ)) ˢ∘ᵛ (ʳ⇑ᵛ ρ)
+                 ≈ˢ ʳ⇑ᵛ ρ ᵛ∘ˢ (λ {B} x₁ → η (σ B) Ψ Γ ⟨$⟩ x₁)
+        η-ˢ∘ᵛ {Ξ = Ξ′} {ψ = ψ} {Γ = Γ′} {Δ′} ρ ι (var-inl x) =
+                   begin⟨ Term-setoid Θ _ _ ⟩
+                     ((λ {B} → _⟨$⟩_ (η (σ B) ψ Δ′)) ˢ∘ᵛ (ʳ⇑ᵛ ρ)) (var-inl x) ≈⟨ {!!} ⟩
+                     {![]!} ≈⟨ {!!} ⟩
+                     {!!} ≈⟨ {! ˢ∘ᵛ-η (σ A₁) Θ Γ₁η (σ A₁) Θ Γ₁ᵛ∘ˢ-disjoint ˢ∘ᵛ-ᵛ∘uˢ-disjoint!} ⟩
+                     (ʳ⇑ᵛ ρ ᵛ∘ˢ (λ {B} → _⟨$⟩_ (η (σ B) Ψ _))) (var-inl x) ∎
+               where
+                 ˢ∘ᵛ-ᵛ∘ˢ-disjoint : ∀ {ψ} {Γ Ξ Δ Λ} (σ : ψ ⊕ Ξ ⇒ˢ Λ) (ρ : Γ ⇒ᵛ Δ)
+                                      →  ⇑ˢ σ ˢ∘ᵛ ʳ⇑ᵛ ρ  ≈ˢ ʳ⇑ᵛ ρ ᵛ∘ˢ ⇑ˢ σ
+                 ˢ∘ᵛ-ᵛ∘ˢ-disjoint σ τ (var-inl x) =
+                                        begin⟨ Term-setoid _ _ _ ⟩
+                                          ([ var-inl ]ᵛ σ x) ≈⟨ []ᵛ-resp-≡ᵛ (λ x₃ → refl) ⟩
+                                          ([ [ (λ x₃ → var-inl x₃) , (λ x₃ → var-inr (τ x₃)) ]ᵛ ∘ᵛ var-inl ]ᵛ σ x) ≈⟨ [∘ᵛ] ⟩
+                                          ([ [ (λ x₃ → var-inl x₃) , (λ x₃ → var-inr (τ x₃)) ]ᵛ ]ᵛ ([ var-inl ]ᵛ σ x)) ∎
+                 ˢ∘ᵛ-ᵛ∘ˢ-disjoint σ τ (var-inr x) = ≈-refl
+        η-ˢ∘ᵛ ρ ι (var-inr x) = begin⟨ Term-setoid Θ _ _ ⟩ {!!}
     Monad.identityʳ VMonad {_} {_} {𝒩s} =
                            λ i {k = Ω} {Γ = Γ} {x = x} {y = y} x≈y → (func-cong (η (𝒩s i) Ω Γ) (x≈y))
-                             -- → begin⟨ Term-setoid Θ _ _ ⟩
-                             --          (η (𝒩s i) Θ Γ ⟨$⟩ x) ≈⟨ {!!} ⟩
-                             --          (η (𝒩s i) Ω Γ ⟨$⟩ x) ≈⟨  (func-cong (η (𝒩s i) Ω Γ) (x≈y)) ⟩
-                             --          (η (𝒩s i) Ω Γ ⟨$⟩ y) ∎
-
     Monad.identityˡ VMonad = λ i x≈y →  ≈-trans [idˢ] x≈y
     Monad.assoc VMonad  {Γ} {Δ} {Ξ} {k} {l} = λ A {ψ} {Λ} {x} {y} ξ
                          → begin⟨ Term-setoid Θ _ _ ⟩
