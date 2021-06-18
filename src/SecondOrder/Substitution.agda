@@ -36,6 +36,11 @@ module SecondOrder.Substitution
   _⊕_⇒ˢ_ : ∀ (Θ : MContext) (Γ Δ : VContext) → Set ℓ
   Θ ⊕ Γ ⇒ˢ Δ = ∀ {A} (x : A ∈ Γ) → Term Θ Δ A
 
+  -- substitution preserves propositionnal equality
+
+  σ-resp-≡ : ∀ {Θ Γ Δ A} {x y : A ∈ Γ} {σ : Θ ⊕ Γ ⇒ˢ Δ} → x ≡ y → σ x ≡ σ y
+  σ-resp-≡ refl = refl
+
   -- syntactic equality of substitutions
 
   infix 5 _≈ˢ_
