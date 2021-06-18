@@ -68,11 +68,28 @@ The ingridients:
 * A category `MCtx` of metavariable contexts and renamings. The category has finite coproducts.
 * A coproduct-preserving functor `Jᵛ : VCtx → Set^Ty` where `Jᵛ Γ A` is thought of as variables of type `A` in context `Γ`
 * A coproduct-preserving functor `Jᵐ : VCtx → Set^(VCtx × Ty)`, where `Jᵐ Θ (Δ, A)` is thought of as metavariables of arity `Δ` and type `A` in metacontext `Θ`.
-* A functor `Term : MCtx × VCtx → Set^Ty`, where `Term Θ Γ A` is thought of as the set of terms of type `A` in metacontext `Θ` and context `Γ`.
+* A functor `Term : MCtx → VCtx → Set^Ty`, where `Term Θ Γ A` is thought of as the set of terms of type `A` in metacontext `Θ` and context `Γ`.
 * A functor `MCtx → RelativeMonad Jᵛ Tᵛ` where `Tᵛ : MCtx → VCtx → Set^Ty` is `Tᵛ Θ Γ A := Term Θ Γ A`.
 * A functor `VCtx → RelativeMonad Jᵐ Tᵐ` where `Tᵐ : VCtx → MCtx → Set^(VCtx × Ty)` is `Tᵐ Θ Γ (Δ, A) = Term Θ (Γ + Δ) A`.
 * For every `f : Jⱽ Γ → Tᵛ Θ Γ'` we can define `hat f : Tᵐ Γ → Tᵐ Γ'` and it is a `Jᵐ`-relative monad morphism
 * For every `I : Jᵐ Θ → Tᵐ Θ'` we can define `hat I : Tᵛ Θ → Tᵛ Θ'` and it is a `Jᵛ`-relative monad morphism
+
+The syntactic structure is recovered from the above category-theoretic ingridients as follows:
+
+* Types are the elements of `Ty`.
+* Variable contexts are the objects of `VCtx`, variable renamings are the morphisms.
+* Metavariable contexts are the objects of `MCtx`, metavariable renamings are the morphisms.
+* `x : A ∈ Γ` is `x ∈ Jⱽ Γ A`
+* `M : [ Δ , A ]∈ Θ` is `M ∈ Jᴹ Θ (Δ, A)`
+* `Θ ; Γ ⊢ t : A` is `t ∈ Term Θ Γ A`
+* a substitution `σ : Γ ⇒ˢ Θ ⊕ Δ` is a morphism `σ : Jᵛ Γ → Tᵛ Θ Δ` in `Set^Ty`.
+* the renaming action `[ ρ ]ʳ : Term Θ Γ → Term Θ Δ` is `Term Θ ρ`
+* the substitution action `[ σ ]ˢ : Term Θ Γ → Term Θ Δ` is the Kleisli extension of `σ`
+* an instantiation `I : Θ ⇒ⁱ Ξ ⊕ Γ` is a morphism `I : Jᵐ Θ → Tᵐ Γ Ξ` in `Set^(VCtx × Ty)`
+* the instantiation action `[ I ]ⁱ : Term Θ Γ → Term Ξ Γ` is **(please fill in)**
+* extension `⇑ʳ` arises from the coproduct structure on `VCtx`
+* extension `⇑ˢ` arises from **(please fill in)**
+* extension `⇑ⁱ` arises from **(please fill in)**
 
 
 
