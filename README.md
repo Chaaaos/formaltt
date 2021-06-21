@@ -88,7 +88,7 @@ The syntactic structure is recovered from the above category-theoretic ingridien
 * an instantiation `I : Θ ⇒ⁱ Ξ ⊕ Γ` is a morphism `I : Jᵐ Θ → Tᵐ Γ Ξ` in `Set^(VCtx × Ty)`
 * the instantiation action `[ I ]ⁱ : Term Θ Γ → Term Ξ Γ` is **(please fill in)**
 * extension `⇑ʳ` arises from the coproduct structure on `VCtx`
-* extension `⇑ˢ` arises from **(please fill in)**
+* extension `⇑ˢ` arises from the coproduct structure on `Terms`(category whose objects are the contexts, and whose morphisms are )
 * extension `⇑ⁱ` arises from **(please fill in)**
 
 
