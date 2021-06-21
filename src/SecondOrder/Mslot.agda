@@ -93,7 +93,7 @@ module SecondOrder.Mslot
           → (Setoids ℓ ℓ Category.≈ (η ((η α) ψ) Γ)) (η ((η β) ψ) Γ)
     ; id = idNt
     ; _∘_ = _∘ᵥ_
-    ; assoc = λ ψ Γ x≈y → Setoid.refl {!!}
+    ; assoc = λ ψ Γ x≈y → Setoid.refl {!setoid ([ !}
     ; sym-assoc = λ ψ Γ x≈y → Setoid.refl {!!}
     ; identityˡ = λ {F} {G} {α} ψ Γ x≈y → Setoid.refl {!!}
     ; identityʳ = λ ψ Γ x → Setoid.refl {!!}
@@ -114,26 +114,20 @@ module SecondOrder.Mslot
           record
             { F₀ = λ Θ A →
                  record
-                 { F₀ = λ ψ → Term-Functor {Θ ,, ψ} {A}
-                 ; F₁ = λ ι → MRenaming-NT (ᵐ⇑ᵐ ι)
-                 ; identity = λ t≈s → ≈-trans (≈-trans ([]ᵐ-resp-≡ᵐ ᵐ⇑ᵐ-resp-idᵐ) [idᵐ]) t≈s
-                 ; homomorphism = λ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) (≈-trans ([]ᵐ-resp-≡ᵐ ᵐ⇑ᵐ-resp-∘ᵐ) [∘ᵐ])
-                 ; F-resp-≈ = λ ι≡μ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) ([]ᵐ-resp-≡ᵐ (ᵐ⇑ᵐ-resp-≡ᵐ ι≡μ))
+                 { F₀ = λ Ψ → record
+                                { F₀ = λ Γ → setoid ([ Γ , A ]∈ (Θ ,, Ψ))
+                                ; F₁ = λ {Γ} {Γ'} ρ → record { _⟨$⟩_ = λ M → {!!} ; cong = {!!} }
+                                ; identity = λ M≡N → {!!}
+                                ; homomorphism = {!!}
+                                ; F-resp-≈ = {!!}
+                                }
+                 ; F₁ = λ ι → {!!}
+                 ; identity = λ t≈s → {!!}
+                 ; homomorphism = λ t≈s → {!!}
+                 ; F-resp-≈ = λ ι≡μ t≈s → {!!}
                  }
-            ; F₁ = λ {Θ} {Θ'} ι A →
-                 record
-                 { η = λ Ψ →
-                     record { η = λ Γ → η (MRenaming-NT (⇑ᵐ ι)) Γ
-                            ; commute = commute (MRenaming-NT (⇑ᵐ ι))
-                            ; sym-commute = sym-commute (MRenaming-NT (⇑ᵐ ι))
-                            }
-                 ; commute = λ ι t≈s
-                           → ≈-trans ([]ᵐ-resp-≈ ([]ᵐ-resp-≈ t≈s)) ⇑-resp-+
-                 ; sym-commute = λ ι t≈s → ≈-trans (≈-sym ⇑-resp-+) (([]ᵐ-resp-≈ ([]ᵐ-resp-≈ t≈s)))
-                 }
-            ; identity = λ Θ ψ Γ t≈s
-              → ≈-trans ([]ᵐ-resp-≈ t≈s) (≈-trans ([]ᵐ-resp-≡ᵐ ⇑ᵐ-resp-idᵐ) [idᵐ])
-            ; homomorphism = λ A ψ Γ t≈s
-              → ≈-trans ([]ᵐ-resp-≈ t≈s) ∘ᵐ-resp-⇑-term
-            ; F-resp-≈ = λ ι≡μ A ψ Γ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) ([]ᵐ-resp-≡ᵐ (⇑ᵐ-resp-≡ᵐ ι≡μ))
+            ; F₁ = {!!}
+            ; identity = {!!}
+            ; homomorphism = {!!}
+            ; F-resp-≈ = {!!}
             }
