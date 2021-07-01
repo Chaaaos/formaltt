@@ -3,7 +3,7 @@ open import Agda.Primitive using (lzero; lsuc; _⊔_)
 import SecondOrder.Arity
 import SecondOrder.Signature
 import SecondOrder.Metavariable
-import SecondOrder.Renaming
+import SecondOrder.VRenaming
 import SecondOrder.Term
 
 module SecondOrder.Theory
@@ -15,7 +15,7 @@ module SecondOrder.Theory
   open SecondOrder.Metavariable Σ public
   open SecondOrder.Term Σ public
   open SecondOrder.Signature.Signature Σ public
-  open SecondOrder.Renaming Σ
+  open SecondOrder.VRenaming Σ
 
   record Axiom : Set ℓ where
     constructor make-ax
