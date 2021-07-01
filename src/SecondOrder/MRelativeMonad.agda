@@ -1,5 +1,5 @@
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; subst; setoid)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; cong₂; subst; setoid)
 open import Data.Product using (_×_; Σ; _,_; proj₁; proj₂; zip; map; <_,_>; swap)
 import Function.Equality
 open import Relation.Binary using (Setoid)
@@ -54,7 +54,6 @@ module SecondOrder.MRelativeMonad
   open Categories.Category.Product
   open Function.Equality using () renaming (setoid to Π-setoid)
   open SecondOrder.IndexedCategory
-  -- open import SecondOrder.RelativeKleisli
 
   module MTerm {Γ : VContext} where
     open Category
@@ -69,46 +68,58 @@ module SecondOrder.MRelativeMonad
     MMonad =
       let open Function.Equality using (_⟨$⟩_) renaming (cong to func-cong) in
       record
-      { F₀ = λ Θ A →
-           record
-           { F₀ = λ Ψ → record
-                          { F₀ = λ Δ → Term-setoid (Θ ,, Ψ) (Γ ,, Δ) A
-                          ; F₁ = λ {Δ} {Ξ} ρ → record { _⟨$⟩_ = [_]ᵛ_ (ʳ⇑ᵛ ρ) ; cong = λ t≈s → []ᵛ-resp-≈ t≈s }
-                          ; identity = λ t≈s → ≈-trans ([]ᵛ-resp-≡ᵛ idᵛ+idᵛ) (≈-trans [idᵛ] t≈s)
-                          ; homomorphism = λ t≈s → ≈-trans ([]ᵛ-resp-≈ t≈s) ∘ᵛ-resp-ʳ⇑ᵛ-term
-                          ; F-resp-≈ = λ ρ≈τ t≈s → {!!}
-                          }
-           ; F₁ = λ ι → record
-                         { η = λ Δ → record { _⟨$⟩_ = [_]ᵐ_ (ᵐ⇑ᵐ ι) ; cong = λ t≈s → []ᵐ-resp-≈ t≈s }
-                         ; commute = λ ρ t≈s → ≈-trans ([]ᵐ-resp-≈ ([]ᵛ-resp-≈ t≈s)) vr-comm-mr
-                         ; sym-commute = λ ρ t≈s → ≈-trans (≈-sym vr-comm-mr) ([]ᵐ-resp-≈ ([]ᵛ-resp-≈ t≈s))
-                         }
-           ; identity = λ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) (≈-trans ([]ᵐ-resp-≡ᵐ ᵐ⇑ᵐ-resp-idᵐ) [idᵐ])
-           ; homomorphism = λ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) ∘ᵐ-resp-ᵐ⇑-term
-           ; F-resp-≈ = λ ι≈μ t≈s → ≈-trans ([]ᵐ-resp-≈ t≈s) ([]ᵐ-resp-≡ᵐ (ᵐ⇑ᵐ-resp-≡ᵐ ι≈μ))
-           }
-      ; unit = λ A → record
-                      { η = λ Θ →
-                          record
-                          { η = λ Δ → record { _⟨$⟩_ = [_]ᵛ_ inrᵛ ; cong = λ t≈s → []ᵛ-resp-≈ t≈s }
-                          ; commute = λ ρ t≈s → ≈-trans ([]ᵛ-resp-≈ ([]ᵛ-resp-≈ t≈s)) (≈-sym ʳ⇑ᵛ-comm-inrᵛ-term)
-                          ; sym-commute = λ ρ t≈s → ≈-trans ʳ⇑ᵛ-comm-inrᵛ-term ([]ᵛ-resp-≈ ([]ᵛ-resp-≈ t≈s))
-                          }
-                      ; commute = λ f t≈s → ≈-trans ([]ᵛ-resp-≈ ([]ᵐ-resp-≈ t≈s)) mr-comm-vr
-                      ; sym-commute = λ f t≈s → ≈-trans ? ([]ᵛ-resp-≈ ([]ᵐ-resp-≈ t≈s))
-                      }
-      ; extend = λ I A → record
-                          { η = λ Θ →
-                              record
-                              { η = λ Ψ → record { _⟨$⟩_ = [_]ⁱ_ {!!} ; cong = {!!} }
-                              ; commute = {!!}
-                              ; sym-commute = {!!}
-                              }
-                          ; commute = {!!}
-                          ; sym-commute = {!!}
-                          }
-      ; identityʳ = {!!}
-      ; identityˡ = {!!}
-      ; assoc = {!!}
-      ; extend-≈ = {!!}
-      }
+        -- The object mapping (which is also a functor)
+        { F₀ = λ Θ Δ A → Term-setoid Θ (Γ ,, Δ) A
+        -- The unit of the relative monad
+        ; unit = λ {Θ} Δ A →
+               record
+               { _⟨$⟩_ = λ M → tm-meta-generic M
+               ; cong = λ {M} {N} M≡N → ≈-≡ (cong tm-meta-generic M≡N)
+               }
+        -- The extension in the rel monad
+        ; extend = λ {Θ} {Ψ} I Δ A →
+                 record
+                 { _⟨$⟩_ = λ t → [ ⇑ⁱ (λ {Λ} {B} M → I Λ B ⟨$⟩ M) ]ⁱ t
+                 ; cong = λ {t} {s} t≈s →
+                   let open SetoidR (Term-setoid Ψ (Γ ,, Δ) A) in
+                   begin
+                   ([ ⇑ⁱ (λ {Λ} {B} M → I Λ B ⟨$⟩ M) ]ⁱ t)
+                     ≈⟨ []ⁱ-resp-≈ (⇑ⁱ (λ {Λ} {B} → _⟨$⟩_ (I Λ B))) t≈s ⟩
+                   ([ ⇑ⁱ (λ {Λ} {B} M → I Λ B ⟨$⟩ M) ]ⁱ s)
+                   ∎
+                 }
+        -- This is the law that says: I* ∘ η = I
+        ; identityʳ = λ {Θ} {Ψ} {I} Δ A {t} {s} t≈s
+            → ≈-trans ([]ⁱ-generic {Θ} {Ψ} {Γ} {λ {Λ} {B} M → I Λ B ⟨$⟩ M}) (func-cong (I Δ A) t≈s)
+        -- This is the law that says η* = id
+        ; identityˡ = λ {Θ} Δ A {t} {s} t≈s →
+            let open SetoidR (Term-setoid Θ (Γ ,, Δ) A) in
+            begin
+            ([ ⇑ⁱ (λ {Λ} {B} M → tm-meta-generic M) ]ⁱ t) ≈⟨ []ⁱ-resp-≈ (⇑ⁱ tm-meta-generic) t≈s ⟩
+            ([ ⇑ⁱ (λ {Λ} {B} M → tm-meta-generic M) ]ⁱ s) ≈⟨ [idⁱ] ⟩
+            s
+            ∎
+        -- This is the law that says: (J* ∘ I)* = J* ∘ I*
+        ; assoc = λ {Θ} {Ψ} {Ξ} {I} {J} Δ A {t} {s} t≈s →
+            let open SetoidR (Term-setoid Ξ (Γ ,, Δ) A) in
+            begin
+            ([ ⇑ⁱ ((λ {Λ} {B} M → J Λ B ⟨$⟩ M) ∘ⁱ (λ {Λ} {B} M → I Λ B ⟨$⟩ M)) ]ⁱ t)
+              ≈⟨ []ⁱ-resp-≈ⁱ t (⇑ⁱ-resp-∘ⁱ {Θ} {Ψ} {Ξ} {Γ} {Δ} {(λ {Λ} {B} M → I Λ B ⟨$⟩ M)}) ⟩
+            ([ (⇑ⁱ (λ {Λ} {B} M → J Λ B ⟨$⟩ M)) ∘ⁱ (⇑ⁱ (λ {Λ} {B} M → I Λ B ⟨$⟩ M)) ]ⁱ t)
+              ≈⟨ [∘ⁱ] t ⟩
+            ([ ⇑ⁱ (λ {Λ} {B} M → J Λ B ⟨$⟩ M) ]ⁱ ([ ⇑ⁱ (λ {Λ} {B} M → I Λ B ⟨$⟩ M) ]ⁱ t))
+              ≈⟨ []ⁱ-resp-≈ (⇑ⁱ (λ {Λ} {B} M → J Λ B ⟨$⟩ M))
+                            ([]ⁱ-resp-≈ (⇑ⁱ (λ {Λ} {B} M → I Λ B ⟨$⟩ M)) t≈s) ⟩
+            ([ ⇑ⁱ (λ {Λ} {B} M → J Λ B ⟨$⟩ M) ]ⁱ ([ ⇑ⁱ (λ {Λ} {B} M → I Λ B ⟨$⟩ M) ]ⁱ s))
+            ∎
+        -- Extension respects equality of instantiations
+        ; extend-≈ = λ {Θ} {Ψ} {I} {J} I≈ⁱJ Δ A {t} {s} t≈s →
+            let open SetoidR (Term-setoid Ψ (Γ ,, Δ) A) in
+            begin
+            ([ ⇑ⁱ (λ {Λ} {B} M → I Λ B ⟨$⟩ M) ]ⁱ t) ≈⟨ []ⁱ-resp-≈ (⇑ⁱ (λ {Λ} {B} M → I Λ B ⟨$⟩ M)) t≈s ⟩
+            (([ ⇑ⁱ (λ {Λ} {B} M → I Λ B ⟨$⟩ M) ]ⁱ s))
+              ≈⟨ []ⁱ-resp-≈ⁱ s (⇑ⁱ-resp-≈ⁱ ((λ {Λ} {B} M → I Λ B ⟨$⟩ M))
+                ((λ {Λ} {B} M → J Λ B ⟨$⟩ M)) λ M → I≈ⁱJ _ _ refl) ⟩
+            ([ ⇑ⁱ (λ {Λ} {B} M → J Λ B ⟨$⟩ M) ]ⁱ s)
+            ∎
+        }

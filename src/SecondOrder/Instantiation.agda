@@ -99,7 +99,6 @@ module SecondOrder.Instantiation
       (≈ˢ-idˢ-[]ˢ (λ { (var-inl _) → ≈-refl ; (var-inr _) → ≈-refl}))
 
 
-
   -- Interactions involving instantiations
 
   -- the identity metavariable instantiation
@@ -184,7 +183,9 @@ module SecondOrder.Instantiation
                    ([]ᵛ-resp-≡ᵛ (λ { (var-inl x) → refl ; (var-inr x) → refl }))
                    [∘ᵛ])))
 
-  ⇑ˢ-resp-ⁱ∘ˢ : ∀ {Θ ψ Γ Δ Ξ} → {I : Θ ⇒ⁱ ψ ⊕ Δ} → {σ : Θ ⊕ Γ ⇒ˢ Δ} → ⇑ˢ {Ξ = Ξ} (I ⁱ∘ˢ σ) ≈ˢ ⇑ⁱ I ⁱ∘ˢ ⇑ˢ σ
+
+  ⇑ˢ-resp-ⁱ∘ˢ : ∀ {Θ ψ Γ Δ Ξ} → {I : Θ ⇒ⁱ ψ ⊕ Δ} → {σ : Θ ⊕ Γ ⇒ˢ Δ}
+    → ⇑ˢ {Ξ = Ξ} (I ⁱ∘ˢ σ) ≈ˢ ⇑ⁱ I ⁱ∘ˢ ⇑ˢ σ
   ⇑ˢ-resp-ⁱ∘ˢ {σ = σ} (var-inl x) = [ᵛ∘ⁱ] (σ x)
   ⇑ˢ-resp-ⁱ∘ˢ (var-inr x) = ≈-refl
 
@@ -221,7 +222,7 @@ module SecondOrder.Instantiation
           (≈ˢ-sym ⇑ˢ-resp-ⁱ∘ˢ)
           ([]ⁱ-resp-≈ⁱ (es i) (≈ⁱ-sym (⇑ⁱ-resp-ᵛ∘ⁱ {I = I}))))
 
-  -- the action of a composition
+  -- the action of a composition is functorial
 
   [∘ⁱ] : ∀ {Θ Ξ Ω Γ} → {I : Θ ⇒ⁱ Ξ ⊕ Γ} → {J : Ξ ⇒ⁱ Ω ⊕ Γ} →
            ∀ {A} → ∀ (t : Term Θ Γ A) → [ J ∘ⁱ I ]ⁱ t ≈ [ J ]ⁱ [ I ]ⁱ t
