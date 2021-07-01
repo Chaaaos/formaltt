@@ -5,7 +5,7 @@ open import Relation.Binary using (Setoid)
 import SecondOrder.Arity
 import SecondOrder.Signature
 import SecondOrder.Metavariable
-import SecondOrder.Renaming
+import SecondOrder.VRenaming
 import SecondOrder.Term
 import SecondOrder.Substitution
 import SecondOrder.Instantiation

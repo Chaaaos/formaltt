@@ -1,3 +1,4 @@
+{-# OPTIONS --allow-unsolved-metas #-}
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subst)
 
@@ -187,6 +188,13 @@ module SecondOrder.Instantiation
   ⇑ˢ-resp-ⁱ∘ˢ {σ = σ} (var-inl x) = [ᵛ∘ⁱ] (σ x)
   ⇑ˢ-resp-ⁱ∘ˢ (var-inr x) = ≈-refl
 
+
+  -- composition of renamings and instantiations is functorial
+  -- write it with pen and paper first
+
+  ᵛ∘ⁱ∘ⁱ : ∀ {Θ ψ Ω Γ Δ} (ρ : Γ ⇒ᵛ Δ) (I : ψ ⇒ⁱ Ω ⊕ Γ) (J : Θ ⇒ⁱ ψ ⊕ Γ) → ρ ᵛ∘ⁱ (I ∘ⁱ J) ≈ⁱ (ρ ᵛ∘ⁱ I) ∘ⁱ (ρ ᵛ∘ⁱ J)
+  ᵛ∘ⁱ∘ⁱ ρ I J M = {!!}
+
   -- interaction lemma
   []ⁱ-[]ˢ : ∀ {Θ Ψ Γ Δ A} {I : Θ ⇒ⁱ Ψ ⊕ Δ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {ρ : Δ ⇒ᵛ Γ} (t : Term Θ Γ A) →
         σ ˢ∘ᵛ ρ ≈ˢ idˢ → ([ I ]ⁱ ([ σ ]ˢ t)) ≈ ([ I ⁱ∘ˢ σ ]ˢ [ ρ ᵛ∘ⁱ I ]ⁱ t)
@@ -237,3 +245,27 @@ module SecondOrder.Instantiation
 
   [∘ⁱ] {I = I} {J = J} (tm-oper f es) =
             ≈-oper (λ i → ≈-trans ([]ⁱ-resp-≈ⁱ (es i) (⇑ⁱ-resp-∘ⁱ {I = I})) ([∘ⁱ] (es i)))
+
+
+-- The category of metacontext and instantiations
+
+  module _ {Γ} where
+
+    open import Categories.Category
+
+    Metacontexts-Insts : Category ℓ ℓ ℓ
+    Metacontexts-Insts =
+      record
+        { Obj = MContext --VContext
+        ; _⇒_ = _⇒ⁱ_⊕ Γ
+        ; _≈_ =  _≈ⁱ_
+        ; id = idⁱ
+        ; _∘_ = _∘ⁱ_
+        ; assoc = {!!} -- λ {Γ} {Δ} {Ξ} {Ψ} {σ} {τ} {ψ} {A} x → [∘ˢ] (σ x)
+        ; sym-assoc = {!!} -- λ {Γ} {Δ} {Ξ} {Ψ} {σ} {τ} {ψ} {A} x → ≈-sym ([∘ˢ] (σ x))
+        ; identityˡ = {!!} -- λ x → [idˢ]
+        ; identityʳ = {!!} -- λ x → ≈-refl
+        ; identity² = {!!} -- λ x → ≈-refl
+        ; equiv = {!!} -- record { refl = λ {σ} {A} → ≈ˢ-refl {σ = σ} ; sym = ≈ˢ-sym ; trans = ≈ˢ-trans }
+        ; ∘-resp-≈ = {!!} -- λ f≈ˢg g≈ˢi x → []ˢ-resp-≈ˢ-≈ f≈ˢg (g≈ˢi x)
+        }
