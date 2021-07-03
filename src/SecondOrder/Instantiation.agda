@@ -189,12 +189,40 @@ module SecondOrder.Instantiation
   ⇑ˢ-resp-ⁱ∘ˢ {σ = σ} (var-inl x) = [ᵛ∘ⁱ] (σ x)
   ⇑ˢ-resp-ⁱ∘ˢ (var-inr x) = ≈-refl
 
+  [ˢ∘ⁱ] : ∀ {Θ Ψ Γ Γ' Δ A} {σ : Ψ ⊕ Γ ⇒ˢ Γ'} {I : Θ ⇒ⁱ Ψ ⊕ Γ} (t : Term Θ Γ' A)
+        → [ σ ˢ∘ⁱ I ]ⁱ t ≈ {! [ I ]ⁱ t!}
+  [ˢ∘ⁱ] t = {!!}
+
 
   -- composition of renamings and instantiations is functorial
   -- write it with pen and paper first
 
-  ᵛ∘ⁱ∘ⁱ : ∀ {Θ ψ Ω Γ Δ} (ρ : Γ ⇒ᵛ Δ) (I : ψ ⇒ⁱ Ω ⊕ Γ) (J : Θ ⇒ⁱ ψ ⊕ Γ) → ρ ᵛ∘ⁱ (I ∘ⁱ J) ≈ⁱ (ρ ᵛ∘ⁱ I) ∘ⁱ (ρ ᵛ∘ⁱ J)
+  ᵛ∘ⁱ∘ⁱ : ∀ {Θ ψ Ω Γ Δ} (ρ : Γ ⇒ᵛ Δ) (I : ψ ⇒ⁱ Ω ⊕ Γ) (J : Θ ⇒ⁱ ψ ⊕ Γ)
+    → ρ ᵛ∘ⁱ (I ∘ⁱ J) ≈ⁱ (ρ ᵛ∘ⁱ I) ∘ⁱ (ρ ᵛ∘ⁱ J)
   ᵛ∘ⁱ∘ⁱ ρ I J M = {!!}
+
+
+  temp : ∀ {Θ Ψ Γ Γ' Δ A} {I : Θ ⇒ⁱ Ψ ⊕ Γ} {f : Θ ⊕ Γ ⇒ˢ Γ'}
+       {g : Ψ ⊕ Γ ⇒ˢ Γ'} (t : Term Θ (Γ ,, Δ) A)
+       → [ ⇑ˢ g ]ˢ ([ ⇑ⁱ I ]ⁱ t) ≈ [ ⇑ⁱ (g ˢ∘ⁱ I) ]ⁱ ([ ⇑ˢ f ]ˢ t)
+  temp (tm-var x) = {!!}
+  temp (tm-meta M ts) = {!!}
+  temp (tm-oper f es) = {!!}
+    where
+    temp2 : ∀ {Θ Γ Γ' Δ A} {f : Θ ⊕ Γ ⇒ˢ Γ'} (M : [ Γ ,, Δ , A ]∈ Θ)
+       → ([ ⇑ˢ f ]ˢ (tm-meta-generic M)) ≈ (tm-meta-generic M)
+    temp2 = λ M → ≈-≡ refl
+
+  ⇑ⁱ-resp-ˢ∘ⁱ : ∀ {Θ Ψ Γ Γ' Δ} {I : Θ ⇒ⁱ Ψ ⊕ Γ} {f : Ψ ⊕ Γ ⇒ˢ Γ'}
+       → ⇑ⁱ {Θ} {Ψ} {Γ'} {Δ} (f ˢ∘ⁱ I) ≈ⁱ (⇑ˢ f) ˢ∘ⁱ (⇑ⁱ I)
+  ⇑ⁱ-resp-ˢ∘ⁱ var-slot = {!!}
+  ⇑ⁱ-resp-ˢ∘ⁱ (var-inl M) = {!!}
+  ⇑ⁱ-resp-ˢ∘ⁱ (var-inr N) = {!!}
+
+  -- temp2 : ∀ {Θ Ψ Γ Γ' Δ A} {I : Θ ⇒ⁱ Ψ ⊕ Γ} {f : Ψ ⊕ Γ ⇒ˢ Γ'} (t : Term Θ (Γ ,, Δ) A)
+  --      → [ ⇑ⁱ (f ˢ∘ⁱ I) ]ⁱ t ≈ [ ⇑ˢ f ]ˢ ([ ⇑ⁱ I ]ⁱ t) 
+  -- temp2 = {!!}
+
 
   -- interaction lemma
   []ⁱ-[]ˢ : ∀ {Θ Ψ Γ Δ A} {I : Θ ⇒ⁱ Ψ ⊕ Δ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {ρ : Δ ⇒ᵛ Γ} (t : Term Θ Γ A) →
