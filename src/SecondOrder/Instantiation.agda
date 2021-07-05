@@ -1,4 +1,4 @@
-{-# OPTIONS --allow-unsolved-metas #-}
+-- {-# OPTIONS --allow-unsolved-metas #-}
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subst)
 
@@ -168,6 +168,7 @@ module SecondOrder.Instantiation
   [ᵛ∘ⁱ] {ρ = ρ} {I = I} (tm-oper f es) =
     ≈-oper λ i → ≈-trans ([ᵛ∘ⁱ] (es i)) ([]ⁱ-resp-≈ⁱ ([ ⇑ᵛ ρ ]ᵛ es i) (≈ⁱ-sym (⇑ⁱ-resp-ᵛ∘ⁱ {I = I})))
 
+
   -- extension commutes with composition
 
   ⇑ⁱ-resp-∘ⁱ : ∀ {Θ Ξ Ω} {Γ Δ} {I : Θ ⇒ⁱ Ξ ⊕ Γ} {J : Ξ ⇒ⁱ Ω ⊕ Γ} →
@@ -189,12 +190,6 @@ module SecondOrder.Instantiation
   ⇑ˢ-resp-ⁱ∘ˢ {σ = σ} (var-inl x) = [ᵛ∘ⁱ] (σ x)
   ⇑ˢ-resp-ⁱ∘ˢ (var-inr x) = ≈-refl
 
-
-  -- composition of renamings and instantiations is functorial
-  -- write it with pen and paper first
-
-  ᵛ∘ⁱ∘ⁱ : ∀ {Θ ψ Ω Γ Δ} (ρ : Γ ⇒ᵛ Δ) (I : ψ ⇒ⁱ Ω ⊕ Γ) (J : Θ ⇒ⁱ ψ ⊕ Γ) → ρ ᵛ∘ⁱ (I ∘ⁱ J) ≈ⁱ (ρ ᵛ∘ⁱ I) ∘ⁱ (ρ ᵛ∘ⁱ J)
-  ᵛ∘ⁱ∘ⁱ ρ I J M = {!!}
 
   -- interaction lemma
   []ⁱ-[]ˢ : ∀ {Θ Ψ Γ Δ A} {I : Θ ⇒ⁱ Ψ ⊕ Δ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {ρ : Δ ⇒ᵛ Γ} (t : Term Θ Γ A) →
@@ -262,11 +257,33 @@ module SecondOrder.Instantiation
         ; _≈_ =  _≈ⁱ_
         ; id = idⁱ
         ; _∘_ = _∘ⁱ_
-        ; assoc = {!!} -- λ {Γ} {Δ} {Ξ} {Ψ} {σ} {τ} {ψ} {A} x → [∘ˢ] (σ x)
-        ; sym-assoc = {!!} -- λ {Γ} {Δ} {Ξ} {Ψ} {σ} {τ} {ψ} {A} x → ≈-sym ([∘ˢ] (σ x))
-        ; identityˡ = {!!} -- λ x → [idˢ]
-        ; identityʳ = {!!} -- λ x → ≈-refl
-        ; identity² = {!!} -- λ x → ≈-refl
-        ; equiv = {!!} -- record { refl = λ {σ} {A} → ≈ˢ-refl {σ = σ} ; sym = ≈ˢ-sym ; trans = ≈ˢ-trans }
+        ; assoc = λ {Θ} {Ω} {ψ} {Ξ} {K} {J} {I} {Γᴹ} {Aᴹ} M →
+                                                            ≈-trans
+                                                              ([]ⁱ-resp-≈ⁱ (K M) (⇑ⁱ-resp-∘ⁱ {Δ = Γᴹ} {I = J} {J = I}))
+                                                              ([∘ⁱ] (K M))
+        ; sym-assoc =  λ {Θ} {Ω} {ψ} {Ξ} {K} {J} {I} {Γᴹ} {Aᴹ} M → ≈-sym
+                                                               ( ≈-trans
+                                                              ([]ⁱ-resp-≈ⁱ (K M) (⇑ⁱ-resp-∘ⁱ {Δ = Γᴹ} {I = J} {J = I}))
+                                                              ([∘ⁱ] (K M)))
+        ; identityˡ = λ M → [idⁱ]
+        ; identityʳ = λ {A} {B} {I} M →
+                                    ≈-trans
+                                      (≈-trans
+                                        (≈-sym ([ˢ∘ᵛ] (I M)))
+                                        ([]ˢ-resp-≈ˢ (I M) λ x → {!!}))
+                                      [idˢ] -- λ x → faire une disjonction de cas ailleurs plus tard : flemme là tout de suite
+        ; identity² = λ M → ≈-refl
+        ; equiv =  record
+                     { refl = λ {I} → ≈ⁱ-refl {I = I}
+                     ; sym = ≈ⁱ-sym
+                     ; trans = ≈ⁱ-trans }
         ; ∘-resp-≈ = {!!} -- λ f≈ˢg g≈ˢi x → []ˢ-resp-≈ˢ-≈ f≈ˢg (g≈ˢi x)
         }
+
+        where
+          idʳ : ∀ {Θ Δ A} (x : A ∈ (Γ ,, Δ)) →
+                                        [ tm-var , (λ i → tm-var (var-inr i)) ]ˢ
+                                        ([ (λ x₁ → var-inl {Γ = Γ ,, Δ} (var-inl x₁)) , (λ x₁ → var-inr x₁) ]ᵛ x)
+                                        ≈ tm-var {Θ = Θ} x
+          idʳ (var-inl x) = {!!}
+          idʳ (var-inr x) = {!!}

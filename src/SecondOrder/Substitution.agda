@@ -14,6 +14,7 @@ import SecondOrder.Arity
 import SecondOrder.Signature
 import SecondOrder.Metavariable
 import SecondOrder.VRenaming
+import SecondOrder.MRenaming
 import SecondOrder.Term
 import SecondOrder.IndexedCategory
 import SecondOrder.RelativeKleisli
@@ -27,6 +28,7 @@ module SecondOrder.Substitution
   open SecondOrder.Signature.Signature Σ
   open SecondOrder.Metavariable Σ
   open SecondOrder.Term Σ
+  open SecondOrder.MRenaming Σ
   open SecondOrder.VRenaming Σ
 
   -- substitution
@@ -94,7 +96,7 @@ module SecondOrder.Substitution
   ⇑ˢ-resp-≈ˢ ξ (var-inl x) = []ᵛ-resp-≈ (ξ x)
   ⇑ˢ-resp-≈ˢ ξ (var-inr y) = ≈-refl
 
-  -- the action of a renaming on a substitution
+  -- the compositions of renamings and substitutions
 
   infixr 6 _ᵛ∘ˢ_
 
@@ -105,6 +107,19 @@ module SecondOrder.Substitution
 
   _ˢ∘ᵛ_ : ∀ {Θ} {Γ Δ Ξ} (σ : Θ ⊕ Δ ⇒ˢ Ξ) (ρ : Γ ⇒ᵛ Δ)  → Θ ⊕ Γ ⇒ˢ Ξ
   (σ ˢ∘ᵛ ρ) x =  σ (ρ x)
+
+  -- the composition of metarenamings and substitutions
+
+  infixr 6 _ᵐ∘ˢ_
+
+  _ᵐ∘ˢ_ : ∀ {Θ Ω} {Γ Δ} (μ : Θ ⇒ᵐ Ω) (σ : Θ ⊕ Γ ⇒ˢ Δ) → Ω ⊕ Γ ⇒ˢ Δ
+  (μ ᵐ∘ˢ σ) x =  [ μ ]ᵐ σ x
+
+  -- infixl 6 _ˢ∘ᵐ_
+
+  -- _ˢ∘ᵐ_ : ∀ {Ω Θ} {Γ Δ} (σ : Ω ⊕ Γ ⇒ˢ Δ) (μ : Θ ⇒ᵐ Ω)  → Ω ⊕ Γ ⇒ˢ Δ
+  -- (σ ˢ∘ᵐ μ) x =  {![_]ˢ_!}
+
 
   -- extension commutes with renaming action
 
@@ -195,7 +210,7 @@ module SecondOrder.Substitution
   [⇑ᵛ∘ˢ] (tm-meta M ts) = ≈-meta (λ i → [⇑ᵛ∘ˢ] (ts i))
   [⇑ᵛ∘ˢ] (tm-oper f es) = ≈-oper (λ i → ≈-trans ([]ˢ-resp-≈ˢ (es i) (⇑ˢ-resp-≈ˢ ⇑ˢ-resp-ᵛ∘ˢ)) ([⇑ᵛ∘ˢ] (es i)))
 
-  -- functoriality of left renaming action
+  -- action of the composition of a renaming and a substitution
 
   [ᵛ∘ˢ] : ∀ {Θ} {A} {Γ Δ Ξ} {ρ : Δ ⇒ᵛ Ξ} {σ : Θ ⊕ Γ ⇒ˢ Δ} (t : Term Θ Γ A) →
            [ ρ ᵛ∘ˢ σ ]ˢ t ≈ [ ρ ]ᵛ [ σ ]ˢ t
@@ -203,13 +218,39 @@ module SecondOrder.Substitution
   [ᵛ∘ˢ] (tm-meta M ts) = ≈-meta (λ i → [ᵛ∘ˢ] (ts i))
   [ᵛ∘ˢ] (tm-oper f es) = ≈-oper (λ i → [⇑ᵛ∘ˢ] (es i))
 
-  -- functoriality of right renaming action
+  -- action of the composition of a substitution and a renaming
 
   [ˢ∘ᵛ] : ∀ {Θ} {A} {Γ Δ Ξ} {σ : Θ ⊕ Δ ⇒ˢ Ξ} {ρ : Γ ⇒ᵛ Δ} (t : Term Θ Γ A) →
            [ σ ˢ∘ᵛ ρ ]ˢ t ≈ [ σ ]ˢ [ ρ ]ᵛ t
   [ˢ∘ᵛ] (tm-var x) = ≈-refl
   [ˢ∘ᵛ] (tm-meta M ts) = ≈-meta (λ i → [ˢ∘ᵛ] (ts i))
   [ˢ∘ᵛ] (tm-oper f es) = ≈-oper (λ i → [⇑ˢ∘ᵛ] (es i))
+
+
+  -- the action of renamings and metarenamings don't interfere with each other
+
+  []ᵛ-[]ᵐ : ∀ {Θ Ω Γ Δ A} (ρ : Γ ⇒ᵛ Δ) (μ : Θ ⇒ᵐ Ω) (t : Term Θ Γ A) → [ ρ ]ᵛ ([ μ ]ᵐ t) ≈ [ μ ]ᵐ ([ ρ ]ᵛ t)
+  []ᵛ-[]ᵐ ρ μ (tm-var x) = ≈-refl
+  []ᵛ-[]ᵐ ρ μ (tm-meta M ts) = ≈-meta (λ i → []ᵛ-[]ᵐ ρ μ (ts i))
+  []ᵛ-[]ᵐ ρ μ (tm-oper f es) = ≈-oper (λ i → []ᵛ-[]ᵐ  [ (λ x → var-inl (ρ x)) , (λ x → var-inr x) ]ᵛ  μ (es i))
+
+  -- substitution extension interacts nicely with the composition of a renaming and a substitution
+
+  ⇑ˢ-ᵐ∘ˢ : ∀ {Θ Ω Γ Δ Ξ} (μ : Θ ⇒ᵐ Ω) (σ : Θ ⊕ Γ ⇒ˢ Δ) →  ⇑ˢ {Ξ = Ξ} (μ ᵐ∘ˢ σ) ≈ˢ μ ᵐ∘ˢ ⇑ˢ σ
+  ⇑ˢ-ᵐ∘ˢ μ σ (var-inl x) = []ᵛ-[]ᵐ var-inl μ (σ x)
+  ⇑ˢ-ᵐ∘ˢ μ σ (var-inr x) = ≈-refl
+
+  -- action of the composition of a metarenaming and a substitution
+
+  [ᵐ∘ˢ] : ∀ {Θ Ω} {A} {Γ Δ} {μ : Θ ⇒ᵐ Ω} {σ : Θ ⊕ Γ ⇒ˢ Δ} (t : Term Θ Γ A) →
+           [ μ ᵐ∘ˢ σ ]ˢ ( [ μ ]ᵐ t) ≈ [ μ ]ᵐ [ σ ]ˢ t
+  [ᵐ∘ˢ] (tm-var x) = ≈-refl
+  [ᵐ∘ˢ] {μ = μ} {σ = σ} (tm-meta M ts) = ≈-meta λ i → ([ᵐ∘ˢ] (ts i))
+  [ᵐ∘ˢ] {μ = μ} {σ = σ} (tm-oper f es) = ≈-oper λ i →
+                                  ≈-trans
+                                    ([]ˢ-resp-≈ˢ ([ μ ]ᵐ (es i)) (⇑ˢ-ᵐ∘ˢ μ σ))
+                                    ([ᵐ∘ˢ] (es i))
+
 
   -- composition commutes with extension
 
