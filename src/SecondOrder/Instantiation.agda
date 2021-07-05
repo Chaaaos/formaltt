@@ -190,18 +190,6 @@ module SecondOrder.Instantiation
   ⇑ˢ-resp-ⁱ∘ˢ {σ = σ} (var-inl x) = [ᵛ∘ⁱ] (σ x)
   ⇑ˢ-resp-ⁱ∘ˢ (var-inr x) = ≈-refl
 
-  [ˢ∘ⁱ] : ∀ {Θ Ψ Γ Γ' Δ A} {σ : Ψ ⊕ Γ ⇒ˢ Γ'} {I : Θ ⇒ⁱ Ψ ⊕ Γ} (t : Term Θ Γ' A)
-        → [ σ ˢ∘ⁱ I ]ⁱ t ≈ {! [ I ]ⁱ t!}
-  [ˢ∘ⁱ] t = {!!}
-
-
-
-  ⇑ⁱ-resp-ˢ∘ⁱ : ∀ {Θ Ψ Γ Γ' Δ} {I : Θ ⇒ⁱ Ψ ⊕ Γ} {f : Ψ ⊕ Γ ⇒ˢ Γ'}
-       → ⇑ⁱ {Θ} {Ψ} {Γ'} {Δ} (f ˢ∘ⁱ I) ≈ⁱ (⇑ˢ f) ˢ∘ⁱ (⇑ⁱ I)
-  ⇑ⁱ-resp-ˢ∘ⁱ var-slot = {!!}
-  ⇑ⁱ-resp-ˢ∘ⁱ (var-inl M) = {!!}
-  ⇑ⁱ-resp-ˢ∘ⁱ (var-inr N) = {!!}
-
   -- interaction lemma
   []ⁱ-[]ˢ : ∀ {Θ Ψ Γ Δ A} {I : Θ ⇒ⁱ Ψ ⊕ Δ} {σ : Θ ⊕ Γ ⇒ˢ Δ} {ρ : Δ ⇒ᵛ Γ} (t : Term Θ Γ A) →
         σ ˢ∘ᵛ ρ ≈ˢ idˢ → ([ I ]ⁱ ([ σ ]ˢ t)) ≈ ([ I ⁱ∘ˢ σ ]ˢ [ ρ ᵛ∘ⁱ I ]ⁱ t)
