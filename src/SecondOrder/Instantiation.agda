@@ -1,4 +1,3 @@
--- {-# OPTIONS --allow-unsolved-metas #-}
 open import Agda.Primitive using (lzero; lsuc; _⊔_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subst)
 
@@ -29,6 +28,12 @@ module SecondOrder.Instantiation
 
   _⇒ⁱ_⊕_ : MContext → MContext → VContext → Set ℓ
   Θ ⇒ⁱ Ξ ⊕ Γ = ∀ {Γᴹ Aᴹ} (M : [ Γᴹ , Aᴹ ]∈ Θ) → Term Ξ (Γ ,, Γᴹ) Aᴹ
+
+
+  -- instantiation respects propositionnal equality
+
+  I-resp-≡ : ∀ {Θ Ω Γ Δ A} {M N : [ Δ , A ]∈ Θ} {I : Θ ⇒ⁱ Ω ⊕ Γ} → M ≡ N → I M ≡ I N
+  I-resp-≡ refl = refl
 
   -- syntactic equality of instantiations
 
