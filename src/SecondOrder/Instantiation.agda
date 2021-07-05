@@ -269,14 +269,17 @@ module SecondOrder.Instantiation
                                     ≈-trans
                                       (≈-trans
                                         (≈-sym ([ˢ∘ᵛ] (I M)))
-                                        ([]ˢ-resp-≈ˢ (I M) λ x → {!!}))
-                                      [idˢ] -- λ x → faire une disjonction de cas ailleurs plus tard : flemme là tout de suite
+                                        ([]ˢ-resp-≈ˢ (I M) λ x → idʳ x))
+                                      [idˢ]
         ; identity² = λ M → ≈-refl
         ; equiv =  record
                      { refl = λ {I} → ≈ⁱ-refl {I = I}
                      ; sym = ≈ⁱ-sym
                      ; trans = ≈ⁱ-trans }
-        ; ∘-resp-≈ = {!!} -- λ f≈ˢg g≈ˢi x → []ˢ-resp-≈ˢ-≈ f≈ˢg (g≈ˢi x)
+        ; ∘-resp-≈ = λ {Θ} {Ω} {ψ} {I} {J} {K} {L} ξ₁ ξ₂ M →
+                                                      ≈-trans
+                                                        ([]ⁱ-resp-≈ (⇑ⁱ I) (ξ₂ M))
+                                                        ([]ⁱ-resp-≈ⁱ (L M) (⇑ⁱ-resp-≈ⁱ I J ξ₁))
         }
 
         where
@@ -284,5 +287,5 @@ module SecondOrder.Instantiation
                                         [ tm-var , (λ i → tm-var (var-inr i)) ]ˢ
                                         ([ (λ x₁ → var-inl {Γ = Γ ,, Δ} (var-inl x₁)) , (λ x₁ → var-inr x₁) ]ᵛ x)
                                         ≈ tm-var {Θ = Θ} x
-          idʳ (var-inl x) = {!!}
-          idʳ (var-inr x) = {!!}
+          idʳ (var-inl x) = ≈-refl
+          idʳ (var-inr x) = ≈-refl
